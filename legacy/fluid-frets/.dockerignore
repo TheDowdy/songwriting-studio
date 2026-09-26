@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+.git
+.shots
+*.log
+.DS_Store
