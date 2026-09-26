@@ -115,6 +115,8 @@ export function renderPluck(midi: number, sampleRate: number, seconds = 3): Floa
 class GuitarVoice {
   private sampler: Tone.Sampler;
   private recorded: Tone.Sampler | null = null;
+  /** Settles once the recorded samples have loaded, or failed to (the synthesized plucks then stay). */
+  readonly ready: Promise<void>;
 
   constructor() {
     const ctx = Tone.getContext();
@@ -137,14 +139,20 @@ class GuitarVoice {
         if (GUITAR_FILES.has(`${name}${oct}`)) recordedUrls[`${name.replace('s', '#')}${oct}`] = `${name}${oct}.mp3`;
       }
     }
+    let settle = () => {};
+    this.ready = new Promise((resolve) => (settle = resolve));
     const recorded: Tone.Sampler = new Tone.Sampler({
       urls: recordedUrls,
       baseUrl: `${import.meta.env.BASE_URL}samples/guitar-acoustic/`,
       release: 0.6,
       onload: () => {
         this.recorded = recorded;
+        settle();
       },
-      onerror: () => recorded.dispose(),
+      onerror: () => {
+        recorded.dispose();
+        settle();
+      },
     }).connect(getBus());
   }
 
@@ -236,16 +244,39 @@ function makeInstrument(id: InstrumentId): Voice {
   }
 }
 
+/** The longest the first sound waits for the recorded guitar before falling back to the synthesized one. */
+const GUITAR_LOAD_WAIT_MS = 4000;
+
+let prefetched = false;
+
+/** Download every sample file into the browser's HTTP cache, without touching audio (which
+ *  would need a user gesture). Called at startup, so when the first tap creates the samplers
+ *  their files come from the cache and the recorded sounds are ready almost at once. */
+export function prefetchSamples(): void {
+  if (prefetched || typeof fetch !== 'function') return;
+  prefetched = true;
+  const base = import.meta.env.BASE_URL;
+  const files = [
+    ...Object.values(SAMPLE_NOTES).map((f) => `${base}samples/salamander/${f}`),
+    ...[...GUITAR_FILES].map((n) => `${base}samples/guitar-acoustic/${n}.mp3`),
+  ];
+  // A failed prefetch only means that file loads normally (uncached) later.
+  for (const url of files) fetch(url).catch(() => {});
+}
+
 /**
  * Start the audio context and load the instruments. Browsers only allow audio to start from a
- * user gesture, so call this synchronously from a tap/click handler.
+ * user gesture, so call this synchronously from a tap/click handler. Waits for the recorded
+ * guitar (up to GUITAR_LOAD_WAIT_MS) so the first chord never sounds on the fallback synth.
  */
 export function unlockAudio(): Promise<void> {
   const started = Tone.start();
   loadingPiano ??= loadPiano();
   if (!voices.has('piano')) voices.set('piano', makeFallbackPiano());
   for (const id of ['epiano', 'pad', 'guitar'] as InstrumentId[]) if (!voices.has(id)) voices.set(id, makeInstrument(id));
-  return Promise.all([started, loadingPiano]).then(() => undefined);
+  const guitar = voices.get('guitar') as GuitarVoice;
+  const guitarReady = Promise.race([guitar.ready, new Promise<void>((r) => setTimeout(r, GUITAR_LOAD_WAIT_MS))]);
+  return Promise.all([started, loadingPiano, guitarReady]).then(() => undefined);
 }
 
 function voiceFor(id: InstrumentId): Voice | null {
