@@ -1,0 +1,20 @@
+{
+  "name": "songwriting-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "workspaces": [
+    "legacy/*"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/fix-typescript-eslint-ts7.mjs",
+    "dev:pb": "npm run dev --workspace=legacy/progression-builder",
+    "dev:ff": "npm run dev --workspace=legacy/fluid-frets -- --port 5199",
+    "test": "npm run test --workspace=legacy/progression-builder && npm run test --workspace=legacy/fluid-frets",
+    "typecheck": "npm run typecheck --workspace=legacy/progression-builder && npm run typecheck --workspace=legacy/fluid-frets",
+    "lint": "npm run lint --workspace=legacy/fluid-frets",
+    "build": "npm run build --workspace=legacy/progression-builder && npm run build --workspace=legacy/fluid-frets",
+    "check:app": "npm run check:app --workspace=legacy/fluid-frets",
+    "check:chords": "npm run check:chords --workspace=legacy/fluid-frets"
+  }
+}
