@@ -1,0 +1,649 @@
+/*
+ * Fluid Frets' own rules, scoped under `.mod-guitar` (the module's root element — see App.tsx)
+ * so nothing here leaks onto the rest of the app and nothing from the shell/other modules leaks
+ * in (§6). The design tokens (--bg, --fg, --surface, --line, --accent, --accent-fg…) now come
+ * from `@sw/ui/tokens.css`, shared with the whole app — FF used to define its own --bg/--fg/
+ * --accent (dark by default) plus --panel/--border/--on-accent; those map onto the shared
+ * --surface/--line/--accent-fg below so this module's panels read as the same product as the
+ * rest of the app. The guitar neck's realistic wood and skins are untouched — they're computed
+ * colours in TS (skin.ts), not CSS custom properties.
+ */
+
+.mod-guitar,
+.mod-guitar * {
+  box-sizing: border-box;
+}
+.mod-guitar {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+}
+.mod-guitar :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.mod-guitar {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Toolbar */
+.mod-guitar .toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.mod-guitar .toolbar-title {
+  font-size: 1.15rem;
+  margin: 0 0.5rem 0 0;
+  align-self: center;
+}
+.mod-guitar .field {
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.75rem;
+}
+.mod-guitar .field select {
+  max-width: 100%;
+  min-height: 40px;
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0 0.5rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.mod-guitar .check {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 40px;
+  font-size: 0.9rem;
+}
+.mod-guitar .check input {
+  width: 20px;
+  height: 20px;
+}
+
+/* Fretboard */
+.mod-guitar .stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.mod-guitar .stage {
+  min-width: 0;
+}
+.mod-guitar .fretboard {
+  width: 100%;
+  min-width: 0;
+  max-width: 1700px;
+}
+.mod-guitar .fretboard-scroll {
+  overflow-x: auto;
+}
+.mod-guitar .fretboard-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  /* Vertical drags are strums; horizontal ones still scroll the neck on a portrait phone. */
+  touch-action: pan-x;
+}
+.mod-guitar .rotate-hint {
+  display: none;
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  opacity: 0.75;
+  text-align: center;
+}
+/* Phone in portrait: scroll the neck horizontally and suggest rotating. */
+@media (max-width: 600px) and (orientation: portrait) {
+  .mod-guitar .fretboard-svg {
+    min-width: 900px;
+  }
+  .mod-guitar .rotate-hint {
+    display: block;
+  }
+}
+/* Phone in landscape: tighten chrome so the neck gets the space. */
+@media (max-height: 500px) {
+  .mod-guitar .toolbar {
+    gap: 0.25rem 0.5rem;
+    padding: 0.25rem 0.75rem;
+  }
+  .mod-guitar .toolbar-title {
+    font-size: 1rem;
+  }
+  /* Labels stay available to screen readers but stop costing a row of height. */
+  .mod-guitar .toolbar .field > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .mod-guitar .toolbar .field select,
+  .mod-guitar .toolbar .button {
+    font-size: 0.8rem;
+  }
+  .mod-guitar .toolbar .field.volume input {
+    width: 5rem;
+  }
+  .mod-guitar .banner {
+    padding: 0.3rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  .mod-guitar .banner small {
+    display: none;
+  }
+  .mod-guitar .stage {
+    padding: 0.5rem;
+  }
+}
+
+/* Controls added in Phase 3 */
+.mod-guitar .field.volume input {
+  width: 8rem;
+  min-height: 40px;
+  accent-color: var(--accent);
+}
+.mod-guitar .button {
+  min-height: 40px;
+  padding: 0 0.9rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.mod-guitar .button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
+.mod-guitar .banner {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  font: inherit;
+  font-size: 0.95rem;
+  text-align: center;
+  color: var(--accent-fg);
+  background: var(--accent);
+  border: 0;
+  cursor: pointer;
+}
+.mod-guitar .banner small {
+  opacity: 0.8;
+}
+.mod-guitar .banner-error {
+  cursor: default;
+  color: #fff;
+  background: #a33;
+}
+.mod-guitar .markers {
+  cursor: pointer;
+}
+
+/* Tuning pegs (Phase 4) */
+.mod-guitar .peg {
+  cursor: ns-resize;
+  touch-action: none;
+  outline: none;
+}
+.mod-guitar .peg .peg-focus {
+  stroke: transparent;
+}
+.mod-guitar .peg:focus-visible .peg-focus {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+
+/* Dialogs and text inputs (Phase 4) */
+.mod-guitar .dialog {
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.mod-guitar .dialog::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+.mod-guitar .dialog-body {
+  padding: 1rem 1.25rem 1.25rem;
+}
+.mod-guitar .dialog-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+.mod-guitar .dialog-subtitle {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1rem;
+}
+.mod-guitar .dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.mod-guitar .dialog-actions.start {
+  justify-content: flex-start;
+}
+.mod-guitar .dialog-warning {
+  margin: 0.75rem 0 0;
+  color: #e06c5a;
+}
+.mod-guitar .muted {
+  opacity: 0.75;
+  font-size: 0.85rem;
+}
+.mod-guitar .text-input {
+  min-height: 40px;
+  width: 100%;
+  padding: 0 0.6rem;
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.mod-guitar .button.primary {
+  color: var(--accent-fg);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.mod-guitar .button.danger {
+  color: #e06c5a;
+}
+.mod-guitar .button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.mod-guitar .tuning-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mod-guitar .tuning-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 0.4rem;
+}
+.mod-guitar .tuning-list .notes {
+  grid-column: 1 / -1;
+  order: 5;
+  margin-top: -0.25rem;
+}
+
+/* Bottom panel, scale mode and legend (Phase 6) */
+.mod-guitar .bottom-panel {
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+.mod-guitar .tabs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 1rem 0;
+}
+.mod-guitar .tablist {
+  display: flex;
+  gap: 0.25rem;
+}
+.mod-guitar .tab {
+  min-height: 40px;
+  padding: 0 1rem;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--fg);
+  background: transparent;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+}
+.mod-guitar .tab[aria-selected='true'] {
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+.mod-guitar .panel-body {
+  padding: 0.5rem 1rem 0.75rem;
+}
+.mod-guitar .panel-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem 1rem;
+}
+.mod-guitar .panel-row + .panel-row {
+  margin-top: 0.75rem;
+}
+.mod-guitar .panel-label {
+  align-self: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.mod-guitar .field.tempo input {
+  width: 9rem;
+  min-height: 40px;
+  accent-color: var(--accent);
+}
+.mod-guitar .field.tempo output {
+  font-variant-numeric: tabular-nums;
+}
+.mod-guitar .scale-info {
+  margin: 0.5rem 0 0.75rem;
+  font-size: 0.95rem;
+}
+.mod-guitar .muted {
+  opacity: 0.75;
+}
+.mod-guitar .button.play {
+  min-width: 6rem;
+}
+.mod-guitar .field select:disabled {
+  opacity: 0.5;
+}
+
+.mod-guitar .legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+.mod-guitar .legend-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mod-guitar .legend-list li,
+.mod-guitar .legend-overlay {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.mod-guitar .legend-overlay {
+  margin: 0;
+}
+.mod-guitar .legend-note {
+  font-weight: 600;
+}
+.mod-guitar .swatch {
+  flex: none;
+}
+
+@media (max-height: 500px) {
+  .mod-guitar .tab {
+    min-height: 36px;
+  }
+  .mod-guitar .panel-body {
+    padding: 0.25rem 0.75rem 0.5rem;
+  }
+}
+
+/* Chords tab (Phase 7) */
+.mod-guitar .chord-panel {
+  max-height: 55vh;
+  overflow-y: auto;
+}
+.mod-guitar .chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  border: 0;
+}
+.mod-guitar .chip-group legend {
+  float: left;
+  min-width: 6rem;
+  margin: 0 0.5rem 0 0;
+  padding: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 40px;
+}
+.mod-guitar .chip {
+  min-height: 40px;
+  min-width: 40px;
+  padding: 0 0.8rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  cursor: pointer;
+}
+.mod-guitar .chip[aria-pressed='true'] {
+  color: var(--accent-fg);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.mod-guitar .chip.unavailable {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.mod-guitar .chip-message {
+  min-height: 1.4em;
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+.mod-guitar .chord-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1.5rem;
+  margin-top: 0.25rem;
+}
+.mod-guitar .chord-summary p {
+  margin: 0;
+}
+.mod-guitar .chord-name {
+  margin: 0;
+  font-size: 1.8rem;
+}
+.mod-guitar .display-options {
+  margin-top: 0.5rem;
+}
+.mod-guitar .voicing-card {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  touch-action: pan-y;
+}
+.mod-guitar .voicing-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.mod-guitar .voicing-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.mod-guitar .shape-text {
+  font-family: ui-monospace, monospace;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+}
+.mod-guitar .shape-reading {
+  margin: 0.4rem 0;
+  text-align: center;
+}
+.mod-guitar .play-row {
+  justify-content: center;
+}
+.mod-guitar .hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+}
+.mod-guitar .rules {
+  margin-top: 0.75rem;
+}
+.mod-guitar .rules summary {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.mod-guitar .voicing-list {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0.75rem 0 0;
+  padding: 0 0 0.5rem;
+  list-style: none;
+  overflow-x: auto;
+}
+.mod-guitar .voicing-thumb {
+  padding: 0.25rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.mod-guitar .voicing-thumb[aria-pressed='true'] {
+  border-color: var(--accent);
+}
+.mod-guitar .chord-diagram {
+  display: block;
+}
+.mod-guitar .diagram-dot {
+  fill: var(--fg);
+}
+.mod-guitar .diagram-dot.root {
+  fill: var(--accent);
+}
+
+.mod-guitar .builder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 0 1.5rem;
+}
+
+.mod-guitar .diagram-placeholder {
+  display: block;
+  width: 73px;
+  height: 84px;
+}
+
+/* Identify tab (Phase 8) */
+.mod-guitar .identify-result {
+  margin-top: 0.5rem;
+}
+.mod-guitar .identify-result p {
+  margin: 0.15rem 0;
+}
+.mod-guitar .identify-shape {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
+/* Guitar models (Phase 9) */
+.mod-guitar .guitar-controls {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+.mod-guitar .popover {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 20;
+  width: min(24rem, calc(100vw - 2rem));
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+.mod-guitar .popover .chip-group legend {
+  min-width: 5rem;
+}
+.mod-guitar .popover-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+.mod-guitar .swatch-button {
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.mod-guitar .swatch-button[aria-pressed='true'] {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Phase 10: accessibility, large neck */
+.mod-guitar .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.mod-guitar .fretboard-svg:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+/* A neck drawn at least 1620 px wide puts the strings (and the pegs) 40 px apart, the touch-target
+   minimum; on a narrower screen it scrolls sideways. */
+.mod-guitar .fretboard-svg[data-large='true'] {
+  min-width: 1620px;
+}
+.mod-guitar .reset-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
