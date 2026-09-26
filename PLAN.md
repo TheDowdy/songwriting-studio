@@ -5,8 +5,7 @@
 > by hand, anything uncertain). Do not start the next phase until told to. Do not create a GitHub
 > repository, push, or touch the two source repos' remotes. The owner will do that.
 >
-> Product name: **Songwriting Studio** (folder `songwriting-app`, package scope `@sw/`; both stay
-> as they are — only the display name changed). Keep the display name in one constant
+> Product name: **Songwriting Studio** (folder `songwriting-studio`, package scope `@sw/`). Keep the display name in one constant
 > (`APP_NAME = 'Songwriting Studio'` in `apps/web/src/shell/appInfo.ts`) so it can be renamed again later.
 
 ---
@@ -55,7 +54,7 @@ local change.
 ## 2. Target architecture
 
 ```
-songwriting-app/
+songwriting-studio/
   package.json              npm workspaces: ["packages/*", "modules/*", "apps/*"]
   tsconfig.base.json
   PLAN.md  ARCHITECTURE.md  CLAUDE.md  README.md
@@ -317,7 +316,7 @@ Each phase ends with: all unit tests green (`npm test` at the root), `npm run ty
 
 ### Phase 0: Monorepo with both histories (no behaviour change)
 
-1. `git init` in `songwriting-app` (this PLAN.md becomes part of the first commit).
+1. `git init` in `songwriting-studio` (this PLAN.md becomes part of the first commit).
 2. Import both repos **with history** using
    `git subtree add --prefix=legacy/progression-builder ../chord-progression-app main` and
    `--prefix=legacy/fluid-frets "../Alternate tuning explorer app" main`. Use no `--squash`.
