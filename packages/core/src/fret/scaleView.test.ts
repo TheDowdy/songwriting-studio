@@ -1,22 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { buildFretboard } from '../src/theory/fretboard';
-import { formatNoteName, parseNoteName } from '../src/theory/notes';
+import { buildFretboard } from './fretboard';
+import { formatNoteName, parseNoteName } from './notes';
 import {
   describeOverlay,
   diatonicChords,
   overlayPitchClasses,
   supportsDiatonicChords,
-} from '../src/theory/overlays';
+} from './overlays';
 import {
   DEFAULT_PLAYBACK,
   DEFAULT_SCALE_SETTINGS,
   sanitizeOverlay,
   sanitizePlayback,
   sanitizeScaleSettings,
-} from '../src/theory/scaleSettings';
-import { buildPitchViews } from '../src/theory/scaleView';
-import { getScale, SCALES } from '../src/theory/scales';
-import { STANDARD_TUNING } from '../src/theory/tunings';
+} from './scaleSettings';
+import { buildPitchViews } from './scaleView';
+import { getScale, SCALES } from './scales';
+import { STANDARD_TUNING } from './tunings';
 
 const note = parseNoteName;
 const views = (root: string, scaleId: string, overlay: ReadonlySet<number> | null = null) =>

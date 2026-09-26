@@ -1,5 +1,8 @@
-import type { ChordRef, Key } from '../theory/types';
-import type { ChordEvent, Section, Song } from '../types';
+/** Pure helpers over the song model (§3.2): construction, flattening, lookup. No storage, no
+ *  framework — `song-store` and both modules build on these. */
+import type { ChordRef, Key } from './theory/types';
+import { defaultGuitarSetup, SCHEMA_VERSION } from './schema';
+import type { ChordEvent, Section, Song } from './schema';
 
 export const DEFAULT_KEY: Key = { tonic: 'C', mode: 'major' };
 export const DEFAULT_BEATS = 4;
@@ -16,6 +19,7 @@ export function newSection(name = 'Verse'): Section {
 export function newSong(key: Key = DEFAULT_KEY): Song {
   const section = newSection('Verse');
   return {
+    schemaVersion: SCHEMA_VERSION,
     id: newId(),
     title: 'Untitled song',
     key,
@@ -26,6 +30,7 @@ export function newSong(key: Key = DEFAULT_KEY): Song {
     sections: [section],
     arrangement: [section.id],
     updatedAt: Date.now(),
+    guitar: defaultGuitarSetup(),
   };
 }
 
@@ -73,9 +78,10 @@ export function sectionLoopBounds(song: Song, sectionId: string): { start: numbe
   const firstSlot = flat.find((f) => f.sectionId === sectionId)?.arrangementIndex;
   if (firstSlot === undefined) return null;
   const inSlot = flat.filter((f) => f.arrangementIndex === firstSlot);
-  const start = inSlot[0].offsetBeats;
-  const end = inSlot[inSlot.length - 1].offsetBeats + inSlot[inSlot.length - 1].event.beats;
-  return { start, end };
+  const first = inSlot[0];
+  const last = inSlot[inSlot.length - 1];
+  if (!first || !last) return null;
+  return { start: first.offsetBeats, end: last.offsetBeats + last.event.beats };
 }
 
 /** The section that contains event `id`, and its index within that section's events. */

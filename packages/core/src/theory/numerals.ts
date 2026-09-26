@@ -1,6 +1,6 @@
 import { Note } from 'tonal';
 import { chroma } from './scales';
-import type { ChordRef, Key, Quality, Seventh } from './types';
+import type { ChordColour, ChordRef, Key, Quality, Seventh } from './types';
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
 /** Semitones above the tonic for each degree of the parallel major scale. */
@@ -72,5 +72,85 @@ export function numeralFor(
     if (isSus) out += chord.flavor;
     else if (chord.flavor === 'add9') out += '(add9)';
   }
+  return out + inversionFigure(inversion, chord.flavor === '7');
+}
+
+const ALT_SYMBOL: Record<string, string> = {
+  b5: '♭5',
+  '#5': '♯5',
+  b9: '♭9',
+  '#9': '♯9',
+  '#11': '♯11',
+  b13: '♭13',
+};
+
+/** The seventh-position digit when a 9/11/13 extension replaces the plain 7th (e.g. dom7 → '9'). */
+function seventhNumeralWithExtension(seventh: Seventh, extension: '9' | '11' | '13'): string {
+  switch (seventh) {
+    case 'dom7':
+      return extension;
+    case 'maj7':
+      return `maj${extension}`;
+    case 'min7':
+      return extension;
+    case 'minMaj7':
+      return `(maj${extension})`;
+    case 'm7b5':
+      return `ø${extension}`;
+    case 'dim7':
+      return `°${extension}`;
+    case 'augMaj7':
+      return `+maj${extension}`;
+    case 'aug7':
+      return `+${extension}`;
+  }
+}
+
+/** Alterations, added tones and omissions, as a compact tail (e.g. '♯9', 'add11', '(no5)'). */
+function colourTail(colour: ChordColour | undefined): string {
+  if (!colour) return '';
+  const alts = (colour.alterations ?? []).map((a) => ALT_SYMBOL[a]).join('');
+  const added = (colour.added ?? []).length ? `add${(colour.added ?? []).map((a) => a.slice(3)).join(',')}` : '';
+  const omit = `${colour.omit3 ? '(no3)' : ''}${colour.omit5 ? '(no5)' : ''}`;
+  return `${alts}${added}${omit}`;
+}
+
+/**
+ * `numeralFor` plus a compact colour suffix (§3.1), e.g. 'V9', 'I6', 'V7♯9'. Identical to
+ * `numeralFor` when the chord has no colour, so every existing numeral is unaffected.
+ */
+export function chordNumeral(
+  chord: Pick<ChordRef, 'root' | 'quality' | 'seventh' | 'flavor' | 'colour'>,
+  key: Key,
+  inversion = 0,
+): string {
+  const colour = chord.colour;
+  const hasColour =
+    colour &&
+    (colour.sixth ||
+      colour.extension ||
+      (colour.alterations && colour.alterations.length > 0) ||
+      (colour.added && colour.added.length > 0) ||
+      colour.omit3 ||
+      colour.omit5);
+  if (!hasColour) return numeralFor(chord, key, inversion);
+
+  const { degree, accidental } = degreeOf(key.tonic, chord.root);
+  let roman = ROMAN[degree];
+  if (isLowerCase(chord.quality)) roman = roman.toLowerCase();
+
+  const isSus = chord.flavor === 'sus2' || chord.flavor === 'sus4';
+  let out = (ACCIDENTAL[accidental] ?? '') + roman;
+  if (chord.flavor === '7') {
+    out += colour?.extension && inversion === 0
+      ? seventhNumeralWithExtension(chord.seventh, colour.extension)
+      : seventhLabel(chord.seventh, inversion > 0);
+  } else {
+    if (!isSus) out += chord.quality === 'dim' ? '°' : chord.quality === 'aug' ? '+' : '';
+    if (isSus) out += chord.flavor;
+    else if (chord.flavor === 'add9') out += '(add9)';
+    if (colour?.sixth) out += colour.sixth;
+  }
+  out += colourTail(colour);
   return out + inversionFigure(inversion, chord.flavor === '7');
 }

@@ -1,7 +1,5 @@
-import { chordStack } from '../theory/chords';
-import { chroma, fmt } from '../theory/scales';
-import type { ChordRef } from '../theory/types';
-import { pianoVoicing } from '../theory/voicings';
+import { chordStack, chroma, fmt, pianoVoicing } from '@sw/core';
+import type { ChordRef } from '@sw/core';
 
 const WHITE_PCS = new Set([0, 2, 4, 5, 7, 9, 11]);
 const isWhite = (midi: number) => WHITE_PCS.has(((midi % 12) + 12) % 12);

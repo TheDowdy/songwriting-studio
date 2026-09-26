@@ -6,11 +6,11 @@ import {
   pitchClass,
   type NoteName,
   type Spelling,
-} from '../theory/notes';
-import { describeOverlay, overlayPitchClasses } from '../theory/overlays';
-import type { PaletteId } from '../theory/scaleColors';
-import { bestRootSpelling, getScale, scaleSpelling, type ScaleDef } from '../theory/scales';
-import { buildPitchViews, type PitchView } from '../theory/scaleView';
+} from '@sw/core/fret/notes';
+import { describeOverlay, overlayPitchClasses } from '@sw/core/fret/overlays';
+import type { PaletteId } from '@sw/core/fret/scaleColors';
+import { bestRootSpelling, getScale, scaleSpelling, type ScaleDef } from '@sw/core/fret/scales';
+import { buildPitchViews, type PitchView } from '@sw/core/fret/scaleView';
 
 export interface LegendItem {
   /** Degree or interval label, e.g. "♭3", "R". */

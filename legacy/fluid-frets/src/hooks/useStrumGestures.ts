@@ -2,8 +2,8 @@ import { useMemo, useRef } from 'react';
 import { stringY } from '../components/Fretboard/geometry';
 import { tapFret } from '../state/tap';
 import { playStrumHit } from '../state/playing';
-import { StrumTracker } from '../theory/strum';
-import { STRING_COUNT } from '../theory/tunings';
+import { StrumTracker } from '@sw/core/fret/strum';
+import { STRING_COUNT } from '@sw/core/fret/tunings';
 
 /**
  * A press that stays put this long without releasing is a held tap, so it sounds now rather than

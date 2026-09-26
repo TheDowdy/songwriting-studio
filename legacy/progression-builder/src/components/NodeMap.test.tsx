@@ -1,8 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { diatonicChords } from '../theory/chords';
-import { startChords, suggestNext } from '../theory/suggestions';
-import type { ChordRef } from '../theory/types';
+import { diatonicChords, startChords, suggestNext } from '@sw/core';
+import type { ChordRef } from '@sw/core';
 import NodeMap from './NodeMap';
 
 const key = { tonic: 'D', mode: 'dorian' } as const;

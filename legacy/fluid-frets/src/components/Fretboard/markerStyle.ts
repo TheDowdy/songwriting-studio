@@ -1,5 +1,5 @@
-import { chromaticColour, degreeColour, textOn, type PaletteId } from '../../theory/scaleColors';
-import type { PitchView } from '../../theory/scaleView';
+import { chromaticColour, degreeColour, textOn, type PaletteId } from '@sw/core/fret/scaleColors';
+import type { PitchView } from '@sw/core/fret/scaleView';
 import { skin } from './skin';
 
 export interface MarkerStyle {

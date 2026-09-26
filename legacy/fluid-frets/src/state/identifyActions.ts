@@ -1,10 +1,10 @@
-import { validateChord } from '../theory/chords';
+import { validateChord } from '@sw/core/fret/chords';
 import {
   emptySelection,
   readSelection,
   selectionToShape,
   tapSelection,
-} from '../theory/identifySelection';
+} from '@sw/core/fret/identifySelection';
 import { stopChordPlayback, strumFingering } from './chordActions';
 import { playFret } from './playing';
 import { useStore } from './store';

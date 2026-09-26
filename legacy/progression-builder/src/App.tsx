@@ -8,8 +8,8 @@ import TransportBar from './components/TransportBar';
 import { useAutosave } from './state/persistence';
 import { previewChordInSong, useLivePlaybackSync } from './state/playback';
 import { selectCenter, useStore } from './state/store';
-import { startChords, suggestNext } from './theory/suggestions';
-import type { ChordRef } from './theory/types';
+import { startChords, suggestNext } from '@sw/core';
+import type { ChordRef } from '@sw/core';
 
 function ThemeToggle() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => (document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'));

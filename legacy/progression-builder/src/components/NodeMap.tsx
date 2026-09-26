@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { chordKey, chordName } from '../theory/chords';
-import { keyLabel } from '../theory/scales';
-import type { ChordRef, Key, Origin, Suggestion } from '../theory/types';
+import { chordKey, chordName, keyLabel } from '@sw/core';
+import type { ChordRef, Key, Origin, Suggestion } from '@sw/core';
 import ChordDetail from './ChordDetail';
 import FlavorPicker from './FlavorPicker';
 

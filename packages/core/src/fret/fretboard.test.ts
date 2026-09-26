@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { chromaticSpelling, parseNoteName } from '../src/theory/notes';
-import { buildFretboard, fretToMidi } from '../src/theory/fretboard';
-import { getScale, scaleSpelling } from '../src/theory/scales';
-import { getPreset } from '../src/theory/tunings';
+import { chromaticSpelling, parseNoteName } from './notes';
+import { buildFretboard, fretToMidi } from './fretboard';
+import { getScale, scaleSpelling } from './scales';
+import { getPreset } from './tunings';
 
 const tuning = (id: string) => (getPreset(id) as { strings: number[] }).strings;
 

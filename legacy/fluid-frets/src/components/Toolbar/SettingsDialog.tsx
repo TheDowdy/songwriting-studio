@@ -3,14 +3,14 @@ import { audioEngine } from '../../audio/engine';
 import { clearSettings } from '../../state/storage';
 import { useStore, type ThemeSetting } from '../../state/store';
 import { selectTuning } from '../../state/tuningActions';
-import { midiToName } from '../../theory/notes';
+import { midiToName } from '@sw/core/fret/notes';
 import {
   deleteTuning,
   exportTunings,
   importTunings,
   renameTuning,
   resolveTuning,
-} from '../../theory/savedTunings';
+} from '@sw/core/fret/savedTunings';
 import { Dialog } from './Dialog';
 
 interface Props {

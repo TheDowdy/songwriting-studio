@@ -1,4 +1,4 @@
-import { stringRange } from '../../theory/tunings';
+import { stringRange } from '@sw/core/fret/tunings';
 
 /** Screen pixels of vertical drag per semitone (§5). */
 export const PX_PER_SEMITONE = 24;

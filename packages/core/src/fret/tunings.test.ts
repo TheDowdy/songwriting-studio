@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { midiToName, parseNote } from '../src/theory/notes';
+import { midiToName, parseNote } from './notes';
 import {
   clampToRange,
   defaultTuningName,
@@ -12,7 +12,7 @@ import {
   STANDARD_STRINGS,
   stringRange,
   validateTuning,
-} from '../src/theory/tunings';
+} from './tunings';
 
 const notes = (id: string) => (getPreset(id)?.strings ?? []).map((m) => midiToName(m, 'flat'));
 

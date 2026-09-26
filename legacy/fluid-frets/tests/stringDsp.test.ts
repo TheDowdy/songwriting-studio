@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { loopDelay, StringBank, type PluckParams } from '../src/audio/synth/stringDsp';
-import { midiToFreq } from '../src/theory/notes';
+import { midiToFreq } from '@sw/core/fret/notes';
 
 const BLOCK = 128;
 

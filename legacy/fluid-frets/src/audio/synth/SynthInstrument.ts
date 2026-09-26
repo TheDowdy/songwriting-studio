@@ -1,4 +1,4 @@
-import { midiToFreq } from '../../theory/notes';
+import { midiToFreq } from '@sw/core/fret/notes';
 import { createEffectChain, type EffectChain } from '../effects';
 import type { Instrument, PluckOptions, SoundPresetId, VoiceHandle } from '../instrument';
 import { DEFAULT_PRESET_ID, getSoundPreset } from './presets';

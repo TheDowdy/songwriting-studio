@@ -1,5 +1,5 @@
 import * as Tone from 'tone';
-import type { InstrumentId } from '../types';
+import type { InstrumentId } from '@sw/core';
 
 /** Piano samples (Salamander Grand, subset) live in public/samples so the app works offline. */
 const SAMPLE_NOTES: Record<string, string> = {

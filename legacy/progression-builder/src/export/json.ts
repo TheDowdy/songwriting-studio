@@ -1,6 +1,6 @@
 import { isSongLike } from '../state/persistence';
-import { newId } from '../state/song';
-import type { Song } from '../types';
+import { newId } from '@sw/core';
+import type { Song } from '@sw/core';
 
 function slugify(title: string): string {
   const slug = title

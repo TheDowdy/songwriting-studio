@@ -8,7 +8,7 @@ import {
   shapeToSelection,
   tapSelection,
   type IdentifyCell,
-} from '../src/theory/identifySelection';
+} from './identifySelection';
 
 const STANDARD = [40, 45, 50, 55, 59, 64];
 

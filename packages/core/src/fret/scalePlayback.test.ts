@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { midiToName } from '../src/theory/notes';
+import { midiToName } from './notes';
 import {
   planScale,
   positionStarts,
   WINDOW_FRETS,
   type PlanOptions,
-} from '../src/theory/scalePlayback';
-import { getScale } from '../src/theory/scales';
-import { STANDARD_TUNING } from '../src/theory/tunings';
+} from './scalePlayback';
+import { getScale } from './scales';
+import { STANDARD_TUNING } from './tunings';
 
 const standard = STANDARD_TUNING.strings;
 const plan = (scaleId: string, rootPc: number, over: Partial<PlanOptions> = {}) =>

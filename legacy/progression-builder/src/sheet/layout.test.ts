@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { diatonicChord } from '../theory/chords';
+import { diatonicChord } from '@sw/core';
 import { layoutBars, keySignatureFor, spellKey, splitDuration, splitStaves } from './layout';
 
 const ev = (beats: number, symbol = 'C') => ({ symbol, numeral: 'I', midi: [36, 48, 52, 55], spellings: ['C', 'E', 'G'], beats });

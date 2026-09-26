@@ -7,7 +7,7 @@ import {
   strumNotes,
   strumVelocity,
   TAP_THRESHOLD_PX,
-} from '../src/theory/strum';
+} from './strum';
 
 // String 0 (lowest) is at the bottom of the screen, so it has the largest y.
 const ys = [200, 160, 120, 80, 40, 0];

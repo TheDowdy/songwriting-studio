@@ -1,7 +1,7 @@
 import { SequencePlayer } from '../audio/scheduler';
-import { describeChord, type ChordInfo } from '../theory/chords';
-import { directionShaping } from '../theory/strum';
-import { pitchClass } from '../theory/notes';
+import { describeChord, type ChordInfo } from '@sw/core/fret/chords';
+import { directionShaping } from '@sw/core/fret/strum';
+import { pitchClass } from '@sw/core/fret/notes';
 import {
   bestVoicingIndex,
   bestVoicingWith,
@@ -10,7 +10,7 @@ import {
   shapeNotes,
   targetFromChord,
   type Voicing,
-} from '../theory/voicings';
+} from '@sw/core/fret/voicings';
 import { emitPluck } from './pluckEvents';
 import { playFret } from './playing';
 import { useStore } from './store';

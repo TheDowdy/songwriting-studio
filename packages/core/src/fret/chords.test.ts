@@ -11,8 +11,8 @@ import {
   sanitizeChord,
   validateChord,
   type ChordSpec,
-} from '../src/theory/chords';
-import { formatNoteName } from '../src/theory/notes';
+} from './chords';
+import { formatNoteName } from './notes';
 
 const C = 0;
 const spec = (over: Partial<ChordSpec> = {}): ChordSpec => ({

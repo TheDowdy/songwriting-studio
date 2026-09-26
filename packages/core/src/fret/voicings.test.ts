@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_CHORD, describeChord, type ChordSpec } from '../src/theory/chords';
+import { DEFAULT_CHORD, describeChord, type ChordSpec } from './chords';
 import {
   bestVoicingIndex,
   bestVoicingWith,
@@ -13,7 +13,7 @@ import {
   shapeText,
   targetFromChord,
   type VoicingRules,
-} from '../src/theory/voicings';
+} from './voicings';
 
 const STANDARD = [40, 45, 50, 55, 59, 64];
 const OPEN_G = [38, 43, 50, 55, 59, 62];

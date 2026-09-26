@@ -1,5 +1,5 @@
 import { audioEngine } from '../audio/engine';
-import { directionShaping, strumNotes, type StrumHit } from '../theory/strum';
+import { directionShaping, strumNotes, type StrumHit } from '@sw/core/fret/strum';
 import { emitPluck } from './pluckEvents';
 import { useStore } from './store';
 

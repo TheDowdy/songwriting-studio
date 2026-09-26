@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import { keyNote } from '../theory/suggestions';
-import { MODES, MODE_INFO, TONIC_OPTIONS, chroma, fmt } from '../theory/scales';
-import type { Key, Mode } from '../theory/types';
-import { flattenSong } from '../state/song';
+import { keyNote, MODES, MODE_INFO, TONIC_OPTIONS, chroma, fmt, flattenSong } from '@sw/core';
+import type { Key, Mode } from '@sw/core';
 import { useStore } from '../state/store';
 
 /** Conventional default spelling for each root (the flat side for Db, Eb, Ab, Bb). */

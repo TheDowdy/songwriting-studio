@@ -10,7 +10,7 @@ import {
   type GuitarModelId,
 } from '../components/Fretboard/guitarSkins';
 import { settingsStorage, SETTINGS_KEY } from './storage';
-import { DEFAULT_CHORD, normalizeChord, sanitizeChord, type ChordSpec } from '../theory/chords';
+import { DEFAULT_CHORD, normalizeChord, sanitizeChord, type ChordSpec } from '@sw/core/fret/chords';
 import {
   DEFAULT_CHORD_DISPLAY,
   DEFAULT_CHORD_PLAY,
@@ -19,10 +19,10 @@ import {
   sanitizeVoicingRules,
   type ChordDisplaySettings,
   type ChordPlaySettings,
-} from '../theory/chordSettings';
-import { emptySelection, type IdentifyCell } from '../theory/identifySelection';
-import type { AccidentalPref } from '../theory/notes';
-import type { PaletteId } from '../theory/scaleColors';
+} from '@sw/core/fret/chordSettings';
+import { emptySelection, type IdentifyCell } from '@sw/core/fret/identifySelection';
+import type { AccidentalPref } from '@sw/core/fret/notes';
+import type { PaletteId } from '@sw/core/fret/scaleColors';
 import {
   DEFAULT_PALETTE,
   DEFAULT_PLAYBACK,
@@ -32,10 +32,10 @@ import {
   sanitizeScaleSettings,
   type PlaybackSettings,
   type ScaleSettings,
-} from '../theory/scaleSettings';
-import { sanitizeSaved, sanitizeTuning } from '../theory/savedTunings';
-import { STANDARD_TUNING, type Tuning } from '../theory/tunings';
-import { DEFAULT_VOICING_RULES, type VoicingRules } from '../theory/voicings';
+} from '@sw/core/fret/scaleSettings';
+import { sanitizeSaved, sanitizeTuning } from '@sw/core/fret/savedTunings';
+import { STANDARD_TUNING, type Tuning } from '@sw/core/fret/tunings';
+import { DEFAULT_VOICING_RULES, type VoicingRules } from '@sw/core/fret/voicings';
 
 export const MIN_FRETS = 18;
 export const MAX_FRETS = 24;

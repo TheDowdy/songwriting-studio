@@ -1,12 +1,13 @@
-# Songwriting App: Build Plan
+# Songwriting Studio: Build Plan
 
 > **For the implementing agent.** Work one phase at a time. At the end of each phase: run every
 > check listed for it, commit, then **stop** and report to the owner (what changed, how to test it
 > by hand, anything uncertain). Do not start the next phase until told to. Do not create a GitHub
 > repository, push, or touch the two source repos' remotes. The owner will do that.
 >
-> Working title: **Songwriting App** (folder `songwriting-app`). Keep the display name in one
-> constant (`APP_NAME` in `apps/web/src/shell/appInfo.ts`) so it can be renamed later.
+> Product name: **Songwriting Studio** (folder `songwriting-app`, package scope `@sw/`; both stay
+> as they are — only the display name changed). Keep the display name in one constant
+> (`APP_NAME = 'Songwriting Studio'` in `apps/web/src/shell/appInfo.ts`) so it can be renamed again later.
 
 ---
 

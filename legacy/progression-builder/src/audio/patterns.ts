@@ -1,4 +1,4 @@
-import type { PatternId, TimeSig } from '../types';
+import type { PatternId, TimeSig } from '@sw/core';
 
 /**
  * One strike within a chord's own beat window. `noteIndices` refer to positions in the chord's

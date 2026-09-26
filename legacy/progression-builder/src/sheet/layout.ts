@@ -1,9 +1,5 @@
-import { chordName, chordStack } from '../theory/chords';
-import { chroma } from '../theory/scales';
-import type { Key, Mode } from '../theory/types';
-import { voiceLeadChord } from '../theory/voicings';
-import type { Song, TimeSig } from '../types';
-import { flattenDetailed } from '../state/song';
+import { chordName, chordStack, chroma, flattenDetailed, voiceLeadChord } from '@sw/core';
+import type { Key, Mode, Song, TimeSig } from '@sw/core';
 
 /** Everything the sheet-music view needs, with all musical decisions made and no drawing. */
 

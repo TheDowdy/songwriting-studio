@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { edgeOpacity, slidingNotes } from '../src/theory/fretboard';
-import { parseNote } from '../src/theory/notes';
+import { edgeOpacity, slidingNotes } from '@sw/core/fret/fretboard';
+import { parseNote } from '@sw/core/fret/notes';
 import {
   CUSTOM_ID,
   deleteTuning,
@@ -13,8 +13,8 @@ import {
   sanitizeTuning,
   saveTuning,
   suggestName,
-} from '../src/theory/savedTunings';
-import { getPreset, STANDARD_TUNING, type Tuning } from '../src/theory/tunings';
+} from '@sw/core/fret/savedTunings';
+import { getPreset, STANDARD_TUNING, type Tuning } from '@sw/core/fret/tunings';
 import {
   interpolateAtFret,
   interpolateClamped,

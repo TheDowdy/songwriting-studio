@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { describeChord, DEFAULT_CHORD, validateChord } from '../src/theory/chords';
-import { identifyChord, libraryStats } from '../src/theory/identify';
-import { shapeNotes } from '../src/theory/voicings';
+import { describeChord, DEFAULT_CHORD, validateChord } from './chords';
+import { identifyChord, libraryStats } from './identify';
+import { shapeNotes } from './voicings';
 
 const STANDARD = [40, 45, 50, 55, 59, 64];
 /** Parse "x-3-2-0-1-0" against standard tuning and identify it. */

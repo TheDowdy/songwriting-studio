@@ -5,7 +5,7 @@ import { useFretKeyboard } from '../../hooks/useFretKeyboard';
 import { useGuitarSkin } from '../../hooks/useGuitarSkin';
 import { useStrumGestures } from '../../hooks/useStrumGestures';
 import { useStore } from '../../state/store';
-import { chromaticSpelling } from '../../theory/notes';
+import { chromaticSpelling } from '@sw/core/fret/notes';
 import { TuningPeg } from '../TuningPeg/TuningPeg';
 import { Frets } from './Frets';
 import {

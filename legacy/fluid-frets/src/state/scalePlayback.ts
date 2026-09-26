@@ -1,6 +1,6 @@
 import { SequencePlayer } from '../audio/scheduler';
-import { getScale } from '../theory/scales';
-import { planScale } from '../theory/scalePlayback';
+import { getScale } from '@sw/core/fret/scales';
+import { planScale } from '@sw/core/fret/scalePlayback';
 import { emitPluck } from './pluckEvents';
 import { useStore } from './store';
 

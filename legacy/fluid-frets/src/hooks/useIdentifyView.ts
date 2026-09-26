@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { useStore } from '../state/store';
-import { describeChord } from '../theory/chords';
-import { readSelection, selectionToShape } from '../theory/identifySelection';
-import { chromaticSpelling, type NoteName } from '../theory/notes';
-import type { PitchView } from '../theory/scaleView';
-import { shapeText } from '../theory/voicings';
+import { describeChord } from '@sw/core/fret/chords';
+import { readSelection, selectionToShape } from '@sw/core/fret/identifySelection';
+import { chromaticSpelling, type NoteName } from '@sw/core/fret/notes';
+import type { PitchView } from '@sw/core/fret/scaleView';
+import { shapeText } from '@sw/core/fret/voicings';
 import type { DisplayModel } from './useScaleView';
 
 /**

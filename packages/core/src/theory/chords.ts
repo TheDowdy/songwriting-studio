@@ -1,7 +1,7 @@
 import { Note } from 'tonal';
 import { chroma, fmt, scaleNotes } from './scales';
-import { numeralFor } from './numerals';
-import type { ChordRef, Flavor, Key, Origin, Quality, Seventh } from './types';
+import { chordNumeral, numeralFor } from './numerals';
+import type { ChordColour, ChordRef, Flavor, Key, Origin, Quality, Seventh } from './types';
 
 const TRIAD_INTERVALS: Record<Quality, [string, string]> = {
   maj: ['3M', '5P'],
@@ -102,6 +102,88 @@ export function chordNotes(chord: ChordRef): string[] {
   return chordStack(chord);
 }
 
+/** The role each `chordStack` slot plays, in the same order chordStack returns them. */
+function stackFamilies(flavor: Flavor): string[] {
+  switch (flavor) {
+    case 'triad':
+      return ['root', 'third', 'fifth'];
+    case '7':
+      return ['root', 'third', 'fifth', 'seventh'];
+    case 'sus2':
+    case 'sus4':
+      return ['root', 'sus', 'fifth'];
+    case 'add9':
+      return ['root', 'third', 'fifth', 'nine'];
+  }
+}
+
+const ALT_FAMILY: Record<string, string> = {
+  b5: 'fifth',
+  '#5': 'fifth',
+  b9: 'nine',
+  '#9': 'nine',
+  '#11': 'eleven',
+  b13: 'thirteen',
+};
+
+const ALT_INTERVAL: Record<string, string> = {
+  b5: '5d',
+  '#5': '5A',
+  b9: '9m',
+  '#9': '9A',
+  '#11': '11A',
+  b13: '13m',
+};
+
+/**
+ * The chord's spelled tones including colour (§3.1): replaces direct `chordStack` use outside
+ * theory. Independent of `toChordSpec`/`describeChord` — computed straight from the chord's own
+ * intervals, so the two can be cross-checked against each other in tests.
+ */
+export function chordTones(chord: ChordRef): string[] {
+  const stack = chordStack(chord);
+  const families = stackFamilies(chord.flavor);
+  const t = (interval: string) => Note.transpose(chord.root, interval);
+  let entries = stack.map((note, i) => ({ family: families[i] as string, note }));
+
+  const c = chord.colour;
+  if (c) {
+    if (c.sixth) {
+      entries.push({ family: 'sixth', note: t('6M') });
+      if (c.sixth === '6/9') entries.push({ family: 'nine', note: t('9M') });
+    }
+    if (c.extension === '9') entries.push({ family: 'nine', note: t('9M') });
+    if (c.extension === '11') {
+      entries.push({ family: 'nine', note: t('9M') }, { family: 'eleven', note: t('11P') });
+    }
+    if (c.extension === '13') {
+      entries.push(
+        { family: 'nine', note: t('9M') },
+        { family: 'eleven', note: t('11P') },
+        { family: 'thirteen', note: t('13M') },
+      );
+    }
+    for (const alt of c.alterations ?? []) {
+      entries = entries.filter((e) => e.family !== ALT_FAMILY[alt]);
+      entries.push({ family: ALT_FAMILY[alt] as string, note: t(ALT_INTERVAL[alt] as string) });
+    }
+    for (const added of c.added ?? []) {
+      entries.push({
+        family: added === 'add11' ? 'eleven' : 'thirteen',
+        note: t(added === 'add11' ? '11P' : '13M'),
+      });
+    }
+    if (c.omit3) entries = entries.filter((e) => e.family !== 'third' && e.family !== 'sus');
+    if (c.omit5) entries = entries.filter((e) => e.family !== 'fifth');
+  }
+
+  let tones = entries.map((e) => e.note);
+  if (chord.bass && !tones.some((n) => chroma(n) === chroma(chord.bass as string))) {
+    tones = [...tones, chord.bass];
+  }
+  return tones;
+}
+
 /** Display name, e.g. 'B♭', 'F♯m7', 'Csus4', 'C/E'. */
 export function chordName(chord: ChordRef): string {
   let suffix: string;
@@ -124,10 +206,26 @@ export function chordName(chord: ChordRef): string {
   return `${fmt(chord.root)}${suffix}${bass}`;
 }
 
-/** A stable identity string, useful for React keys and de-duplication. */
+function colourKey(colour: ChordColour | undefined): string {
+  if (!colour) return '';
+  const parts = [
+    colour.sixth ?? '',
+    colour.extension ?? '',
+    (colour.alterations ?? []).join(','),
+    (colour.added ?? []).join(','),
+    colour.omit3 ? '3' : '',
+    colour.omit5 ? '5' : '',
+  ];
+  return parts.some(Boolean) ? parts.join(',') : '';
+}
+
+/** A stable identity string, useful for React keys and de-duplication. Colour changes the
+ *  identity (a plain chord has an empty colour segment, so existing keys are unaffected). */
 export function chordKey(chord: ChordRef): string {
   const isSeventh = chord.flavor === '7';
-  return [chord.root, chord.quality, isSeventh ? chord.seventh : '', chord.flavor, chord.bass ?? ''].join('|');
+  const base = [chord.root, chord.quality, isSeventh ? chord.seventh : '', chord.flavor, chord.bass ?? ''].join('|');
+  const colour = colourKey(chord.colour);
+  return colour ? `${base}|${colour}` : base;
 }
 
 export function sameChord(a: ChordRef, b: ChordRef): boolean {
@@ -192,7 +290,7 @@ export function secondaryNumeral(chord: Pick<ChordRef, 'root' | 'quality' | 'fla
 
 function labelFor(chord: ChordRef, key: Key, inversion: number): string {
   if (chord.origin === 'secondary') return secondaryNumeral(chord, key) ?? numeralFor(chord, key, inversion);
-  return numeralFor(chord, key, inversion);
+  return chordNumeral(chord, key, inversion);
 }
 
 /** Recompute numeral (and origin, unless it is 'secondary') after the key or chord shape changed. */

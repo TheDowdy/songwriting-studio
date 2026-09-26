@@ -1,5 +1,5 @@
-import { guitarShapeFor } from '../theory/guitarShapes';
-import type { ChordRef } from '../theory/types';
+import { guitarShapeFor } from '@sw/core';
+import type { ChordRef } from '@sw/core';
 
 const STRINGS = 6;
 const FRETS_SHOWN = 4;

@@ -1,23 +1,23 @@
 import { useId } from 'react';
 import { useScaleView } from '../../hooks/useScaleView';
-import { describeChord } from '../../theory/chords';
+import { describeChord } from '@sw/core/fret/chords';
 import { playScale, stopScale } from '../../state/scalePlayback';
 import { useStore } from '../../state/store';
-import { chromaticName, formatNoteName, noteNamePc } from '../../theory/notes';
+import { chromaticName, formatNoteName, noteNamePc } from '@sw/core/fret/notes';
 import {
   diatonicChords,
   NO_OVERLAY,
   supportsDiatonicChords,
   type Overlay,
-} from '../../theory/overlays';
-import { positionStarts, WINDOW_FRETS } from '../../theory/scalePlayback';
+} from '@sw/core/fret/overlays';
+import { positionStarts, WINDOW_FRETS } from '@sw/core/fret/scalePlayback';
 import {
   MAX_TEMPO,
   MIN_TEMPO,
   type PlaybackDirection,
   type PlaybackRange,
-} from '../../theory/scaleSettings';
-import { getScale, SCALES } from '../../theory/scales';
+} from '@sw/core/fret/scaleSettings';
+import { getScale, SCALES } from '@sw/core/fret/scales';
 
 const encodeOverlay = (o: Overlay): string =>
   o.kind === 'none' || o.kind === 'chord'

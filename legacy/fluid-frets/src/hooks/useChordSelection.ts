@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { chordContext, selectBestVoicing, stopChordPlayback } from '../state/chordActions';
 import { useStore } from '../state/store';
-import { indexOfShape } from '../theory/voicings';
+import { indexOfShape } from '@sw/core/fret/voicings';
 
 /**
  * Keeps the fingering on the neck in step with the chord: in chord mode it shows the best voicing

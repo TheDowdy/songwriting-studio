@@ -14,7 +14,7 @@ import {
   pitchClass,
   spellOnLetter,
   spelledMidiName,
-} from '../src/theory/notes';
+} from './notes';
 
 describe('MIDI / pitch class / frequency', () => {
   it('maps MIDI to pitch class, including negatives and fractions', () => {

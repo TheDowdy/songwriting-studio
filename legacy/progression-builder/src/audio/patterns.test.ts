@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PatternId, TimeSig } from '../types';
+import type { PatternId, TimeSig } from '@sw/core';
 import { renderPattern } from './patterns';
 
 const timeSig: TimeSig = { beats: 4, unit: 4 };

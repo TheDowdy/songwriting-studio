@@ -1,6 +1,6 @@
 import { audioEngine } from '../audio/engine';
-import { resolveTuning } from '../theory/savedTunings';
-import { STRING_COUNT, type Tuning } from '../theory/tunings';
+import { resolveTuning } from '@sw/core/fret/savedTunings';
+import { STRING_COUNT, type Tuning } from '@sw/core/fret/tunings';
 import { animateLive } from './tuningAnimation';
 import { useStore } from './store';
 

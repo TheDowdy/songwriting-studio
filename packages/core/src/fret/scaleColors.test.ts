@@ -6,8 +6,8 @@ import {
   degreeColour,
   TEXT_DARK,
   textOn,
-} from '../src/theory/scaleColors';
-import { getScale, parseDegree } from '../src/theory/scales';
+} from './scaleColors';
+import { getScale, parseDegree } from './scales';
 
 const HEX = /^#[0-9a-f]{6}$/;
 

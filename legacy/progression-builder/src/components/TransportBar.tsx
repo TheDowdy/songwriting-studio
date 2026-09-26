@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
 import { BPM_MAX, BPM_MIN, useStore } from '../state/store';
 import { togglePlay } from '../state/playback';
-import { flattenSong } from '../state/song';
-import type { InstrumentId, PatternId } from '../types';
+import { flattenSong } from '@sw/core';
+import type { InstrumentId, PatternId } from '@sw/core';
 
 const INSTRUMENTS: { id: InstrumentId; label: string }[] = [
   { id: 'piano', label: 'Piano' },

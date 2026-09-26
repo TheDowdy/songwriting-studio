@@ -11,7 +11,7 @@ import {
   StaveTie,
   Voice,
 } from 'vexflow/bravura';
-import { keyLabel } from '../theory/scales';
+import { keyLabel } from '@sw/core';
 import { useStore } from '../state/store';
 import { buildSheet, type SheetBar, type SheetData, type SheetNote } from './layout';
 

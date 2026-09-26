@@ -4,7 +4,7 @@ import type { VoiceHandle } from '../../audio/instrument';
 import { commitStringPitch, SNAP_MS } from '../../state/tuningActions';
 import { animateLive, cancelAnimation } from '../../state/tuningAnimation';
 import { useStore } from '../../state/store';
-import { midiToName } from '../../theory/notes';
+import { midiToName } from '@sw/core/fret/notes';
 import { mirrorX, PEG, stringY, STRING_COUNT } from '../Fretboard/geometry';
 import { dragPitch, pegRange, snapPitch, WheelStepper, wheelDeltaPixels } from './pegMath';
 

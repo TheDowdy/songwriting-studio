@@ -1,5 +1,5 @@
-import { FLAVORS, chordName, inversionCount, inversionOf, withFlavor, withInversion } from '../theory/chords';
-import type { ChordRef, Flavor, Key } from '../theory/types';
+import { FLAVORS, chordName, inversionCount, inversionOf, withFlavor, withInversion } from '@sw/core';
+import type { ChordRef, Flavor, Key } from '@sw/core';
 
 const FLAVOR_LABEL: Record<Flavor, string> = {
   triad: 'Triad',

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { selectionToShape } from '../theory/identifySelection';
+import { selectionToShape } from '@sw/core/fret/identifySelection';
 import { useStore } from '../state/store';
 
 /**

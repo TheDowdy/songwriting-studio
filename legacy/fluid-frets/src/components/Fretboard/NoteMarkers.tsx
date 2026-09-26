@@ -2,8 +2,8 @@ import { memo, useEffect, useRef } from 'react';
 import type { DisplayModel } from '../../hooks/useScaleView';
 import { onPluck } from '../../state/pluckEvents';
 import { useStore } from '../../state/store';
-import { edgeOpacity, slidingNotes } from '../../theory/fretboard';
-import { formatNoteName, pitchClass, type Spelling } from '../../theory/notes';
+import { edgeOpacity, slidingNotes } from '@sw/core/fret/fretboard';
+import { formatNoteName, pitchClass, type Spelling } from '@sw/core/fret/notes';
 import {
   interpolateAtFret,
   interpolateClamped,

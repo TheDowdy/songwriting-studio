@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { useStore } from '../state/store';
-import { describeChord, toneShortLabel } from '../theory/chords';
-import { chromaticSpelling, formatNoteName, type NoteName } from '../theory/notes';
-import type { Degree } from '../theory/scales';
-import type { PitchView } from '../theory/scaleView';
-import { shapeText } from '../theory/voicings';
+import { describeChord, toneShortLabel } from '@sw/core/fret/chords';
+import { chromaticSpelling, formatNoteName, type NoteName } from '@sw/core/fret/notes';
+import type { Degree } from '@sw/core/fret/scales';
+import type { PitchView } from '@sw/core/fret/scaleView';
+import { shapeText } from '@sw/core/fret/voicings';
 import type { DisplayModel, LegendItem } from './useScaleView';
 
 /** The chord's tones as marker roles: root, other chord tones (coloured by function), everything else. */

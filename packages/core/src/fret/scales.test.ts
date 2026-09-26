@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatNoteName, parseNoteName, type NoteName } from '../src/theory/notes';
+import { formatNoteName, parseNoteName, type NoteName } from './notes';
 import {
   bestRootSpelling,
   getScale,
@@ -8,7 +8,7 @@ import {
   scalePitchClasses,
   scaleSpelling,
   spellScale,
-} from '../src/theory/scales';
+} from './scales';
 
 const spell = (root: string, scaleId: string, pref: 'sharp' | 'flat' = 'sharp') =>
   spellScale(parseNoteName(root), getScale(scaleId), pref).map(formatNoteName);

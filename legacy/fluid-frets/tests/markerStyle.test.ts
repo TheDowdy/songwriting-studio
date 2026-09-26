@@ -5,10 +5,10 @@ import {
   type ScaleStyleOptions,
 } from '../src/components/Fretboard/markerStyle';
 import { skin } from '../src/components/Fretboard/skin';
-import { parseNoteName } from '../src/theory/notes';
-import { contrastRatio, DEGREE_PALETTES } from '../src/theory/scaleColors';
-import { getScale } from '../src/theory/scales';
-import { buildPitchViews } from '../src/theory/scaleView';
+import { parseNoteName } from '@sw/core/fret/notes';
+import { contrastRatio, DEGREE_PALETTES } from '@sw/core/fret/scaleColors';
+import { getScale } from '@sw/core/fret/scales';
+import { buildPitchViews } from '@sw/core/fret/scaleView';
 
 const opts = (over: Partial<ScaleStyleOptions> = {}): ScaleStyleOptions => ({
   colourMode: false,

@@ -17,10 +17,10 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { chordName } from '../theory/chords';
+import { chordName } from '@sw/core';
 import { previewChordInSong } from '../state/playback';
 import { BEATS_MAX, useStore } from '../state/store';
-import type { ChordEvent, Section } from '../types';
+import type { ChordEvent, Section } from '@sw/core';
 import ChordDetail from './ChordDetail';
 import FlavorPicker from './FlavorPicker';
 

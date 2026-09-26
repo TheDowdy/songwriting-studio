@@ -8,7 +8,7 @@ import {
   saveSongToStorage,
   type SongMeta,
 } from '../state/persistence';
-import { flattenSong, newId } from '../state/song';
+import { flattenSong, newId } from '@sw/core';
 import { useStore } from '../state/store';
 
 function formatDate(ms: number): string {

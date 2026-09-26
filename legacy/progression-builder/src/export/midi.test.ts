@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildChord } from '../theory/chords';
-import { newEvent, newSong } from '../state/song';
-import type { Song } from '../types';
+import { buildChord, newEvent, newSong } from '@sw/core';
+import type { Song } from '@sw/core';
 import { buildMidi, midiFilename } from './midi';
 
 const KEY = { tonic: 'C', mode: 'major' } as const;

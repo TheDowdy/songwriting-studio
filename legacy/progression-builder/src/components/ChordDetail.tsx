@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { chordName } from '../theory/chords';
-import type { ChordRef } from '../theory/types';
+import { chordName } from '@sw/core';
+import type { ChordRef } from '@sw/core';
 import GuitarDiagram from './GuitarDiagram';
 import PianoKeyboard from './PianoKeyboard';
 

@@ -1,0 +1,22 @@
+{
+  "name": "@sw/core",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": "./src/index.ts",
+    "./fret/*": "./src/fret/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "tonal": "^6.4.3"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}

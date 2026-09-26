@@ -1,11 +1,14 @@
-import { useEffect, useRef } from 'react';
-import type { Song } from '../types';
-import { newSong } from './song';
-import { useStore } from './store';
-
-const SONGS_KEY = 'chordbuilder:songs';
-const CURRENT_KEY = 'chordbuilder:currentId';
-const AUTOSAVE_MS = 800;
+/**
+ * PB's original save/load API (§7 Phase 1), now backed by `@sw/song-store` instead of hand-rolled
+ * `localStorage` access. Kept as a thin wrapper so `SongPanel.tsx`/`export/json.ts` (and any other
+ * consumer) don't need to change: same function names, same signatures, same behaviour.
+ *
+ * The song-store handles its own debounced autosave (to `sw:songs`/`sw:currentId`) and imports
+ * PB's legacy songs (`chordbuilder:songs`/`chordbuilder:currentId`) on first run, so `useAutosave`
+ * below is now a no-op kept only so `App.tsx` doesn't need touching.
+ */
+import { songStore } from '@sw/song-store';
+import type { Song } from '@sw/core';
 
 export interface SongMeta {
   id: string;
@@ -13,75 +16,40 @@ export interface SongMeta {
   updatedAt: number;
 }
 
-/** All saved songs, keyed by id. Guarded: private mode, quota, or corrupt data all fall back to
- *  an empty library rather than crashing the app. */
+/** All saved songs, keyed by id. */
 export function loadAllSongs(): Record<string, Song> {
-  try {
-    const raw = localStorage.getItem(SONGS_KEY);
-    if (!raw) return {};
-    const parsed: unknown = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? (parsed as Record<string, Song>) : {};
-  } catch {
-    return {};
-  }
+  return songStore.getState().library;
 }
 
 export function listSongs(): SongMeta[] {
-  return Object.values(loadAllSongs())
-    .map(({ id, title, updatedAt }) => ({ id, title, updatedAt }))
-    .sort((a, b) => b.updatedAt - a.updatedAt);
+  return songStore.getState().listSongs();
 }
 
+/** Upserts `song` into the library without switching which song is open. */
 export function saveSongToStorage(song: Song): void {
-  try {
-    const all = loadAllSongs();
-    all[song.id] = song;
-    localStorage.setItem(SONGS_KEY, JSON.stringify(all));
-  } catch {
-    // private mode, quota exceeded, etc. — silently skip, nothing to recover here
-  }
+  songStore.getState().saveSong(song);
 }
 
 export function deleteSongFromStorage(id: string): void {
-  try {
-    const all = loadAllSongs();
-    delete all[id];
-    localStorage.setItem(SONGS_KEY, JSON.stringify(all));
-  } catch {
-    // ignore
-  }
+  songStore.getState().deleteSong(id);
 }
 
 export function getSongFromStorage(id: string): Song | null {
-  return loadAllSongs()[id] ?? null;
-}
-
-function getCurrentSongId(): string | null {
-  try {
-    return localStorage.getItem(CURRENT_KEY);
-  } catch {
-    return null;
-  }
+  return songStore.getState().library[id] ?? null;
 }
 
 export function setCurrentSongId(id: string): void {
-  try {
-    localStorage.setItem(CURRENT_KEY, id);
-  } catch {
-    // ignore
-  }
+  songStore.getState().loadSong(id);
 }
 
-/** The song to open on load: whichever one autosave last pointed at, or a fresh song if there
- *  is none (first run, private browsing, or the pointed-at song was deleted elsewhere). */
+/** The song to open on load: whichever one the store already opened (its own storage/legacy
+ *  import logic ran at module load), or a fresh song if that somehow came back empty. */
 export function loadInitialSong(): Song {
-  const currentId = getCurrentSongId();
-  const song = currentId ? getSongFromStorage(currentId) : null;
-  return song ?? newSong();
+  return songStore.getState().currentSong() ?? songStore.getState().library[songStore.getState().newSong()]!;
 }
 
 /** Minimal structural check for an imported JSON file — enough to catch "not a song" without
- *  re-validating every field (the theory/state layers already guard against bad ChordRefs). */
+ *  re-validating every field (`migrateSong`, run when it's actually opened, sanitises the rest). */
 export function isSongLike(value: unknown): value is Song {
   if (!value || typeof value !== 'object') return false;
   const s = value as Record<string, unknown>;
@@ -94,20 +62,7 @@ export function isSongLike(value: unknown): value is Song {
   );
 }
 
-/** Autosaves the current song (debounced) and keeps `currentId` pointing at it, so a reload
- *  reopens where you left off. Call once near the app root. */
+/** No-op: the song-store autosaves itself. Kept so `App.tsx` doesn't need to change. */
 export function useAutosave(): void {
-  const song = useStore((s) => s.song);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      saveSongToStorage(song);
-      setCurrentSongId(song.id);
-    }, AUTOSAVE_MS);
-    return () => {
-      if (timer.current) clearTimeout(timer.current);
-    };
-  }, [song]);
+  // intentionally empty
 }

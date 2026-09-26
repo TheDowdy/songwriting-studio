@@ -1,8 +1,7 @@
 import { Midi } from '@tonejs/midi';
 import { toNoteStrikes } from '../state/playback';
-import { flattenDetailed } from '../state/song';
-import { voiceLeadChord } from '../theory/voicings';
-import type { Song } from '../types';
+import { flattenDetailed, voiceLeadChord } from '@sw/core';
+import type { Song } from '@sw/core';
 
 /** song.bpm counts `timeSig.unit` note values per minute (section 8.1); MIDI tempo is always
  *  quarter notes per minute, so convert by how many quarters one `unit` note is worth. */

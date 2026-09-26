@@ -6,7 +6,7 @@ import {
   MAX_NAME_LENGTH,
   saveTuning,
   suggestName,
-} from '../../theory/savedTunings';
+} from '@sw/core/fret/savedTunings';
 import { Dialog } from './Dialog';
 
 interface Props {

@@ -1,5 +1,5 @@
-import { pitchClass } from '../../theory/notes';
-import { fingering, shapeText } from '../../theory/voicings';
+import { pitchClass } from '@sw/core/fret/notes';
+import { fingering, shapeText } from '@sw/core/fret/voicings';
 
 interface Props {
   /** Per string, 0 = lowest: fret, or null for muted. */

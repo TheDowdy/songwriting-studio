@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { clearIdentify, playIdentified, sendToChordMode } from '../../state/identifyActions';
 import { useStore } from '../../state/store';
-import { MAX_STRUM_MS, MIN_STRUM_MS } from '../../theory/chordSettings';
-import { readSelection, type IdentifyCell } from '../../theory/identifySelection';
-import { formatNoteName } from '../../theory/notes';
+import { MAX_STRUM_MS, MIN_STRUM_MS } from '@sw/core/fret/chordSettings';
+import { readSelection, type IdentifyCell } from '@sw/core/fret/identifySelection';
+import { formatNoteName } from '@sw/core/fret/notes';
 
 const cellText = (c: IdentifyCell) => (c === null ? '–' : c === 'x' ? 'x' : String(c));
 

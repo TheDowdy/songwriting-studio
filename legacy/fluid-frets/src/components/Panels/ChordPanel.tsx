@@ -18,11 +18,11 @@ import {
   SEVENTHS,
   validateChord,
   type ChordSpec,
-} from '../../theory/chords';
-import { MAX_STRUM_MS, MIN_STRUM_MS } from '../../theory/chordSettings';
-import { identifyChord } from '../../theory/identify';
-import { chromaticName, formatNoteName } from '../../theory/notes';
-import { findVoicings, shapeNotes, shapeText, targetFromChord } from '../../theory/voicings';
+} from '@sw/core/fret/chords';
+import { MAX_STRUM_MS, MIN_STRUM_MS } from '@sw/core/fret/chordSettings';
+import { identifyChord } from '@sw/core/fret/identify';
+import { chromaticName, formatNoteName } from '@sw/core/fret/notes';
+import { findVoicings, shapeNotes, shapeText, targetFromChord } from '@sw/core/fret/voicings';
 import { ChordDiagram } from './ChordDiagram';
 
 const ALTERATION_TEXT: Record<string, string> = {

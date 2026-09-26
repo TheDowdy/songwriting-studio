@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
 import { renderPattern } from '../audio/patterns';
 import { previewStrikes, startPlayback, stopPlayback, updatePlayback, type NoteStrike, type PlaybackOptions } from '../audio/engine';
-import { voiceLeadChord } from '../theory/voicings';
-import type { Song } from '../types';
-import type { ChordRef } from '../theory/types';
-import { flattenDetailed, sectionLoopBounds } from './song';
+import { flattenDetailed, sectionLoopBounds, voiceLeadChord } from '@sw/core';
+import type { ChordRef, Song } from '@sw/core';
 import { useStore } from './store';
 
 /** The full note-strike list for the song: each chord voice-led from the one before it, then

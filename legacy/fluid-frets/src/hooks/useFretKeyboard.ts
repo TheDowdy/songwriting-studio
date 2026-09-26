@@ -2,8 +2,8 @@ import { useCallback, useState } from 'react';
 import { strumFingering } from '../state/chordActions';
 import { useStore } from '../state/store';
 import { tapFret } from '../state/tap';
-import { formatNoteName, pitchClass, type Spelling } from '../theory/notes';
-import { STRING_COUNT } from '../theory/tunings';
+import { formatNoteName, pitchClass, type Spelling } from '@sw/core/fret/notes';
+import { STRING_COUNT } from '@sw/core/fret/tunings';
 
 export interface FretCursor {
   /** 0 = lowest string. */
