@@ -35,6 +35,7 @@ const readBoard = () =>
       fret: Number(g.dataset.fret),
       midi: Number(g.dataset.midi),
       role: g.dataset.role ?? null,
+      shape: g.hasAttribute('data-shape'),
       muted: g.hasAttribute('data-muted'),
       // Drawn area, not `r`: roots are squares (no radius attribute).
       r: ((el) => { if (!el) return NaN; const b = el.getBBox(); return el.tagName === 'rect' ? b.width * b.height : Math.PI * (b.width / 2) ** 2; })(g.querySelector('.marker-dot')),
@@ -45,6 +46,12 @@ const litPcs = async () =>
   [...new Set((await readBoard()).filter((m) => m.role && m.role !== 'out' && !m.muted).map((m) => ((m.midi % 12) + 12) % 12))].sort(
     (a, b) => a - b,
   );
+/** (string, midi) of the shape now drawn — the sounding pitches, capo already baked in (§7 Phase 3
+ *  change 2 verification: compare against what actually got plucked). */
+const shapeMidis = async () =>
+  (await readBoard()).filter((m) => m.shape).map((m) => `${m.string}:${m.midi}`).sort().join(' ');
+const pluckedMidis = async () =>
+  (await page.evaluate(() => window.__plucks)).map((n) => `${n.string}:${n.midi}`).sort().join(' ');
 
 // The four "Done when" chords (PLAN.md §7 Phase 3), plain ChordRef objects built the same way the
 // progression module's own theory engine would — origin/numeral are cosmetic here, only the notes
@@ -74,6 +81,26 @@ const CHORDS = [
 
 // ---------------------------------------------------------------- build the progression
 await page.goto(url);
+
+// Hook the guitar audio engine's pluck the way scales-check.mjs does, so change 2 (owner request:
+// clicking a chord block, or stepping/picking a voicing, plays it) can be checked for exactly what
+// sounds — and, just as importantly, that nothing sounds without a direct click (page load, or
+// arriving via "Explore guitar voicings").
+await page.evaluate(() => {
+  window.__plucks = [];
+  const engine = window.__fluidfrets?.audioEngine;
+  if (!engine) return;
+  const real = engine.pluck.bind(engine);
+  engine.pluck = (string, midi, opts) => {
+    window.__plucks.push({ string, midi });
+    return real(string, midi, opts);
+  };
+});
+check(
+  'nothing plucks on page load',
+  (await page.evaluate(() => window.__plucks.length)) === 0,
+);
+
 await page.getByRole('button', { name: 'New song' }).click();
 await page.waitForFunction(() => location.hash.startsWith('#/song/'));
 await page.waitForSelector('[aria-label="Chord map"]');
@@ -87,6 +114,7 @@ check('the progression has all four chords', eventIds.length === 4, eventIds.joi
 const songId = (await hash()).match(/#\/song\/([^/]+)\//)[1];
 
 // ---------------------------------------------------------------- Explore guitar voicings
+await page.evaluate(() => (window.__plucks = []));
 await page.getByRole('button', { name: /^Chord: G7,/ }).click();
 await sleep(100);
 await page.getByRole('button', { name: 'Explore guitar voicings' }).click();
@@ -96,6 +124,15 @@ check(
   'clicking "Explore guitar voicings" opens the guitar module, carrying the chosen event',
   (await hash()).includes('/guitar') && (await href()).includes(`event=${encodeURIComponent(eventIds[0])}`),
   `${await hash()} ${await href()}`,
+);
+await sleep(300);
+check(
+  'arriving via "Explore guitar voicings" does not pluck anything (§7 Phase 3 change 2)',
+  (await page.evaluate(() => window.__plucks.length)) === 0,
+);
+check(
+  'the guitar module opens on the Chords tab by default (song context, Explore removed)',
+  (await page.getByRole('tab', { name: 'Chords' }).getAttribute('aria-selected')) === 'true',
 );
 await sleep(200);
 const focusedId = await page.evaluate(() => window.__fluidfrets.store.getState().progressionEventId);
@@ -141,11 +178,18 @@ check('the strip shows all four chords in order', stripLabels.length === 4, stri
 
 for (let i = 0; i < CHORDS.length; i++) {
   const { label, pcs } = CHORDS[i];
+  await page.evaluate(() => (window.__plucks = []));
   await page.locator('.strip-chord').nth(i).click();
   await sleep(150);
   check(`strip block ${i + 1} (${label}) shows exactly its tones`, JSON.stringify(await litPcs()) === JSON.stringify(pcs), JSON.stringify(await litPcs()));
   const pressed = await page.locator('.strip-chord').nth(i).getAttribute('aria-pressed');
   check(`strip block ${i + 1} is highlighted as selected`, pressed === 'true');
+  await sleep(300); // let the strum finish (§7 Phase 3 change 2)
+  check(
+    `strip block ${i + 1} (${label}) plucks exactly the shape now drawn`,
+    (await pluckedMidis()).length > 0 && (await pluckedMidis()) === (await shapeMidis()),
+    `plucked ${await pluckedMidis()} vs shape ${await shapeMidis()}`,
+  );
 }
 
 // ---------------------------------------------------------------- capo and tuning
@@ -168,6 +212,18 @@ check(
   JSON.stringify(await litPcs()) === JSON.stringify(CHORDS[0].pcs),
   JSON.stringify(await litPcs()),
 );
+
+// A fresh click with the capo on: the pluck reflects the capoed pitches too (§7 Phase 3 change 2).
+await page.evaluate(() => (window.__plucks = []));
+await page.locator('.strip-chord').nth(1).click();
+await sleep(450);
+check(
+  'clicking a strip block plucks the capoed shape (capo included)',
+  (await pluckedMidis()).length > 0 && (await pluckedMidis()) === (await shapeMidis()),
+  `plucked ${await pluckedMidis()} vs shape ${await shapeMidis()}`,
+);
+await page.locator('.strip-chord').first().click();
+await sleep(150);
 
 const beforeTuning = await page.evaluate(() => window.__songwriting.store.getState().song.guitar.tuning);
 await page.locator('label.field:has(span:text-is("Tuning")) select').selectOption('drop-d');
@@ -201,6 +257,30 @@ check(
 );
 check('tool mode has its own capo, starting at 0', (await page.evaluate(() => window.__fluidfrets.store.getState().capo)) === 0);
 check('no capo bar in tool mode by default', (await page.evaluate(() => document.querySelectorAll('[data-capo-bar]').length)) === 0);
+
+// ---------------------------------------------------------------- a stored 'explore' tab falls back to Chords in song context
+// A fresh page (storage seeded before it loads, so the sanitising fallback in `store.ts`'s `merge`
+// actually runs) with a brand-new, chordless song — so nothing forces the Chords tab by focusing a
+// progression event either, isolating the storage fallback itself (§7 Phase 3 change 1) from that
+// separate "focusing a chord always shows Chords" behaviour. A fresh page, not a reload of a song
+// route, because reloading mid-song isn't something this app supports (songs aren't persisted).
+{
+  const fallbackPage = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await fallbackPage.addInitScript(() =>
+    localStorage.setItem('sw:guitar-settings', JSON.stringify({ state: { mode: 'explore' }, version: 1 })),
+  );
+  await fallbackPage.goto(url);
+  await fallbackPage.getByRole('button', { name: 'New song' }).click();
+  await fallbackPage.waitForFunction(() => location.hash.startsWith('#/song/'));
+  await fallbackPage.waitForSelector('[aria-label="Chord map"]');
+  await fallbackPage.getByRole('tab', { name: 'Guitar' }).click();
+  await fallbackPage.waitForSelector('.fretboard-svg');
+  check(
+    "a stored 'explore' tab falls back to Chords in song context, even with no chords yet",
+    (await fallbackPage.getByRole('tab', { name: 'Chords' }).getAttribute('aria-selected')) === 'true',
+  );
+  await fallbackPage.close();
+}
 
 check('no console or page errors', errors.length === 0, errors.join(' | '));
 await browser.close();

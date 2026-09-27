@@ -114,7 +114,7 @@ const VoicingThumb = memo(function VoicingThumb({
       className="voicing-thumb"
       aria-pressed={selected}
       aria-label={`Voicing ${index + 1}: ${shapeText(frets)}`}
-      onClick={() => selectVoicing(index)}
+      onClick={() => selectVoicing(index, { play: true })}
     >
       {near || selected ? (
         <ChordDiagram frets={frets} tuning={tuning} rootPc={rootPc} />
@@ -370,8 +370,8 @@ export function ChordPanel() {
           swipe.current = null;
           if (!s || s.id !== e.pointerId) return;
           const dx = e.clientX - s.x;
-          if (dx <= -SWIPE_PX) stepVoicing(1);
-          else if (dx >= SWIPE_PX) stepVoicing(-1);
+          if (dx <= -SWIPE_PX) stepVoicing(1, { play: true });
+          else if (dx >= SWIPE_PX) stepVoicing(-1, { play: true });
         }}
         onPointerCancel={() => (swipe.current = null)}
       >
@@ -379,7 +379,7 @@ export function ChordPanel() {
           <button
             type="button"
             className="button"
-            onClick={() => stepVoicing(-1)}
+            onClick={() => stepVoicing(-1, { play: true })}
             disabled={voicings.length === 0}
           >
             ◀ Prev
@@ -403,7 +403,7 @@ export function ChordPanel() {
           <button
             type="button"
             className="button"
-            onClick={() => stepVoicing(1)}
+            onClick={() => stepVoicing(1, { play: true })}
             disabled={voicings.length === 0}
           >
             Next ▶
@@ -484,7 +484,7 @@ export function ChordPanel() {
           <button
             type="button"
             className="button"
-            onClick={() => selectBestVoicing()}
+            onClick={() => selectBestVoicing({ play: true })}
             disabled={voicings.length === 0}
           >
             Best voicing

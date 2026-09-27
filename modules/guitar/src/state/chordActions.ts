@@ -40,24 +40,43 @@ export function chordContext(): ChordContext {
   return { info, voicings, best: bestVoicingIndex(voicings) };
 }
 
+/**
+ * Options shared by every action below that changes the selected voicing. `play`, set only by a
+ * direct user gesture (owner request, §7 Phase 3 change 2) — clicking a progression block, Prev/
+ * Next, a voicing in the list, or "Best voicing" — sounds the newly selected shape exactly as the
+ * Play button would (same strum direction/speed/sound/capo, via `strumChord`). Left off (the
+ * default) for every programmatic call, e.g. `useChordSelection`'s effect re-picking the best
+ * voicing whenever the chord/tuning/capo/rules change, so nothing plays on page load or when the
+ * song/chord changes elsewhere.
+ */
+export interface SelectVoicingOptions {
+  play?: boolean;
+}
+
 /** Shows the best voicing (or nothing if the rules leave none). */
-export function selectBestVoicing(): void {
+export function selectBestVoicing(opts?: SelectVoicingOptions): void {
   const { voicings, best } = chordContext();
   const v = voicings[best];
   useStore.getState().setChordShape(v ? v.frets.slice() : null, v ? best : null);
+  if (opts?.play && v) strumChord();
 }
 
-export function selectVoicing(index: number): void {
+export function selectVoicing(index: number, opts?: SelectVoicingOptions): void {
   const v = chordContext().voicings[index];
-  if (v) useStore.getState().setChordShape(v.frets.slice(), index);
+  if (!v) return;
+  useStore.getState().setChordShape(v.frets.slice(), index);
+  if (opts?.play) strumChord();
 }
 
 /** Steps through the position-sorted voicing list; wraps at either end. */
-export function stepVoicing(delta: number): void {
+export function stepVoicing(delta: number, opts?: SelectVoicingOptions): void {
   const { voicings, best } = chordContext();
   if (voicings.length === 0) return;
   const from = useStore.getState().voicingIndex ?? best;
-  selectVoicing((((from + delta) % voicings.length) + voicings.length) % voicings.length);
+  selectVoicing(
+    (((from + delta) % voicings.length) + voicings.length) % voicings.length,
+    opts,
+  );
 }
 
 const chordPlayer = new SequencePlayer();

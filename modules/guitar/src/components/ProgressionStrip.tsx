@@ -1,8 +1,16 @@
 import { useMemo } from 'react';
 import { chordName, flattenDetailed, type FlatEvent } from '@sw/core';
 import { useSong } from '@sw/song-store/react';
+import { selectBestVoicing } from '../state/chordActions';
 import { selectProgressionEvent } from '../state/progressionChordActions';
 import { useStore } from '../state/store';
+
+/** Selecting a block is a direct user gesture (owner request, §7 Phase 3 change 2): it also plays
+ *  the chord's shape, the one the neck then shows — the best voicing `selectProgressionEvent`'s own
+ *  chord-selection effect would pick anyway, just sounded here because a click chose it. */
+function selectAndPlay(eventId: string): void {
+  if (selectProgressionEvent(eventId)) selectBestVoicing({ play: true });
+}
 
 const ORIGIN_TINT = {
   diatonic: 'var(--t-diatonic)',
@@ -77,7 +85,7 @@ export function ProgressionStrip() {
                       backgroundColor: ORIGIN_TINT[event.chord.origin],
                       borderColor: ORIGIN_COLOR[event.chord.origin],
                     }}
-                    onClick={() => selectProgressionEvent(event.id)}
+                    onClick={() => selectAndPlay(event.id)}
                   >
                     <span className="strip-chord-name">{chordName(event.chord)}</span>
                     <span className="strip-chord-numeral">{event.chord.numeral}</span>
