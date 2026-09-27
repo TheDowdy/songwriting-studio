@@ -42,6 +42,8 @@ const RING_WIDTH = 2.4;
 const SQUARE_HALF = 0.9;
 /** Opacity of a note outside the shown fingering. */
 const DIM_OPACITY = 0.3;
+/** Opacity of a scale note outside a chord laid over the scale: dimmed by about 30 %. */
+const OVERLAY_DIM_OPACITY = 0.7;
 
 /**
  * All the note markers of one string. Each is placed from its pitch (fret = midi − string
@@ -75,6 +77,8 @@ const StringMarkers = memo(function StringMarkers({
   // While a fingering (or an Identify pick) is shown, every note outside it is dimmed, so the
   // notes in it stand out just by being at full strength.
   const hasShape = !!display?.shape?.some((f) => typeof f === 'number');
+  // Likewise a chord laid over a scale: its notes stay at full strength, the rest dim a little.
+  const hasOverlay = !hasShape && !!display && Object.values(display.views).some((v) => v?.overlay);
 
   return (
     <g>
@@ -86,9 +90,16 @@ const StringMarkers = memo(function StringMarkers({
         const onFret = Math.abs(fret - Math.round(fret)) < 1e-6 && fret >= 0 && fret <= fretCount;
         // A note in the fingering is drawn at full strength whatever its role, and never hidden.
         const inShape = onFret && shapeFret === Math.round(fret);
-        const dimmed = hasShape && !inShape;
         const baseView = display?.views[pc];
-        const style = markerStyle(baseView, styleOptions, lightBoard, inShape);
+        const inOverlay = !!baseView?.overlay;
+        const dimmed = hasShape ? !inShape : hasOverlay && !inOverlay;
+        // No rings any more: fingering and overlay notes stand out by everything else dimming.
+        const style = markerStyle(
+          baseView && { ...baseView, overlay: false },
+          styleOptions,
+          lightBoard,
+          inShape || inOverlay,
+        );
         if (!style.visible) return null;
         const label =
           display?.labels?.[pc] ?? formatNoteName(spelling[pc] as (typeof spelling)[number]);
@@ -117,7 +128,7 @@ const StringMarkers = memo(function StringMarkers({
         return (
           <g
             key={midi}
-            opacity={edge * (dimmed ? DIM_OPACITY : 1)}
+            opacity={edge * (dimmed ? (hasShape ? DIM_OPACITY : OVERLAY_DIM_OPACITY) : 1)}
             data-dimmed={dimmed ? '' : undefined}
             data-string={onFret ? string : undefined}
             data-fret={onFret ? Math.round(fret) : undefined}
