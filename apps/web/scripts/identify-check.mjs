@@ -262,7 +262,10 @@ check(
 );
 await page.getByRole('button', { name: /Down|Up/ }).click();
 
-// Strum gesture.
+// Strum gesture. The geometry is read after picking the shape, not before: whether the previous
+// selection named a chord can change the page's layout above the neck (the chord-focus header),
+// so the neck's on-screen position isn't stable across a pick that changes that.
+await pick('0-x-x-0-x-0');
 const geo = await store(() => {
   const c = document.querySelector('.fretboard-svg').getScreenCTM();
   return {
@@ -270,7 +273,6 @@ const geo = await store(() => {
     x: c.a * 500 + c.e,
   };
 });
-await pick('0-x-x-0-x-0');
 await clearPlucks();
 await page.mouse.move(geo.x, geo.ys[0] + 25);
 await page.mouse.down();

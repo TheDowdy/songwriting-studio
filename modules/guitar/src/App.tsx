@@ -1,5 +1,6 @@
 import './styles/global.css';
 import { AudioBanner } from './components/Toolbar/AudioBanner';
+import { ChordHeader } from './components/ChordHeader';
 import { Fretboard } from './components/Fretboard/Fretboard';
 import { BottomPanel } from './components/Panels/BottomPanel';
 import { Legend } from './components/Panels/Legend';
@@ -35,6 +36,7 @@ export default function GuitarModule({ songId = null, focus = {} }: Props) {
       <Toolbar />
       <AudioBanner />
       <main className="stage">
+        <ChordHeader />
         <Fretboard />
         <Legend />
       </main>
