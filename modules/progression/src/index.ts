@@ -6,7 +6,7 @@
 import { createElement } from 'react';
 import ProgressionModule from './App';
 import { prefetchSamples } from './audio/engine';
-import { stopPlayback } from './state/playback';
+import { stop as stopPlayback } from './state/playback';
 
 /** Music-note tab icon. */
 const icon = createElement(

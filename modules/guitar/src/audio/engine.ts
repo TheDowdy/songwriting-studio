@@ -1,4 +1,4 @@
-import { getAudioContext, unlockAudio as unlockShared } from '@sw/audio';
+import { getAudioContext, getMasterDestination, unlockAudio as unlockShared } from '@sw/audio';
 import type { Instrument, PluckOptions, SoundPresetId, VoiceHandle } from './instrument';
 import { SynthInstrument, type SynthEngine } from './synth/SynthInstrument';
 import { volumeToGain } from './volume';
@@ -113,7 +113,7 @@ export class AudioEngine {
     // One AudioContext for the whole app (§5): Tone's own, shared with the progression module's
     // samplers, so unlocking in either module unlocks both and there's only one audio graph.
     const ctx = getAudioContext();
-    const bus = createMasterBus(ctx);
+    const bus = createMasterBus(ctx, getMasterDestination());
     const master = bus.input;
     // Pass-through tap so the output level can be inspected (tests, future meters).
     const analyser = ctx.createAnalyser();

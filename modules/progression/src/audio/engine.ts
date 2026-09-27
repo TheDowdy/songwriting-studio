@@ -48,6 +48,9 @@ export interface PlaybackOptions {
 let masterBus: Tone.Gain | null = null;
 function getBus(): Tone.Gain {
   if (!masterBus) {
+    // `Tone.Destination` (toDestination()) is rerouted through the shared app-wide master gain
+    // by `@sw/audio` (§5) the first time it's touched, so this still ends up there too, on top of
+    // this module's own instrument volume set below via `Tone.getDestination().volume`.
     const limiter = new Tone.Limiter(-1).toDestination();
     masterBus = new Tone.Gain(0.7).connect(limiter);
   }

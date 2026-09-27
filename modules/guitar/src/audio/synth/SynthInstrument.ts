@@ -1,3 +1,4 @@
+import { createWorkletNode } from '@sw/audio';
 import { midiToFreq } from '@sw/core/fret/notes';
 import { createEffectChain, type EffectChain } from '../effects';
 import type { Instrument, PluckOptions, SoundPresetId, VoiceHandle } from '../instrument';
@@ -58,7 +59,7 @@ export class SynthInstrument implements Instrument {
       this.loadFallback();
       return;
     }
-    const node = new AudioWorkletNode(this.ctx, PROCESSOR_NAME, {
+    const node = createWorkletNode(this.ctx, PROCESSOR_NAME, {
       numberOfInputs: 0,
       numberOfOutputs: 1,
       outputChannelCount: [2],
