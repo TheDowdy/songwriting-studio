@@ -80,6 +80,10 @@ onto a new release immediately, bump `CACHE` in `public/sw.js`.
 test) sends a strict Content-Security-Policy: everything same-origin, no inline scripts. If you add
 external resources (fonts, analytics), loosen it deliberately.
 
+**Phase 2 change:** the shell's Geist fonts (`@fontsource-variable/geist`/`-mono`) are bundled as
+`data:` URIs, so the policy now also allows `font-src 'self' data:` (previously unset, falling back
+to `default-src`, which blocked them). Nothing else changed.
+
 ## Verifying a build
 
 ```bash

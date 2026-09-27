@@ -1,12 +1,13 @@
 /*
- * Fluid Frets' own rules, scoped under `.mod-guitar` (the module's root element — see App.tsx)
- * so nothing here leaks onto the rest of the app and nothing from the shell/other modules leaks
- * in (§6). The design tokens (--bg, --fg, --surface, --line, --accent, --accent-fg…) now come
- * from `@sw/ui/tokens.css`, shared with the whole app — FF used to define its own --bg/--fg/
- * --accent (dark by default) plus --panel/--border/--on-accent; those map onto the shared
- * --surface/--line/--accent-fg below so this module's panels read as the same product as the
- * rest of the app. The guitar neck's realistic wood and skins are untouched — they're computed
- * colours in TS (skin.ts), not CSS custom properties.
+ * The guitar module's own rules, scoped under `.mod-guitar` (the module's root element — see
+ * App.tsx) so nothing here leaks onto the rest of the app and nothing from the shell/other
+ * modules leaks in (§6). The design tokens (--bg, --fg, --surface, --line, --accent,
+ * --accent-fg…) now come from `@sw/ui/tokens.css`, shared with the whole app — this module used
+ * to define its own --bg/--fg/--accent (dark by default) plus --panel/--border/--on-accent, back
+ * when it was its own stand-alone app; those map onto the shared --surface/--line/--accent-fg
+ * below so this module's panels read as the same product as the rest of the app. The guitar
+ * neck's realistic wood and skins are untouched — they're computed colours in TS (skin.ts), not
+ * CSS custom properties.
  */
 
 .mod-guitar,

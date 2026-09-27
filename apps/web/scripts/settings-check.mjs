@@ -1,10 +1,10 @@
 /**
  * Settings: everything persists across a reload, themes (system / dark / light, no flash), the
- * large-neck option, reset, and reduced motion. Usage: URL=http://localhost:5199/?debug node scripts/settings-check.mjs
+ * large-neck option, reset, and reduced motion. Usage: URL=http://localhost:5173/?debug#/tools/guitar node scripts/settings-check.mjs
  */
 import { chromium } from 'playwright-core';
 
-const url = process.env.URL ?? 'http://localhost:5199/?debug';
+const url = process.env.URL ?? 'http://localhost:5173/?debug#/tools/guitar';
 const browser = await chromium.launch({ channel: 'chrome' });
 const results = [];
 const check = (name, ok, detail = '') => {
@@ -23,8 +23,18 @@ async function open(options = {}) {
   return { context, page, errors };
 }
 const bg = (page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-const DARK = 'rgb(22, 24, 29)';
-const LIGHT = 'rgb(245, 242, 236)';
+// The shared tokens now (Phase 2: `@sw/ui/tokens.css`), not FF's own former --bg values.
+const DARK = 'rgb(14, 21, 18)';
+const LIGHT = 'rgb(236, 238, 234)';
+
+/** Theme is a shell setting now (Phase 2 §6), not the guitar module's own: drive it through the
+ *  header's "Preferences" dialog instead of the module's Settings dialog / store. */
+async function setTheme(page, label) {
+  await page.getByRole('button', { name: 'Preferences' }).click();
+  await page.getByRole('button', { name: label, exact: true }).click();
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(100);
+}
 
 // ---------------------------------------------------------------- everything persists
 {
@@ -148,6 +158,8 @@ const LIGHT = 'rgb(245, 242, 236)';
 }
 
 // ---------------------------------------------------------------- themes
+// (Phase 2 §6: theme is now a shell-wide setting, applied via `apps/web/src/shell/settings.ts`
+// and its "Preferences" dialog — not the guitar module's own store/Settings dialog.)
 {
   const { context, page } = await open({ colorScheme: 'light' });
   check(
@@ -155,8 +167,7 @@ const LIGHT = 'rgb(245, 242, 236)';
     (await bg(page)) === LIGHT,
     await bg(page),
   );
-  await page.evaluate(() => window.__fluidfrets.store.getState().setTheme('dark'));
-  await page.waitForTimeout(100);
+  await setTheme(page, 'Dark');
   check(
     'forcing dark overrides a light system',
     (await bg(page)) === DARK &&
@@ -173,23 +184,15 @@ const LIGHT = 'rgb(245, 242, 236)';
     (await bg(page)) === DARK,
     await bg(page),
   );
-  await page.evaluate(() => window.__fluidfrets.store.getState().setTheme('light'));
-  await page.waitForTimeout(100);
+  await setTheme(page, 'Light');
   check(
     'forcing light overrides a dark system',
     (await bg(page)) === LIGHT &&
       (await page.evaluate(() => document.documentElement.dataset.theme)) === 'light',
   );
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await page.getByLabel('Theme').selectOption('dark');
-  await page.waitForTimeout(100);
-  check(
-    'the Settings dialog changes the theme',
-    (await bg(page)) === DARK &&
-      (await page.evaluate(() => window.__fluidfrets.store.getState().theme)) === 'dark',
-  );
-  await page.getByLabel('Theme').selectOption('light');
-  await page.keyboard.press('Escape');
+  await setTheme(page, 'Dark');
+  check('the Preferences dialog changes the theme', (await bg(page)) === DARK, await bg(page));
+  await setTheme(page, 'Light');
   const themeMeta = await page.evaluate(
     () => document.querySelector('meta[name="theme-color"]').content,
   );
@@ -206,7 +209,7 @@ const LIGHT = 'rgb(245, 242, 236)';
   const page = await context.newPage();
   await page.addInitScript(() =>
     localStorage.setItem(
-      'fluid-frets-settings',
+      'sw:shell-settings',
       JSON.stringify({ state: { theme: 'light' }, version: 1 }),
     ),
   );
@@ -366,8 +369,11 @@ const LIGHT = 'rgb(245, 242, 236)';
   );
   await page.evaluate(() => window.__fluidfrets.store.getState().setFretCount(21));
   await page.waitForTimeout(200);
+  // The current key is now `sw:guitar-settings` (Phase 2: the module moved from its own app into
+  // Songwriting Studio); `fluid-frets-settings` is itself a legacy key now, one step newer than
+  // `fretscape-settings`.
   const keys = await page.evaluate(() => ({
-    fresh: !!localStorage.getItem('fluid-frets-settings'),
+    fresh: !!localStorage.getItem('sw:guitar-settings'),
     old: !!localStorage.getItem('fretscape-settings'),
   }));
   check(
@@ -388,17 +394,18 @@ const LIGHT = 'rgb(245, 242, 236)';
 
 // The name itself, everywhere a person sees it.
 {
+  // Phase 2: the product is "Songwriting Studio"; the guitar module names only itself now.
   const { page } = await open();
   check(
-    'the page title, heading and manifest say Fluid Frets',
-    (await page.title()).startsWith('Fluid Frets') &&
-      (await page.locator('h1').textContent()) === 'Fluid Frets' &&
+    'the page title and manifest say Songwriting Studio; the module names itself "Guitar"',
+    (await page.title()) === 'Songwriting Studio' &&
+      (await page.locator('.toolbar-title').textContent()) === 'Guitar' &&
       (await (await page.request.get(new URL('manifest.webmanifest', page.url()).href)).json())
-        .short_name === 'Fluid Frets',
+        .short_name === 'Songwriting Studio',
   );
   check(
-    'and nothing on the page still says Fretscape',
-    !/fretscape/i.test(await page.evaluate(() => document.documentElement.outerHTML)),
+    'and nothing on the page still says Fretscape or Fluid Frets',
+    !/fretscape|fluid frets/i.test(await page.evaluate(() => document.documentElement.outerHTML)),
   );
   await page.close();
 }

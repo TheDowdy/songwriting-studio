@@ -6,7 +6,7 @@
  */
 import { chromium } from 'playwright-core';
 
-const url = process.env.PERF_URL ?? 'http://localhost:5198/?debug';
+const url = process.env.PERF_URL ?? 'http://localhost:4173/?debug#/tools/guitar';
 const rate = Number(process.env.CPU_RATE ?? 4);
 const browser = await chromium.launch({ channel: 'chrome' });
 const context = await browser.newContext({

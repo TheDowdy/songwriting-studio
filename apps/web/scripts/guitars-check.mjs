@@ -2,11 +2,11 @@
  * Drives the guitar models in headless Chrome: every model at 18 and 24 frets, right- and
  * left-handed, must leave note markers and pegs exactly where they were and stay tappable; plus
  * customising, "match sound to guitar", fret defaults, legibility on a pale board, persistence.
- * Usage: URL=http://localhost:5199/?debug node scripts/guitars-check.mjs
+ * Usage: URL=http://localhost:5173/?debug#/tools/guitar node scripts/guitars-check.mjs
  */
 import { chromium } from 'playwright-core';
 
-const url = process.env.URL ?? 'http://localhost:5199/?debug';
+const url = process.env.URL ?? 'http://localhost:5173/?debug#/tools/guitar';
 const browser = await chromium.launch({ channel: 'chrome' });
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await context.newPage();
@@ -438,7 +438,7 @@ check(
 );
 await page.evaluate(() =>
   localStorage.setItem(
-    'fluid-frets-settings',
+    'sw:guitar-settings',
     JSON.stringify({
       state: {
         guitarModel: 'banjo',

@@ -1,6 +1,6 @@
 /** Screenshots of the running app into .shots/ (gitignored). Usage: node scripts/shot.mjs */
 import { chromium } from 'playwright-core';
-const url = process.env.URL ?? 'http://localhost:5199/?debug';
+const url = process.env.URL ?? 'http://localhost:5173/?debug#/tools/guitar';
 const browser = await chromium.launch({ channel: 'chrome' });
 
 async function shot(name, { w, h, setup }) {

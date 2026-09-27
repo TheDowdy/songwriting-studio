@@ -1,7 +1,7 @@
 /**
  * Accessibility: runs axe-core (WCAG 2 A/AA + best practice) over every tab, both themes, and the
  * dialogs / popover, then drives the keyboard: Tab order, the fretboard cursor, pegs, panels.
- * Usage: URL=http://localhost:5199/?debug node scripts/a11y-check.mjs
+ * Usage: URL=http://localhost:5173/?debug#/tools/guitar node scripts/a11y-check.mjs
  */
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
@@ -9,7 +9,7 @@ import { chromium } from 'playwright-core';
 
 const require = createRequire(import.meta.url);
 const axeSource = readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
-const url = process.env.URL ?? 'http://localhost:5199/?debug';
+const url = process.env.URL ?? 'http://localhost:5173/?debug#/tools/guitar';
 const browser = await chromium.launch({ channel: 'chrome' });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 const page = await context.newPage();

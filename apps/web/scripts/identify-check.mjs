@@ -1,11 +1,11 @@
 /**
  * Drives Identify mode in headless Chrome with real clicks: the selection rules, the open/muted
  * toggle, live naming for the plan's example shapes, spelled notes and intervals, playing, and
- * sending a shape to chord mode. Usage: URL=http://localhost:5199/?debug node scripts/identify-check.mjs
+ * sending a shape to chord mode. Usage: URL=http://localhost:5173/?debug#/tools/guitar node scripts/identify-check.mjs
  */
 import { chromium } from 'playwright-core';
 
-const url = process.env.URL ?? 'http://localhost:5199/?debug';
+const url = process.env.URL ?? 'http://localhost:5173/?debug#/tools/guitar';
 const browser = await chromium.launch({ channel: 'chrome' });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 const page = await context.newPage();

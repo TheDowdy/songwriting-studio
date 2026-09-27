@@ -1,11 +1,11 @@
 /**
  * Drives scale mode in headless Chrome: the E minor pentatonic box, colours, overlays, hiding,
  * spelling, the colour-blind palette, persistence, and scale playback timing against the audio
- * clock. Usage: URL=http://localhost:5199/?debug node scripts/scales-check.mjs
+ * clock. Usage: URL=http://localhost:5173/?debug#/tools/guitar node scripts/scales-check.mjs
  */
 import { chromium } from 'playwright-core';
 
-const url = process.env.URL ?? 'http://localhost:5199/?debug';
+const url = process.env.URL ?? 'http://localhost:5173/?debug#/tools/guitar';
 const browser = await chromium.launch({ channel: 'chrome' });
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await context.newPage();
@@ -335,7 +335,7 @@ check(
 );
 await page.evaluate(() =>
   localStorage.setItem(
-    'fluid-frets-settings',
+    'sw:guitar-settings',
     JSON.stringify({
       state: {
         mode: 'scale',

@@ -1,20 +1,27 @@
 /**
  * Renders the real audio chain (worklet + effects + master bus) offline in headless Chrome and
- * prints pitch / level / brightness / decay per preset, plus a rapid-retrigger stress test.
- * Usage: start `npm run dev -- --port 5199`, then `node scripts/audio-check.mjs`.
+ * prints pitch / level / brightness / decay per preset, plus a rapid-retrigger stress test. Loads
+ * the guitar module's audio source straight from disk (via Vite's `/@fs/`), since this check
+ * exercises the synth internals directly rather than driving the UI.
+ * Usage: start `npm run dev`, then `node scripts/audio-check.mjs`.
  */
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import { chromium } from 'playwright-core';
 
-const url = process.env.URL ?? 'http://localhost:5199';
+const url = process.env.URL ?? 'http://localhost:5173/#/tools/guitar';
+const audioDir = encodeURI(
+  path.resolve(fileURLToPath(new URL('.', import.meta.url)), '../../../modules/guitar/src/audio'),
+);
 const browser = await chromium.launch({ channel: 'chrome' });
 const page = await browser.newPage();
 page.on('pageerror', (e) => console.error('PAGE ERROR', e.message));
 await page.goto(url);
 
-const results = await page.evaluate(async () => {
-  const { createMasterBus } = await import('/src/audio/engine.ts');
-  const { SynthInstrument } = await import('/src/audio/synth/SynthInstrument.ts');
-  const { SOUND_PRESETS } = await import('/src/audio/synth/presets.ts');
+const results = await page.evaluate(async (dir) => {
+  const { createMasterBus } = await import(`/@fs/${dir}/engine.ts`);
+  const { SynthInstrument } = await import(`/@fs/${dir}/synth/SynthInstrument.ts`);
+  const { SOUND_PRESETS } = await import(`/@fs/${dir}/synth/presets.ts`);
 
   const SR = 48000;
 
@@ -157,7 +164,7 @@ const results = await page.evaluate(async () => {
     out.stress.push({ id: preset.id, peak: +peakOf(x).toFixed(3), nan, over });
   }
   return out;
-});
+}, audioDir);
 
 console.log(JSON.stringify(results, null, 1));
 await browser.close();

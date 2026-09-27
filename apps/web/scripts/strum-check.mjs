@@ -1,10 +1,10 @@
 /**
  * Drives strumming with a real mouse and real touch events in headless Chrome, recording every
- * pluck the app makes. Usage: URL=http://localhost:5199/?debug node scripts/strum-check.mjs
+ * pluck the app makes. Usage: URL=http://localhost:5173/?debug#/tools/guitar node scripts/strum-check.mjs
  */
 import { chromium } from 'playwright-core';
 
-const url = process.env.URL ?? 'http://localhost:5199/?debug';
+const url = process.env.URL ?? 'http://localhost:5173/?debug#/tools/guitar';
 const browser = await chromium.launch({ channel: 'chrome' });
 const context = await browser.newContext({
   viewport: { width: 1440, height: 800 },

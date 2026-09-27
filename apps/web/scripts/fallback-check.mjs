@@ -1,11 +1,17 @@
 /**
  * The audio engine must still work where AudioWorklet is missing (a page served over plain http
  * on a LAN): it falls back to a ScriptProcessorNode. Emulates that by removing `audioWorklet`
- * before the app loads. Usage: URL=http://localhost:5199/?debug node scripts/fallback-check.mjs
+ * before the app loads. Usage: URL=http://localhost:5173/?debug#/tools/guitar node scripts/fallback-check.mjs
  */
 import { chromium } from 'playwright-core';
 
-const url = process.env.URL ?? 'http://localhost:5199/?debug';
+const url = process.env.URL ?? 'http://localhost:5173/?debug#/tools/guitar';
+/** Adds a query flag before the hash (`?debug&noworklet#/tools/guitar`), not after it — a flag
+ *  appended after the `#` would land in the hash route instead of `location.search`. */
+function withFlag(u, flag) {
+  const [beforeHash, hash = ''] = u.split('#');
+  return `${beforeHash}&${flag}${hash ? '#' + hash : ''}`;
+}
 const browser = await chromium.launch({ channel: 'chrome' });
 const results = [];
 const check = (name, ok, detail = '') => {
@@ -24,7 +30,7 @@ async function session(label, { insecure, flag }) {
       Object.defineProperty(BaseAudioContext.prototype, 'audioWorklet', { get: () => undefined });
     });
   }
-  await page.goto(flag ? url + '&noworklet' : url);
+  await page.goto(flag ? withFlag(url, 'noworklet') : url);
   await page.evaluate(() => window.__fluidfrets.store.getState().setStrumOnTuningChange(false));
   const marker = (s, f) => page.locator(`[data-string="${s}"][data-fret="${f}"]`);
   await marker(1, 0).click();

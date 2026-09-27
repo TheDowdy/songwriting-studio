@@ -2,11 +2,11 @@
  * Drives chord mode in headless Chrome with real clicks and drags: the builder and its validation,
  * chord-tone display, voicing browsing, root-click selection, manual editing with live renaming,
  * filters, play / arpeggiate, and strumming a shape with muted strings.
- * Usage: URL=http://localhost:5199/?debug node scripts/chords-check.mjs
+ * Usage: URL=http://localhost:5173/?debug#/tools/guitar node scripts/chords-check.mjs
  */
 import { chromium } from 'playwright-core';
 
-const url = process.env.URL ?? 'http://localhost:5199/?debug';
+const url = process.env.URL ?? 'http://localhost:5173/?debug#/tools/guitar';
 const browser = await chromium.launch({ channel: 'chrome' });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 const page = await context.newPage();
@@ -611,8 +611,11 @@ check(
   `${await text('chord-name')} ${await text('shape-text')}`,
 );
 await page.evaluate(() =>
+  // Ported to the guitar module's current settings key (was 'fluid-frets-settings' pre-Phase-2):
+  // writing to the legacy key here would have no effect, since it's only read when the current
+  // key is absent, and the app already wrote valid settings there earlier in this run.
   localStorage.setItem(
-    'fluid-frets-settings',
+    'sw:guitar-settings',
     JSON.stringify({
       state: {
         mode: 'chord',

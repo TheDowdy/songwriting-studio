@@ -75,7 +75,7 @@ await page.addInitScript(() => {
     window.__csp.push(`${e.violatedDirective} ${e.blockedURI}`),
   );
 });
-await page.goto(base + '?debug');
+await page.goto(base + '?debug#/tools/guitar');
 await page.waitForSelector('.fretboard-svg');
 check(
   'the security headers under test include a strict Content-Security-Policy',
@@ -154,7 +154,7 @@ await context.setOffline(true);
 await page.reload();
 await page.waitForSelector('.fretboard-svg', { timeout: 8000 });
 check('offline: the app still loads', (await page.locator('[data-string]').count()) > 100);
-await page.goto(base + '?debug');
+await page.goto(base + '?debug#/tools/guitar');
 await page.locator('[data-string="1"][data-fret="0"]').click();
 await page.waitForFunction(() => window.__fluidfrets.audioEngine.getStatus() === 'running', null, {
   timeout: 8000,

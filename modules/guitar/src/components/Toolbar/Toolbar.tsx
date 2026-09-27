@@ -28,8 +28,14 @@ export function Toolbar() {
   const notes = (strings: readonly number[]) => strings.map((m) => midiToName(m, pref)).join(' ');
 
   return (
-    <header className="toolbar">
-      <h1 className="toolbar-title">Fluid Frets</h1>
+    // A labelled <section>, not a second <header>: the shell above already provides the page's
+    // one "banner" landmark (its own <header>), and two would be a duplicate-landmark a11y
+    // violation — but its controls still need to be *some* landmark region, so a plain <div>
+    // isn't quite right either.
+    <section className="toolbar" aria-label="Guitar toolbar">
+      {/* The app-level identity ("Songwriting Studio") and navigation live in the shell header
+          above this one; this just names the module itself (was "Fluid Frets" pre-Phase-2). */}
+      <h1 className="toolbar-title">Guitar</h1>
 
       <label className="field">
         <span>Tuning</span>
@@ -118,6 +124,6 @@ export function Toolbar() {
 
       <SaveTuningDialog open={saving} onClose={() => setSaving(false)} />
       <SettingsDialog open={settings} onClose={() => setSettings(false)} />
-    </header>
+    </section>
   );
 }
