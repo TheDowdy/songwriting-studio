@@ -15,7 +15,15 @@ function Swatch({ style, children }: { style: MarkerStyle; children?: ReactNode 
     <svg className="swatch" width="30" height="30" viewBox="-15 -15 30 30" aria-hidden="true">
       <SwatchBacking />
       <g opacity={style.opacity === 1 ? 1 : Math.max(style.opacity, 0.55)}>
-        {style.square ? (
+        {style.diamond ? (
+          <polygon
+            points="0,-13 13,0 0,13 -13,0"
+            strokeLinejoin="round"
+            fill={style.fill}
+            stroke={style.stroke}
+            strokeWidth={style.strokeWidth}
+          />
+        ) : style.square ? (
           <rect
             x={-11 * style.scale}
             y={-11 * style.scale}
@@ -114,6 +122,12 @@ export function Legend() {
         // else (see NoteMarkers), not by a ring.
         <p className="legend-overlay">
           <span>Bright notes: {overlayLabel} (others dimmed)</span>
+        </p>
+      )}
+      {display.views.some((v) => v?.role === 'out' && v.overlay) && (
+        <p className="legend-overlay">
+          <Swatch style={markerStyle({ role: 'out', interval: 1, variant: false, overlay: false }, opts, false, true)} />
+          <span>In the chord, outside the scale</span>
         </p>
       )}
     </div>

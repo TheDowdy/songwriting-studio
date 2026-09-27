@@ -40,6 +40,8 @@ const RING_GAP = 2.4;
 const RING_WIDTH = 2.4;
 /** A root's square, as a fraction of the circle's radius: about the same area as the circle. */
 const SQUARE_HALF = 0.9;
+/** A diamond's half-diagonal, as a fraction of the circle's radius (room for the label). */
+const DIAMOND_HALF = 1.25;
 /** Opacity of a note outside the shown fingering, or outside a chord laid over a scale. */
 const DIM_OPACITY = 0.5;
 
@@ -157,7 +159,17 @@ const StringMarkers = memo(function StringMarkers({
               </g>
             )}
             <g opacity={style.opacity}>
-              {style.square ? (
+              {style.diamond ? (
+                <polygon
+                  className="marker-dot"
+                  points={`${cx},${cy - r * DIAMOND_HALF} ${cx + r * DIAMOND_HALF},${cy} ${cx},${cy + r * DIAMOND_HALF} ${cx - r * DIAMOND_HALF},${cy}`}
+                  strokeLinejoin="round"
+                  fill={style.fill}
+                  stroke={sounding ? skin.playhead : style.stroke}
+                  strokeWidth={sounding ? 3.6 : style.strokeWidth}
+                  style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                />
+              ) : style.square ? (
                 <rect
                   className="marker-dot"
                   x={cx - half}

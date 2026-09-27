@@ -21,6 +21,8 @@ export interface MarkerStyle {
   dashed: boolean;
   /** Drawn as a rounded square rather than a circle: roots, so they read by shape alone. */
   square: boolean;
+  /** Drawn as a diamond: a chord note outside the scale, bright but plainly not a scale note. */
+  diamond?: boolean;
 }
 
 export interface ScaleStyleOptions {
@@ -89,8 +91,9 @@ function baseMarkerStyle(view: PitchView | undefined, o: ScaleStyleOptions | nul
   if (view.role === 'out') {
     if (!ring && !inShape && o.hideOutOfScale) return { ...PLAIN_MARKER, visible: false };
     // A chord note outside the scale (a chord laid over the scale, or a note in the fingering) is
-    // drawn solid at full strength, so it's as easy to spot as the chord's in-scale notes.
-    if (inShape) return { ...PLAIN_MARKER, strokeWidth: 1.4 };
+    // drawn solid at full strength but as a diamond: as easy to spot as the chord's in-scale
+    // notes, while still plainly not one of them.
+    if (inShape) return { ...PLAIN_MARKER, strokeWidth: 1.4, diamond: true };
     return {
       visible: true,
       // Transparent, not "none", so the empty middle of the outline can still be tapped.
