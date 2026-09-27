@@ -180,6 +180,38 @@ describe('chordName agrees with FF chordSuffix for colour chords (§3.1)', () =>
   });
 });
 
+describe('Phase 3 "Done when": a 7th, a sus4, an inversion and a borrowed chord each show exactly their tones', () => {
+  const pcsOfSpec = (spec: ReturnType<typeof toChordSpec>) => describeChord(spec).pcs.slice().sort((a, b) => a - b);
+
+  it('a dominant 7th (G7): 1 3 5 ♭7', () => {
+    const g7: ChordRef = { root: 'G', quality: 'maj', seventh: 'dom7', flavor: '7', origin: 'diatonic', numeral: 'V7' };
+    expect(pcsOfSpec(toChordSpec(g7))).toEqual(pcsOf(['G', 'B', 'D', 'F']));
+    expect(pcsOfSpec(toChordSpec(g7))).toEqual(pcsOf(chordTones(g7)));
+  });
+
+  it('a sus4 (Dsus4): 1 4 5, no 3rd at all', () => {
+    const dsus4: ChordRef = { root: 'D', quality: 'maj', seventh: 'maj7', flavor: 'sus4', origin: 'diatonic', numeral: 'Vsus4' };
+    const pcs = pcsOfSpec(toChordSpec(dsus4));
+    expect(pcs).toEqual(pcsOf(['D', 'G', 'A']));
+    expect(pcs).not.toContain(chroma('F#'));
+    expect(pcs).not.toContain(chroma('F'));
+  });
+
+  it('an inversion (C/E, first inversion): same tones as C major, bass is the 3rd', () => {
+    const c: ChordRef = { root: 'C', quality: 'maj', seventh: 'maj7', flavor: 'triad', origin: 'diatonic', numeral: 'I' };
+    const firstInversion = withInversion(c, 1, KEY);
+    const spec = toChordSpec(firstInversion);
+    expect(pcsOfSpec(spec)).toEqual(pcsOf(['C', 'E', 'G']));
+    expect(spec.bassPc).toBe(chroma('E'));
+  });
+
+  it('a borrowed chord (bVII in C major, i.e. B♭ major borrowed from the parallel minor): 1 3 5 on its own root, unaffected by origin', () => {
+    const bVII: ChordRef = { root: 'Bb', quality: 'maj', seventh: 'maj7', flavor: 'triad', origin: 'borrowed', numeral: '♭VII' };
+    expect(pcsOfSpec(toChordSpec(bVII))).toEqual(pcsOf(['Bb', 'D', 'F']));
+    expect(pcsOfSpec(toChordSpec(bVII))).toEqual(pcsOf(chordTones(bVII)));
+  });
+});
+
 describe('spellInKey', () => {
   it('spells a diatonic pitch class exactly as the scale does', () => {
     const fSharpMajor: Key = { tonic: 'F#', mode: 'major' };

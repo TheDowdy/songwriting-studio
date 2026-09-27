@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useStore } from '../../state/store';
+import { applyTuning } from '../../state/tuningActions';
 import {
   cleanName,
   findSavedByName,
@@ -41,10 +42,10 @@ function SaveForm({ onClose }: { onClose: () => void }) {
       setConfirming(true);
       return;
     }
-    const { savedTunings, setSavedTunings, setTuning } = useStore.getState();
+    const { savedTunings, setSavedTunings } = useStore.getState();
     const result = saveTuning(savedTunings, name, strings);
     setSavedTunings(result.saved);
-    setTuning(result.tuning);
+    applyTuning(result.tuning);
     onClose();
   };
 

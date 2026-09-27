@@ -64,6 +64,7 @@ const StringMarkers = memo(function StringMarkers({
     palette: display.palette,
     hideOutOfScale: display.hideOutOfScale,
     chromatic: display.chromatic,
+    strongRoot: display.strongRoot,
   };
   // undefined: string not in the fingering (drawn normally); null: muted; number: the fret played.
   const shapeFret = display?.shape ? display.shape[string] : undefined;
@@ -124,16 +125,16 @@ const StringMarkers = memo(function StringMarkers({
                 <circle
                   cx={cx}
                   cy={cy}
-                  r={r + RING_GAP}
+                  r={r + RING_GAP * style.ringScale}
                   stroke={skin.ringHalo}
-                  strokeWidth={RING_WIDTH + 2.2}
+                  strokeWidth={(RING_WIDTH + 2.2) * style.ringScale}
                 />
                 <circle
                   cx={cx}
                   cy={cy}
-                  r={r + RING_GAP}
+                  r={r + RING_GAP * style.ringScale}
                   stroke={skin.ring}
-                  strokeWidth={RING_WIDTH}
+                  strokeWidth={RING_WIDTH * style.ringScale}
                 />
               </g>
             )}

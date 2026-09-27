@@ -23,6 +23,7 @@ import {
   totalWidth,
   shouldUseRealisticSpacing,
 } from './geometry';
+import { Capo } from './Capo';
 import { Inlays } from './Inlays';
 import { Neck } from './Neck';
 import { NoteMarkers } from './NoteMarkers';
@@ -31,6 +32,7 @@ import { Strings } from './Strings';
 export function Fretboard() {
   const tuning = useStore((s) => s.tuning);
   const fretCount = useStore((s) => s.fretCount);
+  const capo = useStore((s) => s.capo);
   const pref = useStore((s) => s.accidentalPref);
   const leftHanded = useStore((s) => s.leftHanded);
   const spacingSetting = useStore((s) => s.fretSpacing);
@@ -64,7 +66,7 @@ export function Fretboard() {
           className="fretboard-svg"
           viewBox={`0 0 ${totalWidth} ${totalHeight}`}
           role="application"
-          aria-label={`Guitar fretboard, ${tuning.name} tuning, ${fretCount} frets. Arrow keys move between notes, Enter plays one, Shift and Enter strums.`}
+          aria-label={`Guitar fretboard, ${tuning.name} tuning, ${fretCount} frets${capo > 0 ? `, capo ${capo}` : ''}. Arrow keys move between notes, Enter plays one, Shift and Enter strums.`}
           data-large={largeNeck || undefined}
           tabIndex={0}
           {...strumHandlers}
@@ -98,6 +100,22 @@ export function Fretboard() {
             display={display}
             lightBoard={guitar.lightBoard}
           />
+          <g transform={flip}>
+            <Capo capo={capo} fretCount={fretCount} wires={wires} />
+          </g>
+          {capo > 0 && (
+            <text
+              x={mirrorX(interpolateAtFret(centres, Math.min(capo, fretCount)), leftHanded)}
+              y={13}
+              textAnchor="middle"
+              fontFamily="system-ui, sans-serif"
+              fontSize={12}
+              fontWeight={700}
+              fill="currentColor"
+            >
+              {`Capo ${capo}`}
+            </text>
+          )}
           {Array.from({ length: STRING_COUNT }, (_, i) => (
             <TuningPeg key={i} string={i} leftHanded={leftHanded} />
           ))}

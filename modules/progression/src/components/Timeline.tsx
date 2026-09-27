@@ -18,6 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { chordName } from '@sw/core';
+import type { Navigate } from '../App';
 import { previewChordInSong } from '../state/playback';
 import { BEATS_MAX, useStore } from '../state/store';
 import type { ChordEvent, Section } from '@sw/core';
@@ -166,6 +167,7 @@ function ChordToolbar({
   replacing,
   onFlavor,
   onDetail,
+  onExplore,
 }: {
   event: ChordEvent;
   flavorOpen: boolean;
@@ -173,6 +175,8 @@ function ChordToolbar({
   replacing: boolean;
   onFlavor: () => void;
   onDetail: () => void;
+  /** Opens the guitar module with this chord selected (§7 Phase 3 item 1). */
+  onExplore: () => void;
 }) {
   const removeEvent = useStore((s) => s.removeEvent);
   const duplicateEvent = useStore((s) => s.duplicateEvent);
@@ -197,6 +201,7 @@ function ChordToolbar({
       </label>
       <button onClick={onFlavor} aria-pressed={flavorOpen} className={btn}>Flavor</button>
       <button onClick={onDetail} aria-pressed={detailOpen} className={btn}>Piano / guitar</button>
+      <button onClick={onExplore} className={btn}>Explore guitar voicings</button>
       <button onClick={() => (replacing ? cancelReplace() : startReplace(event.id))} aria-pressed={replacing} className={btn}>
         {replacing ? 'Cancel replace' : 'Replace'}
       </button>
@@ -218,7 +223,7 @@ function EmptyDropZone({ sectionId }: { sectionId: string }) {
   );
 }
 
-function SectionBlock({ section, isOnly }: { section: Section; isOnly: boolean }) {
+function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly: boolean; navigate: Navigate }) {
   const song = useStore((s) => s.song);
   const selectedId = useStore((s) => s.selectedEventId);
   const playingId = useStore((s) => s.playingEventId);
@@ -330,6 +335,7 @@ function SectionBlock({ section, isOnly }: { section: Section; isOnly: boolean }
             setFlavorId(null);
             setDetailOpen(!detailOpen);
           }}
+          onExplore={() => navigate({ module: 'guitar', eventId: toolbarEvent.id })}
         />
       )}
       {flavorEvent && (
@@ -345,7 +351,11 @@ function SectionBlock({ section, isOnly }: { section: Section; isOnly: boolean }
       )}
       {detailEvent && (
         <div className="mt-2">
-          <ChordDetail chord={detailEvent.chord} onClose={() => setDetailOpen(false)} />
+          <ChordDetail
+            chord={detailEvent.chord}
+            onClose={() => setDetailOpen(false)}
+            onExplore={() => navigate({ module: 'guitar', eventId: detailEvent.id })}
+          />
         </div>
       )}
     </section>
@@ -433,7 +443,7 @@ function ArrangementChip({ id, name, onRemove }: { id: string; name: string; onR
   );
 }
 
-export default function Timeline() {
+export default function Timeline({ navigate }: { navigate: Navigate }) {
   const song = useStore((s) => s.song);
   const addSection = useStore((s) => s.addSection);
   const reorderEvents = useStore((s) => s.reorderEvents);
@@ -467,7 +477,7 @@ export default function Timeline() {
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <div className="space-y-3">
           {song.sections.map((section) => (
-            <SectionBlock key={section.id} section={section} isOnly={song.sections.length === 1} />
+            <SectionBlock key={section.id} section={section} isOnly={song.sections.length === 1} navigate={navigate} />
           ))}
         </div>
       </DndContext>

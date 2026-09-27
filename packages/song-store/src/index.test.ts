@@ -126,6 +126,16 @@ describe('song-store: actions wrap @sw/core operations', () => {
     expect(songStore.getState().currentSongId).toBe('imported-1');
     expect(songStore.getState().importSong('not a song')).toBeNull();
   });
+
+  it('setGuitarTuning / setGuitarCapo update the current song, not a copy (§7 Phase 3 item 4)', async () => {
+    const { songStore } = await import('./index');
+    songStore.getState().setGuitarTuning([38, 43, 50, 55, 59, 62], 'Open G');
+    songStore.getState().setGuitarCapo(2);
+    const song = songStore.getState().currentSong()!;
+    expect(song.guitar.tuning).toEqual([38, 43, 50, 55, 59, 62]);
+    expect(song.guitar.tuningName).toBe('Open G');
+    expect(song.guitar.capo).toBe(2);
+  });
 });
 
 describe('song-store: autosave', () => {

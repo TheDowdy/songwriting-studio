@@ -8,6 +8,8 @@ import {
   strumChord,
 } from '../../state/chordActions';
 import { useStore } from '../../state/store';
+import { chordName } from '@sw/core';
+import { capoedFretCount, capoedTuning } from '@sw/core/fret/capo';
 import {
   ADDED,
   ALTERATIONS,
@@ -123,7 +125,12 @@ const VoicingThumb = memo(function VoicingThumb({
   );
 });
 
-/** Chord builder, voicing browser and shape editor (PLAN.md §9.3, §11). */
+/**
+ * Chord builder, voicing browser and shape editor (PLAN.md §9.3, §11). In song context (§7 Phase 3
+ * item 3) the builder gives way to a read-only "Progression chord" header showing whichever chord
+ * the strip focused; the voicing browser, strum/arpeggio and shape editing all still work, now
+ * searched on `tuning + capo` (item 4).
+ */
 export function ChordPanel() {
   const spec = useStore((s) => s.chordSpec);
   const rules = useStore((s) => s.voicingRules);
@@ -135,14 +142,20 @@ export function ChordPanel() {
   const pref = useStore((s) => s.accidentalPref);
   const tuning = useStore((s) => s.tuning);
   const fretCount = useStore((s) => s.fretCount);
+  const capo = useStore((s) => s.capo);
+  const songId = useStore((s) => s.songId);
+  const progressionChord = useStore((s) => s.progressionChord);
   const { setChordSpec, setVoicingRules, setChordDisplay, setChordPlay, setEditingShape } =
     useStore.getState();
   const [message, setMessage] = useState<string | null>(null);
 
+  const soundingTuning = useMemo(() => capoedTuning(tuning.strings, capo), [tuning.strings, capo]);
+  const soundingFretCount = capoedFretCount(fretCount, capo);
+
   const info = useMemo(() => describeChord(spec, pref), [spec, pref]);
   const voicings = useMemo(
-    () => findVoicings(tuning.strings, fretCount, targetFromChord(info), rules),
-    [tuning.strings, fretCount, info, rules],
+    () => findVoicings(soundingTuning, soundingFretCount, targetFromChord(info), rules),
+    [soundingTuning, soundingFretCount, info, rules],
   );
   const current = index !== null ? voicings[index] : undefined;
 
@@ -151,11 +164,11 @@ export function ChordPanel() {
     () =>
       shape
         ? identifyChord(
-            shapeNotes(tuning.strings, shape).map((n) => n.midi),
+            shapeNotes(soundingTuning, shape).map((n) => n.midi),
             pref,
           )
         : [],
-    [shape, tuning.strings, pref],
+    [shape, soundingTuning, pref],
   );
   const reading = heard[0];
   const matches = reading?.name === info.name;
@@ -174,6 +187,17 @@ export function ChordPanel() {
 
   return (
     <div className="panel-body chord-panel">
+      {songId && progressionChord && (
+        <div className="chord-summary" data-testid="progression-chord-header">
+          <h2 className="chord-name">{chordName(progressionChord)}</h2>
+          <p>
+            <span className="muted">Numeral</span> {progressionChord.numeral}
+          </p>
+          {capo > 0 && <span className="capo-badge">{`Capo ${capo}`}</span>}
+        </div>
+      )}
+      {!songId && (
+      <>
       <div className="panel-row">
         <label className="field">
           <span>Root</span>
@@ -292,6 +316,8 @@ export function ChordPanel() {
       <p className="chip-message" role="status" aria-live="polite">
         {message}
       </p>
+      </>
+      )}
 
       <div className="chord-summary">
         <h2 className="chord-name" data-testid="chord-name">
@@ -323,14 +349,17 @@ export function ChordPanel() {
           />
           <span>Colour by function</span>
         </label>
-        <label className="check">
-          <input
-            type="checkbox"
-            checked={display.hideOthers}
-            onChange={(e) => setChordDisplay({ hideOthers: e.target.checked })}
-          />
-          <span>Hide other notes</span>
-        </label>
+        {/* Forced on in song context (§7 Phase 3 item 3) — nothing to toggle, so nothing shown. */}
+        {!songId && (
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={display.hideOthers}
+              onChange={(e) => setChordDisplay({ hideOthers: e.target.checked })}
+            />
+            <span>Hide other notes</span>
+          </label>
+        )}
       </div>
 
       <section
@@ -556,7 +585,7 @@ export function ChordPanel() {
               <VoicingThumb
                 index={i}
                 frets={v.frets}
-                tuning={tuning.strings}
+                tuning={soundingTuning}
                 rootPc={spec.rootPc}
                 selected={index === i}
               />

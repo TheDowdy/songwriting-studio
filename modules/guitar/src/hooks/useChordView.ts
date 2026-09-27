@@ -7,7 +7,12 @@ import type { PitchView } from '@sw/core/fret/scaleView';
 import { shapeText } from '@sw/core/fret/voicings';
 import type { DisplayModel, LegendItem } from './useScaleView';
 
-/** The chord's tones as marker roles: root, other chord tones (coloured by function), everything else. */
+/**
+ * The chord's tones as marker roles: root, other chord tones (coloured by function), everything
+ * else. In song context (§7 Phase 3 item 3, "Progression chord" mode) other notes are always
+ * hidden and roots draw with extra emphasis, whatever the display settings say — they still
+ * govern intervals/colour, which stay user-adjustable either way.
+ */
 export function useChordView(): DisplayModel | null {
   const mode = useStore((s) => s.mode);
   const spec = useStore((s) => s.chordSpec);
@@ -15,6 +20,8 @@ export function useChordView(): DisplayModel | null {
   const palette = useStore((s) => s.palette);
   const pref = useStore((s) => s.accidentalPref);
   const shape = useStore((s) => s.chordShape);
+  const capo = useStore((s) => s.capo);
+  const songId = useStore((s) => s.songId);
 
   return useMemo(() => {
     if (mode !== 'chord') return null;
@@ -53,20 +60,25 @@ export function useChordView(): DisplayModel | null {
       items.push({ label: toneShortLabel(t), note: formatNoteName(t.name), view });
     }
 
+    // `shape`'s frets are relative to the capo (0 = capo/open, §7 Phase 3 item 4); the neck itself
+    // draws physical frets, so the ringed fingering needs the capo added back in.
+    const physicalShape = shape ? shape.map((f) => (f === null ? null : f + capo)) : null;
+
     return {
       spelling,
       views,
       colourMode: display.colourByFunction,
       palette,
-      hideOutOfScale: display.hideOthers,
+      hideOutOfScale: songId ? true : display.hideOthers,
       chromatic: false,
       labels: display.showIntervals ? labels : null,
-      shape,
+      shape: physicalShape,
+      strongRoot: !!songId,
       legend: {
         items,
         terms: { tonic: 'Root', scale: 'Chord tone', out: 'Other note' },
         overlayLabel: shape ? `fingering ${shapeText(shape)}` : null,
       },
     };
-  }, [mode, spec, display, palette, pref, shape]);
+  }, [mode, spec, display, palette, pref, shape, capo, songId]);
 }

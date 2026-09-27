@@ -10,6 +10,7 @@ import {
   type GuitarModelId,
 } from '../components/Fretboard/guitarSkins';
 import { settingsStorage, SETTINGS_KEY } from './storage';
+import { sanitizeCapo } from '@sw/core/fret/capo';
 import { DEFAULT_CHORD, normalizeChord, sanitizeChord, type ChordSpec } from '@sw/core/fret/chords';
 import {
   DEFAULT_CHORD_DISPLAY,
@@ -36,6 +37,7 @@ import {
 import { sanitizeSaved, sanitizeTuning } from '@sw/core/fret/savedTunings';
 import { STANDARD_TUNING, type Tuning } from '@sw/core/fret/tunings';
 import { DEFAULT_VOICING_RULES, type VoicingRules } from '@sw/core/fret/voicings';
+import type { ChordRef } from '@sw/core';
 
 export const MIN_FRETS = 18;
 export const MAX_FRETS = 24;
@@ -50,8 +52,14 @@ export type ThemeSetting = 'system' | 'dark' | 'light';
 export type AppMode = 'explore' | 'scale' | 'chord' | 'identify';
 
 export interface AppState {
-  /** The committed tuning (whole semitones). */
+  /**
+   * The committed tuning actually drawn (whole semitones): the tool's own `toolTuning` as a
+   * stand-alone tool, or a mirror of the open song's `guitar.tuning` in song context (§7 Phase 3
+   * item 4). Not persisted itself — see `toolTuning`, which is.
+   */
   tuning: Tuning;
+  /** The tool's own tuning, persisted, edited only outside a song (`songId` null). */
+  toolTuning: Tuning;
   /**
    * What is drawn: equals `tuning.strings` at rest, but holds fractional MIDI values while a peg
    * is dragged or a tuning change is animating. Not persisted.
@@ -59,6 +67,18 @@ export interface AppState {
   liveTuning: number[];
   savedTunings: Tuning[];
   fretCount: number;
+  /** The capo actually in effect (0–12): the tool's own `toolCapo`, or a mirror of the open song's
+   *  `guitar.capo` in song context. Not persisted itself — see `toolCapo`. */
+  capo: number;
+  /** The tool's own capo, persisted, edited only outside a song. */
+  toolCapo: number;
+  /** The song currently driving `tuning`/`capo`/the Chords tab, or null in tool mode (§7 Phase 3
+   *  items 3–4). Set by the module component from its `songId` prop; not persisted. */
+  songId: string | null;
+  /** The progression event focused in the Chords tab's "Progression chord" mode, and its chord
+   *  (§7 Phase 3 items 1–3). Null outside song context or before anything is focused. */
+  progressionEventId: string | null;
+  progressionChord: ChordRef | null;
   accidentalPref: AccidentalPref;
   leftHanded: boolean;
   fretSpacing: FretSpacing;
@@ -116,13 +136,23 @@ export interface AppState {
   playhead: { string: number; fret: number } | null;
   playing: boolean;
 
-  /** Sets the committed tuning without touching `liveTuning` (callers animate it). */
+  /** Sets the drawn tuning without touching `liveTuning` (callers animate it). Dumb: it never
+   *  decides whether that also belongs in the song or the tool's own settings — see
+   *  `state/tuningActions.ts`'s `applyTuning` for that. */
   setTuning: (tuning: Tuning) => void;
-  /** Sets both the committed and drawn tuning at once, with no animation. */
+  /** Sets both the drawn and live tuning at once, with no animation. */
   jumpToTuning: (tuning: Tuning) => void;
+  /** Sets the tool's own persisted tuning (does not touch what's drawn). */
+  setToolTuning: (tuning: Tuning) => void;
   setLive: (stringIndex: number, midi: number) => void;
   setSavedTunings: (saved: Tuning[]) => void;
   setFretCount: (fretCount: number) => void;
+  /** Sets the drawn capo (0–12). Dumb, like `setTuning` — see `state/capoActions.ts`. */
+  setCapo: (capo: number) => void;
+  /** Sets the tool's own persisted capo (does not touch what's drawn). */
+  setToolCapo: (capo: number) => void;
+  setSongId: (songId: string | null) => void;
+  setProgressionFocus: (eventId: string | null, chord: ChordRef | null) => void;
   setAccidentalPref: (pref: AccidentalPref) => void;
   setLeftHanded: (leftHanded: boolean) => void;
   setFretSpacing: (spacing: FretSpacing) => void;
@@ -155,10 +185,14 @@ export interface AppState {
   setPlaying: (playing: boolean) => void;
 }
 
-/** The subset written to localStorage. Transient drawing state is deliberately left out. */
+/** The subset written to localStorage. Transient drawing state, the song mirror (`tuning`/`capo`)
+ *  and the song context itself are deliberately left out — only the tool's own `toolTuning`/
+ *  `toolCapo` are persisted (§7 Phase 3 item 4), so opening a song and changing its capo/tuning
+ *  never touches the tool's saved settings. */
 type Persisted = Pick<
   AppState,
-  | 'tuning'
+  | 'toolTuning'
+  | 'toolCapo'
   | 'savedTunings'
   | 'fretCount'
   | 'accidentalPref'
@@ -189,9 +223,15 @@ export const useStore = create<AppState>()(
   persist(
     (set) => ({
       tuning: STANDARD_TUNING,
+      toolTuning: STANDARD_TUNING,
       liveTuning: [...STANDARD_TUNING.strings],
       savedTunings: [],
       fretCount: 22,
+      capo: 0,
+      toolCapo: 0,
+      songId: null,
+      progressionEventId: null,
+      progressionChord: null,
       accidentalPref: 'sharp',
       leftHanded: false,
       fretSpacing: 'auto',
@@ -225,6 +265,7 @@ export const useStore = create<AppState>()(
 
       setTuning: (tuning) => set({ tuning }),
       jumpToTuning: (tuning) => set({ tuning, liveTuning: [...tuning.strings] }),
+      setToolTuning: (toolTuning) => set({ toolTuning }),
       setLive: (stringIndex, midi) =>
         set((s) => {
           const liveTuning = s.liveTuning.slice();
@@ -234,6 +275,10 @@ export const useStore = create<AppState>()(
       setSavedTunings: (savedTunings) => set({ savedTunings }),
       setFretCount: (fretCount) =>
         set({ fretCount: Math.min(MAX_FRETS, Math.max(MIN_FRETS, Math.round(fretCount))) }),
+      setCapo: (capo) => set({ capo: sanitizeCapo(capo) }),
+      setToolCapo: (toolCapo) => set({ toolCapo: sanitizeCapo(toolCapo) }),
+      setSongId: (songId) => set({ songId }),
+      setProgressionFocus: (progressionEventId, progressionChord) => set({ progressionEventId, progressionChord }),
       setAccidentalPref: (accidentalPref) => set({ accidentalPref }),
       setLeftHanded: (leftHanded) => set({ leftHanded }),
       setFretSpacing: (fretSpacing) => set({ fretSpacing }),
@@ -271,7 +316,8 @@ export const useStore = create<AppState>()(
       storage: settingsStorage,
       version: 1,
       partialize: (s): Persisted => ({
-        tuning: s.tuning,
+        toolTuning: s.toolTuning,
+        toolCapo: s.toolCapo,
         savedTunings: s.savedTunings,
         fretCount: s.fretCount,
         accidentalPref: s.accidentalPref,
@@ -298,13 +344,20 @@ export const useStore = create<AppState>()(
         chordPlay: s.chordPlay,
       }),
       // Never trust storage: validate the tuning data, and rebuild the drawn tuning from it.
+      // `toolTuning`/`toolCapo` replace the pre-Phase-3 `tuning` key (there was no capo before) —
+      // a settings blob saved by an older build still has `tuning`, read here as a fallback so
+      // nobody loses it in the move.
       merge: (persisted, current) => {
-        const p = (persisted ?? {}) as Partial<Persisted>;
-        const tuning = sanitizeTuning(p.tuning);
+        const p = (persisted ?? {}) as Partial<Persisted> & { tuning?: unknown; capo?: unknown };
+        const toolTuning = sanitizeTuning(p.toolTuning ?? p.tuning);
+        const toolCapo = sanitizeCapo(p.toolCapo ?? p.capo);
         return {
           ...current,
           ...p,
-          tuning,
+          toolTuning,
+          toolCapo,
+          tuning: toolTuning,
+          capo: toolCapo,
           theme: p.theme === 'dark' || p.theme === 'light' ? p.theme : 'system',
           largeNeck: p.largeNeck === true,
           guitarModel: isGuitarModelId(p.guitarModel) ? p.guitarModel : DEFAULT_MODEL_ID,
@@ -320,7 +373,7 @@ export const useStore = create<AppState>()(
           scaleSettings: sanitizeScaleSettings(p.scaleSettings),
           palette: sanitizePalette(p.palette),
           playback: sanitizePlayback(p.playback),
-          liveTuning: [...tuning.strings],
+          liveTuning: [...toolTuning.strings],
           savedTunings: sanitizeSaved(p.savedTunings),
           fretCount: Math.min(
             MAX_FRETS,

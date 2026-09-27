@@ -27,11 +27,14 @@ function saveView(v: View): void {
 interface Props {
   chord: ChordRef;
   onClose: () => void;
+  /** Opens the guitar module with this chord selected (§7 Phase 3 item 1). Omitted where there is
+   *  no placed event to select — e.g. previewing a not-yet-added suggestion from the chord map. */
+  onExplore?: () => void;
 }
 
 /** Section 7.6: expand a chord to see it on a piano keyboard or a guitar diagram, remembering
  *  which the player last chose. */
-export default function ChordDetail({ chord, onClose }: Props) {
+export default function ChordDetail({ chord, onClose, onExplore }: Props) {
   const [view, setView] = useState<View>(loadView);
 
   const choose = (v: View) => {
@@ -45,9 +48,19 @@ export default function ChordDetail({ chord, onClose }: Props) {
         <h3 className="font-semibold">
           {chordName(chord)} <span className="font-normal text-muted">({chord.numeral})</span>
         </h3>
-        <button onClick={onClose} aria-label="Close chord detail" className="grid size-8 place-items-center rounded-lg text-lg text-muted hover:bg-surface-2">
-          ×
-        </button>
+        <div className="flex items-center gap-2">
+          {onExplore && (
+            <button
+              onClick={onExplore}
+              className="rounded-lg border border-line bg-surface px-3 py-1.5 text-sm font-medium hover:bg-surface-2"
+            >
+              Explore guitar voicings →
+            </button>
+          )}
+          <button onClick={onClose} aria-label="Close chord detail" className="grid size-8 place-items-center rounded-lg text-lg text-muted hover:bg-surface-2">
+            ×
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-1.5 rounded-lg bg-surface-2 p-1" role="group" aria-label="View">

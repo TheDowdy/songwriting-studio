@@ -15,6 +15,8 @@ export interface MarkerStyle {
   scale: number;
   /** Draw the overlay ring. */
   ring: boolean;
+  /** Multiplier on the ring's radius/width — bigger for an emphasised root (§7 Phase 3 item 3). */
+  ringScale: number;
   /** Draw the dashed inner ring that marks an altered degree sharing another note's hue. */
   dashed: boolean;
 }
@@ -25,11 +27,15 @@ export interface ScaleStyleOptions {
   hideOutOfScale: boolean;
   /** The chromatic scale is coloured by a 12-hue wheel rather than by degree number. */
   chromatic: boolean;
+  /** Root markers grow further and their outline/ring is heavier: the guitar module's
+   *  "Progression chord" mode (§7 Phase 3 item 3), so a chord's root reads at a glance. */
+  strongRoot?: boolean;
 }
 
 /** Room for the overlay ring beside neighbouring strings' markers. */
 const RING_SHRINK = 0.84;
 const TONIC_GROW = 1.08;
+const STRONG_TONIC_GROW = 1.32;
 const OUT_OPACITY = 0.3;
 const OUT_OVERLAY_OPACITY = 0.75;
 
@@ -42,6 +48,7 @@ export const PLAIN_MARKER: MarkerStyle = {
   opacity: 1,
   scale: 1,
   ring: false,
+  ringScale: 1,
   dashed: false,
 };
 
@@ -86,21 +93,24 @@ function baseMarkerStyle(view: PitchView | undefined, o: ScaleStyleOptions | nul
       opacity: ring ? OUT_OVERLAY_OPACITY : OUT_OPACITY,
       scale: shrink,
       ring,
+      ringScale: 1,
       dashed: false,
     };
   }
 
   const tonic = view.role === 'tonic';
+  const strongRoot = tonic && !!o.strongRoot;
   const fill = o.colourMode ? noteColour(view, o) : tonic ? skin.tonicFill : skin.markerFill;
   return {
     visible: true,
     fill,
     stroke: tonic ? skin.tonicStroke : PLAIN_MARKER.stroke,
-    strokeWidth: tonic ? 2.2 : 1,
+    strokeWidth: tonic ? (strongRoot ? 3.2 : 2.2) : 1,
     text: textOn(fill),
     opacity: 1,
-    scale: shrink * (tonic ? TONIC_GROW : 1),
+    scale: shrink * (strongRoot ? STRONG_TONIC_GROW : tonic ? TONIC_GROW : 1),
     ring,
+    ringScale: strongRoot && ring ? 1.6 : 1,
     dashed: o.colourMode && view.variant,
   };
 }

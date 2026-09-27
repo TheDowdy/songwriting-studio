@@ -147,6 +147,11 @@ export interface SongStoreState {
 
   commitVoicing: (eventId: string, voicing: GuitarVoicing) => void;
   clearVoicing: (eventId: string) => void;
+
+  /** Sets the song's tuning (§7 Phase 3 item 4) — the guitar module's pegs and presets edit this
+   *  in song context, never the tool's own persisted tuning. */
+  setGuitarTuning: (tuning: readonly number[], tuningName?: string) => void;
+  setGuitarCapo: (capo: number) => void;
 }
 
 const { library: initialLibrary, currentSongId: initialCurrentId } = loadInitial();
@@ -254,6 +259,9 @@ export const songStore = createStore<SongStoreState>((set, get) => ({
 
   commitVoicing: (eventId, voicing) => withCurrent(set, get, (song) => ops.commitVoicing(song, eventId, voicing)),
   clearVoicing: (eventId) => withCurrent(set, get, (song) => ops.clearVoicing(song, eventId)),
+
+  setGuitarTuning: (tuning, tuningName) => withCurrent(set, get, (song) => ops.setGuitarTuning(song, tuning, tuningName)),
+  setGuitarCapo: (capo) => withCurrent(set, get, (song) => ops.setGuitarCapo(song, capo)),
 }));
 
 // ------------------------------------------------------------------ autosave

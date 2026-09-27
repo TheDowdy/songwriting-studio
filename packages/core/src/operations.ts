@@ -5,10 +5,12 @@
  * that stays in each app's own thin store wrapper.
  */
 import { Interval } from 'tonal';
+import { sanitizeCapo } from './fret/capo';
+import { isValidStrings } from './fret/tunings';
 import { relabel, transposeChord } from './theory/chords';
 import type { ChordRef, Key } from './theory/types';
 import { findEvent, newEvent, newId, newSection, withSection } from './song';
-import type { ChordAttachments, ChordEvent, GuitarVoicing, InstrumentId, PatternId, Section, Song, TimeSig } from './schema';
+import type { ChordAttachments, ChordEvent, GuitarSetup, GuitarVoicing, InstrumentId, PatternId, Section, Song, TimeSig } from './schema';
 
 export const BPM_MIN = 30;
 export const BPM_MAX = 300;
@@ -243,6 +245,26 @@ export function setPattern(song: Song, pattern: PatternId): Song {
 
 export function setTitle(song: Song, title: string): Song {
   return touch({ ...song, title });
+}
+
+// ------------------------------------------------------------------ guitar setup (§7 Phase 3 item 4)
+
+/**
+ * Sets the song's tuning (the pegs and presets, edited through the guitar module in song context —
+ * never the tool's own persisted tuning). Invalid input (wrong string count, out-of-range MIDI) is
+ * ignored rather than corrupting the song; `tuningName` replaces the stored name, or clears it when
+ * omitted, so switching back to an unnamed/preset tuning doesn't keep an old custom name.
+ */
+export function setGuitarTuning(song: Song, tuning: readonly number[], tuningName?: string): Song {
+  if (!isValidStrings(tuning)) return song;
+  const guitar: GuitarSetup = { tuning: [...tuning], capo: song.guitar.capo };
+  if (tuningName) guitar.tuningName = tuningName;
+  return touch({ ...song, guitar });
+}
+
+/** Sets the song's capo (0–12). */
+export function setGuitarCapo(song: Song, capo: number): Song {
+  return touch({ ...song, guitar: { ...song.guitar, capo: sanitizeCapo(capo) } });
 }
 
 // ------------------------------------------------------------------ guitar attachments (§3.2/§4)

@@ -1,4 +1,5 @@
 import { audioEngine } from '../audio/engine';
+import { capoedTuning } from '@sw/core/fret/capo';
 import { directionShaping, strumNotes, type StrumHit } from '@sw/core/fret/strum';
 import { emitPluck } from './pluckEvents';
 import { useStore } from './store';
@@ -16,8 +17,9 @@ export function playFret(string: number, fret: number, velocity = 0.8): void {
  * shape's fretted note, or the open string when there is no shape; a muted string is silent.
  */
 export function playStrumHit({ string, velocity, direction, offsetMs }: StrumHit): void {
-  const { tuning, strumShape } = useStore.getState();
-  const note = strumNotes(tuning.strings, strumShape)[string];
+  const { tuning, capo, strumShape } = useStore.getState();
+  // `strumShape` mirrors `chordShape`, whose frets are relative to the capo (0 = capo/open).
+  const note = strumNotes(capoedTuning(tuning.strings, capo), strumShape)[string];
   if (!note) return;
   const { gain, brightness } = directionShaping(direction);
   const v = Math.min(1, velocity * gain);

@@ -15,6 +15,7 @@ export function useChordSelection(): void {
   const rules = useStore((s) => s.voicingRules);
   const strings = useStore((s) => s.tuning.strings);
   const fretCount = useStore((s) => s.fretCount);
+  const capo = useStore((s) => s.capo);
   const pref = useStore((s) => s.accidentalPref);
 
   useEffect(() => {
@@ -33,5 +34,5 @@ export function useChordSelection(): void {
       if (chordShape) setChordShape(null, null);
       setEditingShape(false);
     }
-  }, [mode, spec, rules, strings, fretCount, pref]);
+  }, [mode, spec, rules, strings, fretCount, capo, pref]);
 }
