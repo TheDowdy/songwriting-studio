@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   DndContext,
   KeyboardSensor,
@@ -75,6 +75,25 @@ function ChordSlot({
   const [resizeBeats, setResizeBeats] = useState<number | null>(null);
   const shownBeats = resizeBeats ?? event.beats;
 
+  // When this chord becomes the selected one (just added, or picked), scroll the timeline row
+  // sideways so it's in view. Only the row scrolls, never the page, so adding from the map above
+  // doesn't jump the window down.
+  const itemRef = useRef<HTMLLIElement | null>(null);
+  useEffect(() => {
+    const li = itemRef.current;
+    const row = li?.closest<HTMLElement>('.timeline-scroll');
+    if (!active || !li || !row) return;
+    const left = li.getBoundingClientRect().left - row.getBoundingClientRect().left + row.scrollLeft;
+    const right = left + li.offsetWidth;
+    const pad = 16;
+    let to: number | null = null;
+    if (left < row.scrollLeft) to = left - pad;
+    else if (right > row.scrollLeft + row.clientWidth) to = right - row.clientWidth + pad;
+    if (to === null) return;
+    const smooth = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    row.scrollTo({ left: Math.max(0, to), behavior: smooth ? 'smooth' : 'auto' });
+  }, [active]);
+
   // Drag the right edge: width maps straight to a beat count, computed from the pointer's
   // absolute position at drag start, so it never depends on a previous render's value.
   const onResizeDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -110,7 +129,10 @@ function ChordSlot({
 
   return (
     <li
-      ref={setNodeRef}
+      ref={(el) => {
+        setNodeRef(el);
+        itemRef.current = el;
+      }}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
       className={`snap-start shrink-0 ${isBarStart ? 'border-l-2 border-line pl-1.5' : ''}`}
     >

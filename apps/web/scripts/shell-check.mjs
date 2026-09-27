@@ -100,6 +100,26 @@ check(
   `${synthesized.length}/${starts.length} buffer(s) were the 3.0 s synthesized pluck`,
 );
 
+// Adding chords past the timeline's visible width: the row follows the new chord, the page stays put.
+for (let i = 0; i < 8; i++) {
+  await page.locator('.map-node').nth(1 + (i % 4)).click();
+  await page.getByRole('button', { name: '+ Add' }).click();
+}
+await page.waitForTimeout(700);
+await page.evaluate(() => (document.querySelector('.timeline-scroll').scrollLeft = 0));
+await page.locator('.map-node').nth(1).click();
+const pageYBefore = await page.evaluate(() => scrollY);
+await page.getByRole('button', { name: '+ Add' }).click();
+await page.waitForTimeout(700);
+const follow = await page.evaluate(() => {
+  const row = document.querySelector('.timeline-scroll');
+  const last = [...row.querySelectorAll(':scope > li')].pop().getBoundingClientRect();
+  const r = row.getBoundingClientRect();
+  return { inView: last.left >= r.left - 1 && last.right <= r.right + 1, scrollLeft: row.scrollLeft, pageY: scrollY };
+});
+check('the timeline scrolls to a newly added chord', follow.inView && follow.scrollLeft > 0, JSON.stringify(follow));
+check('adding a chord does not scroll the page', follow.pageY === pageYBefore, `${pageYBefore} → ${follow.pageY}`);
+
 check('no console or page errors', errors.length === 0, errors.join(' | '));
 await browser.close();
 const failed = results.filter((r) => !r).length;
