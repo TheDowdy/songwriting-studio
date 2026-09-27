@@ -9,7 +9,6 @@ export const skin = {
   markerFillOnLight: '#3a2718',
   /** Tonic marker when notes aren't coloured by degree. */
   tonicFill: '#f2a93b',
-  tonicStroke: '#ffffff',
   /** Overlay ring: light line over a dark halo so it reads on both wood and coloured markers. */
   ring: '#ffffff',
   ringHalo: 'rgba(0,0,0,0.7)',

@@ -110,12 +110,9 @@ check(
 check(
   'tonic marker is larger and has its own colour',
   await page.evaluate(() => {
+    // Drawn area, not `r`: the tonic is a square (no radius attribute).
     const r = (s, f) =>
-      Number(
-        document
-          .querySelector(`[data-string="${s}"][data-fret="${f}"] .marker-dot`)
-          .getAttribute('r'),
-      );
+      ((el) => { if (!el) return NaN; const b = el.getBBox(); return el.tagName === 'rect' ? b.width * b.height : Math.PI * (b.width / 2) ** 2; })(document.querySelector(`[data-string="${s}"][data-fret="${f}"] .marker-dot`));
     const fill = (s, f) =>
       document
         .querySelector(`[data-string="${s}"][data-fret="${f}"] .marker-dot`)

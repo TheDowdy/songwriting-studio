@@ -36,7 +36,8 @@ const readBoard = () =>
       midi: Number(g.dataset.midi),
       role: g.dataset.role ?? null,
       muted: g.hasAttribute('data-muted'),
-      r: Number(g.querySelector('.marker-dot')?.getAttribute('r')),
+      // Drawn area, not `r`: roots are squares (no radius attribute).
+      r: ((el) => { if (!el) return NaN; const b = el.getBBox(); return el.tagName === 'rect' ? b.width * b.height : Math.PI * (b.width / 2) ** 2; })(g.querySelector('.marker-dot')),
     })),
   );
 /** The set of pitch classes lit as a chord tone (root or other tone), ignoring the muted ✕. */
@@ -114,6 +115,24 @@ check(
   'the root draws with extra emphasis (bigger than a plain chord tone)',
   !!rootMark && !!toneMark && rootMark.r > toneMark.r,
   `${rootMark?.r} vs ${toneMark?.r}`,
+);
+const look = await page.evaluate(() => {
+  const gs = [...document.querySelectorAll('.markers [data-string]')].filter((g) => !g.hasAttribute('data-muted'));
+  const roots = gs.filter((g) => g.dataset.role === 'tonic');
+  return {
+    rootsSquare: roots.length > 0 && roots.every((g) => g.querySelector('.marker-dot')?.tagName === 'rect'),
+    tonesRound: gs.filter((g) => g.dataset.role === 'scale').every((g) => g.querySelector('.marker-dot')?.tagName === 'circle'),
+    shape: gs.filter((g) => g.hasAttribute('data-shape')).length,
+    shapeDimmed: gs.filter((g) => g.hasAttribute('data-shape') && g.hasAttribute('data-dimmed')).length,
+    othersUndimmed: gs.filter((g) => !g.hasAttribute('data-shape') && !g.hasAttribute('data-dimmed')).length,
+    shapeRinged: gs.filter((g) => g.hasAttribute('data-shape') && g.querySelector('g[fill="none"] circle')).length,
+  };
+});
+check('roots are squares, other chord tones circles', look.rootsSquare && look.tonesRound, JSON.stringify(look));
+check(
+  'the fingering stands out by dimming every other note (no ring)',
+  look.shape > 0 && look.shapeDimmed === 0 && look.othersUndimmed === 0 && look.shapeRinged === 0,
+  JSON.stringify(look),
 );
 
 // ---------------------------------------------------------------- progression strip

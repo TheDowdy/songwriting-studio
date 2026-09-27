@@ -15,12 +15,25 @@ function Swatch({ style, children }: { style: MarkerStyle; children?: ReactNode 
     <svg className="swatch" width="30" height="30" viewBox="-15 -15 30 30" aria-hidden="true">
       <SwatchBacking />
       <g opacity={style.opacity === 1 ? 1 : Math.max(style.opacity, 0.55)}>
-        <circle
-          r={12 * style.scale}
-          fill={style.fill}
-          stroke={style.stroke}
-          strokeWidth={style.strokeWidth}
-        />
+        {style.square ? (
+          <rect
+            x={-11 * style.scale}
+            y={-11 * style.scale}
+            width={22 * style.scale}
+            height={22 * style.scale}
+            rx={3.3 * style.scale}
+            fill={style.fill}
+            stroke={style.stroke}
+            strokeWidth={style.strokeWidth}
+          />
+        ) : (
+          <circle
+            r={12 * style.scale}
+            fill={style.fill}
+            stroke={style.stroke}
+            strokeWidth={style.strokeWidth}
+          />
+        )}
         {style.dashed && (
           <circle
             r={12 * style.scale * 0.68}
@@ -107,12 +120,19 @@ export function Legend() {
           )}
         </ul>
       )}
-      {overlayLabel && (
-        <p className="legend-overlay">
-          <RingSwatch />
-          <span>Ring: {overlayLabel}</span>
-        </p>
-      )}
+      {overlayLabel &&
+        // A fingering or Identify pick is shown by dimming everything else (see NoteMarkers);
+        // a chord laid over a scale still uses the ring.
+        (display.shape?.some((f) => typeof f === 'number') ? (
+          <p className="legend-overlay">
+            <span>Bright notes: {overlayLabel} (others dimmed)</span>
+          </p>
+        ) : (
+          <p className="legend-overlay">
+            <RingSwatch />
+            <span>Ring: {overlayLabel}</span>
+          </p>
+        ))}
     </div>
   );
 }

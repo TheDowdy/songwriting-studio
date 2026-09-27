@@ -55,7 +55,8 @@ const readBoard = () =>
       shape: g.hasAttribute('data-shape'),
       muted: g.hasAttribute('data-muted'),
       label: g.querySelector('text')?.textContent,
-      r: Number(g.querySelector('.marker-dot')?.getAttribute('r')),
+      // Drawn area, not `r`: roots are squares (no radius attribute).
+      r: ((el) => { if (!el) return NaN; const b = el.getBBox(); return el.tagName === 'rect' ? b.width * b.height : Math.PI * (b.width / 2) ** 2; })(g.querySelector('.marker-dot')),
       fill: g.querySelector('.marker-dot')?.getAttribute('fill'),
     })),
   );

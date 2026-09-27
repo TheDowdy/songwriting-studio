@@ -25,14 +25,24 @@ describe('markerStyle', () => {
     expect(markerStyle(undefined, null)).toBe(PLAIN_MARKER);
   });
 
-  it('highlights the tonic: distinct colour, larger, white outline', () => {
+  it('highlights the tonic: distinct colour, larger, a square with the ordinary outline', () => {
     const v = views('E', 'minor-pentatonic');
     const tonic = markerStyle(v[4], opts());
     const inScale = markerStyle(v[7], opts());
     expect(tonic.fill).toBe(skin.tonicFill);
     expect(inScale.fill).toBe(skin.markerFill);
     expect(tonic.scale).toBeGreaterThan(inScale.scale);
-    expect(tonic.stroke).toBe(skin.tonicStroke);
+    expect(tonic.square).toBe(true);
+    expect(inScale.square).toBe(false);
+    expect(tonic.stroke).toBe(inScale.stroke);
+  });
+
+  it('keeps a note in the shown fingering visible even when out-of-scale notes are hidden', () => {
+    const blue = views('E', 'minor-pentatonic')[1];
+    const hidden = { ...opts(), hideOutOfScale: true };
+    expect(markerStyle(blue, hidden).visible).toBe(false);
+    expect(markerStyle(blue, hidden, false, true).visible).toBe(true);
+    expect(markerStyle(blue, hidden, false, true).ring).toBe(false);
   });
 
   it('greys out out-of-scale notes: ~30 % opacity, outline only, still tappable', () => {
