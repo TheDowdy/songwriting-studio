@@ -395,7 +395,7 @@ const dark = await page.evaluate(() =>
   document.querySelector('.markers [data-role="out"] .marker-dot')?.getAttribute('stroke'),
 );
 check('dark board: cream outlines as before', dark === '#f2ead3', dark);
-await store(() => window.__fluidfrets.store.getState().setMode('explore'));
+await store(() => window.__fluidfrets.store.getState().setMode('scale'));
 
 // ---------------------------------------------------------------- switching leaves everything else alone
 await store(() => {

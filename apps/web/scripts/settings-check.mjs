@@ -60,7 +60,11 @@ async function setTheme(page, label) {
     s.setFretCountUserSet(true);
     s.setVolume(0.35);
     s.setMuted(true);
-    s.setMode('chord');
+    // `chooseMode`, not the dumb `setMode`: a real tab pick (§7 Phase 3 change 1) is what should
+    // stick across a reload — `setMode` alone is for internal uses (e.g. focusing a progression
+    // chord) that must NOT count as the user choosing a tab, so the context's default can still
+    // apply the next time a song opens or closes.
+    s.chooseMode('chord');
     s.setScaleSettings({
       rootPc: 9,
       scaleId: 'dorian',
@@ -471,6 +475,31 @@ async function setTheme(page, label) {
     /AudioWorklet/.test(await page.getByTestId('audio-engine').textContent()),
     await page.getByTestId('audio-engine').textContent(),
   );
+  await page.close();
+}
+
+// ---------------------------------------------------------------- Explore tab removed (§7 Phase 3 change 1)
+for (const stored of ['explore', 'bogus-value']) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  await page.addInitScript(
+    (mode) =>
+      localStorage.setItem('sw:guitar-settings', JSON.stringify({ state: { mode }, version: 1 })),
+    stored,
+  );
+  await page.goto(url);
+  await page.waitForSelector('.fretboard-svg');
+  check(
+    `a stored '${stored}' tab sanitises to the tool-mode default (Scales)`,
+    (await page.evaluate(() => window.__fluidfrets.store.getState().mode)) === 'scale' &&
+      (await page.getByRole('tab', { name: 'Scales' }).getAttribute('aria-selected')) === 'true',
+  );
+  await page.close();
+  await context.close();
+}
+{
+  const { page } = await open();
+  check('there is no Explore tab any more', (await page.getByRole('tab', { name: 'Explore' }).count()) === 0);
   await page.close();
 }
 

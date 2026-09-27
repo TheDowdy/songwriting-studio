@@ -46,7 +46,7 @@ async function axe(label) {
   check(`axe: ${label}`, bad.length === 0, bad.join(' ;; '));
 }
 
-const tabs = ['Explore', 'Scales', 'Chords', 'Identify'];
+const tabs = ['Scales', 'Chords', 'Identify'];
 for (const theme of ['dark', 'light']) {
   await page.evaluate((t) => window.__fluidfrets.store.getState().setTheme(t), theme);
   await sleep(150);
@@ -92,7 +92,7 @@ await axe('light theme, hollow-body guitar');
 await page.evaluate(() => {
   const s = window.__fluidfrets.store.getState();
   s.setTheme('dark');
-  s.setMode('explore');
+  s.setMode('scale');
   s.setGuitarModel('steel-acoustic');
 });
 
@@ -203,7 +203,7 @@ check(
 );
 
 // Pegs are still keyboard controls inside the board.
-await page.getByRole('tab', { name: 'Explore' }).click();
+await page.getByRole('tab', { name: 'Scales' }).click();
 const peg = page.locator('[data-peg="0"]');
 await peg.focus();
 const t0 = await page.evaluate(() => window.__fluidfrets.store.getState().tuning.strings[0]);
@@ -224,12 +224,13 @@ check(
 );
 
 // Tabs.
-await page.getByRole('tab', { name: 'Explore' }).focus();
+await page.getByRole('tab', { name: 'Scales' }).focus();
 await page.keyboard.press('ArrowRight');
 check(
   'the tab list: → selects the next tab',
-  (await page.getByRole('tab', { name: 'Scales' }).getAttribute('aria-selected')) === 'true',
+  (await page.getByRole('tab', { name: 'Chords' }).getAttribute('aria-selected')) === 'true',
 );
+check('there is no Explore tab', (await page.getByRole('tab', { name: 'Explore' }).count()) === 0);
 // Visible focus.
 await page.getByRole('button', { name: 'Mute' }).focus();
 const outline = await page

@@ -46,9 +46,9 @@ export function Fretboard() {
   const spaces = useMemo(() => fretSpaceWidths(wires), [wires]);
   const display = useDisplay();
   const guitar = useGuitarSkin();
-  const exploreSpelling = useMemo(() => chromaticSpelling(pref), [pref]);
+  const plainSpelling = useMemo(() => chromaticSpelling(pref), [pref]);
   // In a key or chord, notes are spelled for it (B♭ in F major); otherwise by the ♯/♭ preference.
-  const spelling = display?.spelling ?? exploreSpelling;
+  const spelling = display?.spelling ?? plainSpelling;
 
   const keyboard = useFretKeyboard({ fretCount, leftHanded, spelling });
   const strumHandlers = useStrumGestures();

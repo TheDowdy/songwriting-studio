@@ -20,7 +20,7 @@ export interface LegendItem {
   view: PitchView;
 }
 
-/** What the fretboard draws in scale or chord mode; explore mode has no display model. */
+/** What the fretboard draws in scale or chord mode. */
 export interface DisplayModel {
   /** Spelling of all 12 pitch classes: the key's/chord's own names where they apply. */
   spelling: Spelling;

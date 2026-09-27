@@ -21,6 +21,7 @@ import {
   type ChordDisplaySettings,
   type ChordPlaySettings,
 } from '@sw/core/fret/chordSettings';
+import { defaultGuitarTab, sanitizeGuitarTab, type GuitarTab } from '@sw/core/fret/guitarTabs';
 import { emptySelection, type IdentifyCell } from '@sw/core/fret/identifySelection';
 import type { AccidentalPref } from '@sw/core/fret/notes';
 import type { PaletteId } from '@sw/core/fret/scaleColors';
@@ -48,8 +49,9 @@ export type FretSpacing = 'auto' | 'realistic' | 'even';
 /** Colour scheme: follow the operating system, or force one. */
 export type ThemeSetting = 'system' | 'dark' | 'light';
 
-/** Which panel is open: chromatic exploring, a key/scale overlay, a chord, or identifying a shape. */
-export type AppMode = 'explore' | 'scale' | 'chord' | 'identify';
+/** Which panel is open: a key/scale overlay, a chord, or identifying a shape (the Explore tab was
+ *  removed — §7 Phase 3 change 1; every gesture it offered still works on every tab). */
+export type AppMode = GuitarTab;
 
 export interface AppState {
   /**
@@ -108,6 +110,11 @@ export interface AppState {
    */
   strumShape: (number | null)[] | null;
   mode: AppMode;
+  /** True until the user explicitly picks a tab. While true, `useSongContext` keeps `mode` in step
+   *  with `defaultGuitarTab` as a song opens or closes (§7 Phase 3 change 1); a real tab choice
+   *  (`BottomPanel`'s `chooseMode`) sets this false so it then sticks, like any other setting.
+   *  Persisted alongside `mode`. */
+  modeIsDefault: boolean;
   scaleSettings: ScaleSettings;
   /** Colours used by scale colour mode. */
   palette: PaletteId;
@@ -168,7 +175,12 @@ export interface AppState {
   setVolume: (volume: number) => void;
   setMuted: (muted: boolean) => void;
   setStrumShape: (shape: (number | null)[] | null) => void;
+  /** Dumb: sets `mode` without touching `modeIsDefault` — used internally (e.g. focusing a
+   *  progression chord always shows the Chords tab) where that shouldn't count as the user
+   *  picking a tab. Real tab clicks go through `chooseMode` instead. */
   setMode: (mode: AppMode) => void;
+  /** A real tab choice (`BottomPanel`): sets `mode` and marks it no longer the context's default. */
+  chooseMode: (mode: AppMode) => void;
   setScaleSettings: (patch: Partial<ScaleSettings>) => void;
   setPalette: (palette: PaletteId) => void;
   setPlayback: (patch: Partial<PlaybackSettings>) => void;
@@ -210,6 +222,7 @@ type Persisted = Pick<
   | 'volume'
   | 'muted'
   | 'mode'
+  | 'modeIsDefault'
   | 'scaleSettings'
   | 'palette'
   | 'playback'
@@ -247,7 +260,8 @@ export const useStore = create<AppState>()(
       volume: 0.8,
       muted: false,
       strumShape: null,
-      mode: 'explore',
+      mode: defaultGuitarTab(false),
+      modeIsDefault: true,
       scaleSettings: DEFAULT_SCALE_SETTINGS,
       palette: DEFAULT_PALETTE,
       playback: DEFAULT_PLAYBACK,
@@ -295,6 +309,7 @@ export const useStore = create<AppState>()(
       setMuted: (muted) => set({ muted }),
       setStrumShape: (strumShape) => set({ strumShape }),
       setMode: (mode) => set({ mode }),
+      chooseMode: (mode) => set({ mode, modeIsDefault: false }),
       setScaleSettings: (patch) =>
         set((s) => ({ scaleSettings: { ...s.scaleSettings, ...patch } })),
       setPalette: (palette) => set({ palette }),
@@ -335,6 +350,7 @@ export const useStore = create<AppState>()(
         volume: s.volume,
         muted: s.muted,
         mode: s.mode,
+        modeIsDefault: s.modeIsDefault,
         scaleSettings: s.scaleSettings,
         palette: s.palette,
         playback: s.playback,
@@ -351,6 +367,15 @@ export const useStore = create<AppState>()(
         const p = (persisted ?? {}) as Partial<Persisted> & { tuning?: unknown; capo?: unknown };
         const toolTuning = sanitizeTuning(p.toolTuning ?? p.tuning);
         const toolCapo = sanitizeCapo(p.toolCapo ?? p.capo);
+        // The removed 'explore' tab, or any other unknown value (including no stored mode at all,
+        // a brand-new install), sanitises to `null` here — resolved to the tool's own default
+        // ('scale') for now, and corrected to the song's default ('chord') by `useSongContext` once
+        // it knows a song is open (§7 Phase 3 change 1). A settings blob from before `modeIsDefault`
+        // existed is treated as a real past choice exactly when its `mode` was already valid.
+        const sanitizedMode = sanitizeGuitarTab(p.mode);
+        const modeIsDefault =
+          typeof p.modeIsDefault === 'boolean' ? p.modeIsDefault : sanitizedMode === null;
+        const mode = sanitizedMode ?? defaultGuitarTab(false);
         return {
           ...current,
           ...p,
@@ -364,8 +389,8 @@ export const useStore = create<AppState>()(
           customise: sanitizeCustomise(p.customise),
           matchSound: p.matchSound !== false,
           fretCountUserSet: p.fretCountUserSet === true,
-          mode:
-            p.mode === 'scale' || p.mode === 'chord' || p.mode === 'identify' ? p.mode : 'explore',
+          mode,
+          modeIsDefault,
           chordSpec: sanitizeChord(p.chordSpec),
           voicingRules: sanitizeVoicingRules(p.voicingRules),
           chordDisplay: sanitizeChordDisplay(p.chordDisplay),

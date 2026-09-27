@@ -124,11 +124,11 @@ for (const id of ['acoustic', 'classical', 'clean', 'jazz', 'crunch', 'highgain'
 
 // Volume slider affects level.
 await presetSelect.selectOption('acoustic');
-await page.locator('input[type=range]').fill('100');
+await page.getByRole('slider', { name: 'Volume' }).fill('100');
 await marker(1, 0).click();
 await page.waitForTimeout(150);
 const loud = await peak();
-await page.locator('input[type=range]').fill('20');
+await page.getByRole('slider', { name: 'Volume' }).fill('20');
 await page.waitForTimeout(200);
 await marker(1, 0).click();
 await page.waitForTimeout(150);
@@ -140,7 +140,7 @@ check(
 );
 
 // Rapid taps across the neck: never clips past 1, no errors.
-await page.locator('input[type=range]').fill('100');
+await page.getByRole('slider', { name: 'Volume' }).fill('100');
 let maxPeak = 0;
 for (let i = 0; i < 80; i++) {
   await marker(i % 6, i % 12).click();

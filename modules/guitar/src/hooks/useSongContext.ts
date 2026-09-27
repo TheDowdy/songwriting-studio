@@ -1,10 +1,19 @@
 import { useLayoutEffect } from 'react';
 import { defaultGuitarSetup, flattenSong } from '@sw/core';
 import { songStore } from '@sw/song-store';
+import { defaultGuitarTab } from '@sw/core/fret/guitarTabs';
 import { resolveTuning } from '@sw/core/fret/savedTunings';
 import { isValidStrings, STANDARD_TUNING, type Tuning } from '@sw/core/fret/tunings';
 import { clearProgressionFocus, selectProgressionEvent } from '../state/progressionChordActions';
 import { useStore } from '../state/store';
+
+/** While the tab is still the context's default (nobody has picked one yet — §7 Phase 3 change 1),
+ *  keeps it in step as a song opens or closes: Chords for a song, Scales for the stand-alone tool.
+ *  A real tab choice (`chooseMode`) clears `modeIsDefault`, so this then leaves the tab alone. */
+function applyContextualDefault(hasSong: boolean): void {
+  const state = useStore.getState();
+  if (state.modeIsDefault) state.setMode(defaultGuitarTab(hasSong));
+}
 
 function tuningFromSong(tuning: readonly number[], saved: readonly Tuning[]): Tuning {
   return isValidStrings(tuning) ? resolveTuning(tuning, saved) : STANDARD_TUNING;
@@ -41,6 +50,7 @@ export function useSongContext(songId: string | null, focusEventId: string | und
       tool.jumpToTuning(tool.toolTuning);
       tool.setCapo(tool.toolCapo);
       clearProgressionFocus();
+      applyContextualDefault(false);
       return undefined;
     }
 
@@ -50,8 +60,13 @@ export function useSongContext(songId: string | null, focusEventId: string | und
     const focused = wanted ? selectProgressionEvent(wanted) : false;
     if (!focused) {
       const first = song ? flattenSong(song)[0] : undefined;
+      // Focusing a chord (below) always shows the Chords tab anyway; only the chordless case needs
+      // the default applied explicitly.
       if (first) selectProgressionEvent(first.id);
-      else clearProgressionFocus();
+      else {
+        clearProgressionFocus();
+        applyContextualDefault(true);
+      }
     }
 
     return songStore.subscribe(applyGuitarSetup);

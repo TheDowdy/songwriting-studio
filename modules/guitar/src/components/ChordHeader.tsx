@@ -6,8 +6,9 @@ import { ChordDiagram } from './Panels/ChordDiagram';
 /**
  * The chord-focus header (owner request): the notes of whatever chord is currently selected,
  * shown above the neck with a larger chord name and a small diagram of its voicing. Hidden
- * (`useChordHeader` returns null) whenever no chord is in focus — the Explore tab, an empty
- * Identify selection, or a Scales overlay that isn't a chord — so it then takes no space.
+ * (`useChordHeader` returns null) whenever no chord is in focus — the Scales tab with no chord
+ * overlay, an empty Identify selection, or a Scales overlay that isn't a chord — so it then takes
+ * no space.
  */
 export function ChordHeader() {
   const header = useChordHeader();

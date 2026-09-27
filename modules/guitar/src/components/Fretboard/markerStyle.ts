@@ -64,8 +64,9 @@ export function noteColour(view: PitchView, o: Pick<ScaleStyleOptions, 'palette'
 }
 
 /**
- * How a marker is drawn. With no `view` (explore mode) every note looks the same; in scale mode
- * the tonic, in-scale and out-of-scale notes differ, and colour mode fills by degree (§10).
+ * How a marker is drawn. With no `view` (e.g. no chord read yet) every note looks the same; in
+ * scale mode the tonic, in-scale and out-of-scale notes differ, and colour mode fills by degree
+ * (§10).
  */
 export function markerStyle(
   view: PitchView | undefined,

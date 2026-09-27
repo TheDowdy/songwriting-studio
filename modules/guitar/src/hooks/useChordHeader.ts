@@ -48,9 +48,10 @@ function bestVoicingFor(
 
 /**
  * The chord-focus header shown above the neck (owner request: list the notes of whatever chord is
- * selected). Null hides the header — the Explore tab, an empty Identify selection, or a Scales
- * overlay that isn't a chord. Reuses each tab's own display hook (`useChordView`/`useScaleView`)
- * for the colouring, so a header chip always matches the neck and legend exactly.
+ * selected). Null hides the header — the Scales tab with no chord overlay, an empty Identify
+ * selection, or a Scales overlay that isn't a chord. Reuses each tab's own display hook
+ * (`useChordView`/`useScaleView`) for the colouring, so a header chip always matches the neck and
+ * legend exactly.
  */
 export function useChordHeader(): ChordHeaderView | null {
   const mode = useStore((s) => s.mode);

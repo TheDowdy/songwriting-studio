@@ -65,7 +65,10 @@ check(
 await page.getByRole('tab', { name: 'Guitar' }).click();
 await page.waitForSelector('.fretboard-svg');
 check('switching to the guitar module shows the fretboard', (await page.locator('[data-string]').count()) > 0);
-await page.locator('[data-string="1"][data-fret="0"]').click();
+// In song context the default tab is now Chords with "hide other notes" forced on (§7 Phase 3
+// change 1), so not every string/fret is a lit chord tone — click whichever marker is actually
+// drawn instead of assuming string 1, fret 0.
+await page.locator('[data-string]').first().click();
 await page.waitForFunction(() => window.__fluidfrets?.audioEngine.getStatus() === 'running', null, {
   timeout: 5000,
 });

@@ -21,7 +21,7 @@ const views = (root: string, scaleId: string, overlay: number[] | null = null) =
   buildPitchViews(parseNoteName(root), getScale(scaleId), overlay && new Set(overlay));
 
 describe('markerStyle', () => {
-  it('explore mode draws every note the same', () => {
+  it('with no view (e.g. the Identify tab\'s header before a chord is read): every note plain', () => {
     expect(markerStyle(undefined, null)).toBe(PLAIN_MARKER);
   });
 

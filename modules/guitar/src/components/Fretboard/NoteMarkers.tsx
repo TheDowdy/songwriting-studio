@@ -23,7 +23,8 @@ interface StringProps {
   spaces: readonly number[];
   spelling: Spelling;
   leftHanded: boolean;
-  /** Null in explore mode. */
+  /** Null when nothing is being displayed for the current tab (shouldn't normally happen now the
+   *  Explore tab is gone, kept as a safe fallback). */
   display: DisplayModel | null;
   /** Pale board (maple): dark outlines for out-of-key notes. */
   lightBoard: boolean;

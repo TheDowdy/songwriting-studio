@@ -41,9 +41,13 @@ const diagramFrets = () =>
     return svg?.getAttribute('aria-label') ?? null;
   });
 
-// ---------------------------------------------------------------- Explore: hidden
+// ---------------------------------------------------------------- default tab (Explore removed)
 await store(() => window.__fluidfrets.store.getState().setStrumOnTuningChange(false));
-check('Explore tab: no header', (await headerCount()) === 0);
+check(
+  'tool mode opens on the Scales tab by default, with no header (no chord overlay)',
+  (await page.getByRole('tab', { name: 'Scales' }).getAttribute('aria-selected')) === 'true' &&
+    (await headerCount()) === 0,
+);
 
 // ---------------------------------------------------------------- Scales tab
 await page.getByRole('tab', { name: 'Scales' }).click();
@@ -200,9 +204,9 @@ check('clearing the picks hides the header again', (await headerCount()) === 0);
 
 // ---------------------------------------------------------------- no horizontal overflow at 390px
 //
-// The Explore tab (no chord header at all) already has a few px of horizontal overflow at 390px
-// wide from the toolbar, unrelated to this feature and pre-existing on `phase-3` before it — see
-// the "Decisions I made" note in the handoff report. So the bar here is that showing the header
+// The default tab (Scales, no chord header at all) already has a few px of horizontal overflow at
+// 390px wide from the toolbar, unrelated to this feature and pre-existing on `phase-3` before it —
+// see the "Decisions I made" note in the handoff report. So the bar here is that showing the header
 // adds nothing to that baseline, which is what "must not cause horizontal page overflow" means for
 // work scoped to the header.
 const narrow = await browser.newContext({ viewport: { width: 390, height: 844 } });
