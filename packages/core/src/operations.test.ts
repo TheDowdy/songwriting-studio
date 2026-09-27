@@ -20,6 +20,8 @@ import {
   setBpm,
   setEventBeats,
   setEventChord,
+  setGuitarCapo,
+  setGuitarTuning,
 } from './operations';
 
 const c = { tonic: 'C', mode: 'major' } as const;
@@ -261,5 +263,44 @@ describe('commitVoicing / clearVoicing', () => {
     expect(flattenSong(song)[0]!.attachments?.guitar).toEqual(voicing);
     song = clearVoicing(song, eventId);
     expect(flattenSong(song)[0]!.attachments?.guitar).toBeUndefined();
+  });
+});
+
+describe('setGuitarTuning / setGuitarCapo (§7 Phase 3 item 4)', () => {
+  it('sets the tuning and keeps the capo', () => {
+    let song = newSong(c);
+    song = setGuitarCapo(song, 3);
+    song = setGuitarTuning(song, [38, 43, 50, 55, 59, 62]);
+    expect(song.guitar.tuning).toEqual([38, 43, 50, 55, 59, 62]);
+    expect(song.guitar.capo).toBe(3);
+  });
+
+  it('stores a tuning name when given one, and clears a previous one when not', () => {
+    let song = newSong(c);
+    song = setGuitarTuning(song, [38, 43, 50, 55, 59, 62], 'Open G');
+    expect(song.guitar.tuningName).toBe('Open G');
+    song = setGuitarTuning(song, [40, 45, 50, 55, 59, 64]); // back to Standard, unnamed
+    expect(song.guitar.tuningName).toBeUndefined();
+  });
+
+  it('ignores an invalid tuning (wrong string count) rather than corrupting the song', () => {
+    let song = newSong(c);
+    const before = song.guitar.tuning;
+    song = setGuitarTuning(song, [40, 45, 50]);
+    expect(song.guitar.tuning).toEqual(before);
+  });
+
+  it('clamps the capo to 0–12', () => {
+    let song = newSong(c);
+    song = setGuitarCapo(song, 99);
+    expect(song.guitar.capo).toBe(12);
+    song = setGuitarCapo(song, -5);
+    expect(song.guitar.capo).toBe(0);
+  });
+
+  it('bumps updatedAt like every other song operation', () => {
+    const song = newSong(c);
+    const next = setGuitarCapo(song, 2);
+    expect(next.updatedAt).toBeGreaterThanOrEqual(song.updatedAt);
   });
 });

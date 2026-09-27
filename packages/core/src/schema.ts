@@ -4,6 +4,7 @@
  * sanitises anything read from storage or an import — that input is always untrusted (§8).
  */
 import { toChordSpec } from './convert';
+import { sanitizeCapo } from './fret/capo';
 import { resolveTones } from './fret/chords';
 import { chroma } from './theory/scales';
 import type { ChordRef, Key, Mode } from './theory/types';
@@ -184,7 +185,7 @@ function sanitizeVoicing(raw: unknown): GuitarVoicing | null {
   const frets = r.frets.map((f) => (f === null ? null : isFiniteNumber(f) ? Math.round(f) : null));
   const tuning = r.tuning.filter(isFiniteNumber).map((n) => Math.round(n));
   if (tuning.length === 0) return null;
-  const capo = isFiniteNumber(r.capo) ? Math.max(0, Math.min(12, Math.round(r.capo))) : 0;
+  const capo = sanitizeCapo(r.capo);
   const source = r.source === 'picked' || r.source === 'edited' ? r.source : 'recommended';
   return { frets, tuning, capo, source };
 }
@@ -222,7 +223,7 @@ function sanitizeGuitarSetup(raw: unknown): GuitarSetup {
   if (!raw || typeof raw !== 'object') return defaultGuitarSetup();
   const r = raw as Record<string, unknown>;
   const tuning = Array.isArray(r.tuning) ? r.tuning.filter(isFiniteNumber).map((n) => Math.round(n)) : [];
-  const capo = isFiniteNumber(r.capo) ? Math.max(0, Math.min(12, Math.round(r.capo))) : 0;
+  const capo = sanitizeCapo(r.capo);
   return {
     tuning: tuning.length >= 4 ? tuning : [...STANDARD_GUITAR_TUNING],
     capo,

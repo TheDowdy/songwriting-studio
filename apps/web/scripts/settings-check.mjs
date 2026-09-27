@@ -41,7 +41,10 @@ async function setTheme(page, label) {
   const { page, errors } = await open();
   const nonDefault = await page.evaluate(() => {
     const s = window.__fluidfrets.store.getState();
-    s.jumpToTuning({ id: 'custom', name: 'Custom', strings: [38, 43, 50, 55, 59, 62] });
+    // Through the real tool-mode path (§7 Phase 3 item 4): `jumpToTuning` alone only changes what's
+    // drawn now, not the tool's persisted tuning (that's `toolTuning`, kept separate from a song's
+    // tuning in song context) — `applyTuning` is what pegs/presets actually call.
+    window.__fluidfrets.applyTuning({ id: 'custom', name: 'Custom', strings: [38, 43, 50, 55, 59, 62] });
     s.setFretCount(20);
     s.setAccidentalPref('flat');
     s.setLeftHanded(true);
@@ -57,7 +60,11 @@ async function setTheme(page, label) {
     s.setFretCountUserSet(true);
     s.setVolume(0.35);
     s.setMuted(true);
-    s.setMode('chord');
+    // `chooseMode`, not the dumb `setMode`: a real tab pick (§7 Phase 3 change 1) is what should
+    // stick across a reload — `setMode` alone is for internal uses (e.g. focusing a progression
+    // chord) that must NOT count as the user choosing a tab, so the context's default can still
+    // apply the next time a song opens or closes.
+    s.chooseMode('chord');
     s.setScaleSettings({
       rootPc: 9,
       scaleId: 'dorian',
@@ -468,6 +475,31 @@ async function setTheme(page, label) {
     /AudioWorklet/.test(await page.getByTestId('audio-engine').textContent()),
     await page.getByTestId('audio-engine').textContent(),
   );
+  await page.close();
+}
+
+// ---------------------------------------------------------------- Explore tab removed (§7 Phase 3 change 1)
+for (const stored of ['explore', 'bogus-value']) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  await page.addInitScript(
+    (mode) =>
+      localStorage.setItem('sw:guitar-settings', JSON.stringify({ state: { mode }, version: 1 })),
+    stored,
+  );
+  await page.goto(url);
+  await page.waitForSelector('.fretboard-svg');
+  check(
+    `a stored '${stored}' tab sanitises to the tool-mode default (Scales)`,
+    (await page.evaluate(() => window.__fluidfrets.store.getState().mode)) === 'scale' &&
+      (await page.getByRole('tab', { name: 'Scales' }).getAttribute('aria-selected')) === 'true',
+  );
+  await page.close();
+  await context.close();
+}
+{
+  const { page } = await open();
+  check('there is no Explore tab any more', (await page.getByRole('tab', { name: 'Explore' }).count()) === 0);
   await page.close();
 }
 

@@ -22,7 +22,10 @@
     "check:settings": "node scripts/settings-check.mjs",
     "check:a11y": "node scripts/a11y-check.mjs",
     "check:perf": "node scripts/perf-check.mjs",
-    "check:shell": "node scripts/shell-check.mjs"
+    "check:clock": "node scripts/clock-check.mjs",
+    "check:shell": "node scripts/shell-check.mjs",
+    "check:song-guitar": "node scripts/song-guitar-check.mjs",
+    "check:chord-header": "node scripts/chord-header-check.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

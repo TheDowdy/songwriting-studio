@@ -1,5 +1,5 @@
 import * as Tone from 'tone';
-import { unlockAudio as unlockShared } from '@sw/audio';
+import { getAudioContext, unlockAudio as unlockShared } from '@sw/audio';
 import type { InstrumentId } from '@sw/core';
 
 /** Piano samples (Salamander Grand, subset) live in public/samples so the app works offline. */
@@ -275,6 +275,13 @@ export function prefetchSamples(): void {
  */
 export function unlockAudio(): Promise<void> {
   const started = unlockShared(); // Tone.start() + resume, shared with the guitar module (§5)
+  // Install the shared context now, before building any instrument below. `unlockShared` only
+  // swaps it into Tone after an await, and an instrument built on Tone's default context before
+  // that plays on a different clock from `Tone.now()`: every note was scheduled in the past by
+  // however long that context had been running (from page load, where autoplay is allowed), and
+  // the browser skipped that far into the sample. Short chords lost their sound; long ones only
+  // their start. check:clock covers this.
+  getAudioContext();
   loadingPiano ??= loadPiano();
   if (!voices.has('piano')) voices.set('piano', makeFallbackPiano());
   for (const id of ['epiano', 'pad', 'guitar'] as InstrumentId[]) if (!voices.has(id)) voices.set(id, makeInstrument(id));

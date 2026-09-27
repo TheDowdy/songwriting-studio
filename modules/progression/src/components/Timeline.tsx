@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   DndContext,
   KeyboardSensor,
@@ -18,6 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { chordName } from '@sw/core';
+import type { Navigate } from '../App';
 import { previewChordInSong } from '../state/playback';
 import { BEATS_MAX, useStore } from '../state/store';
 import type { ChordEvent, Section } from '@sw/core';
@@ -74,6 +75,25 @@ function ChordSlot({
   const [resizeBeats, setResizeBeats] = useState<number | null>(null);
   const shownBeats = resizeBeats ?? event.beats;
 
+  // When this chord becomes the selected one (just added, or picked), scroll the timeline row
+  // sideways so it's in view. Only the row scrolls, never the page, so adding from the map above
+  // doesn't jump the window down.
+  const itemRef = useRef<HTMLLIElement | null>(null);
+  useEffect(() => {
+    const li = itemRef.current;
+    const row = li?.closest<HTMLElement>('.timeline-scroll');
+    if (!active || !li || !row) return;
+    const left = li.getBoundingClientRect().left - row.getBoundingClientRect().left + row.scrollLeft;
+    const right = left + li.offsetWidth;
+    const pad = 16;
+    let to: number | null = null;
+    if (left < row.scrollLeft) to = left - pad;
+    else if (right > row.scrollLeft + row.clientWidth) to = right - row.clientWidth + pad;
+    if (to === null) return;
+    const smooth = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    row.scrollTo({ left: Math.max(0, to), behavior: smooth ? 'smooth' : 'auto' });
+  }, [active]);
+
   // Drag the right edge: width maps straight to a beat count, computed from the pointer's
   // absolute position at drag start, so it never depends on a previous render's value.
   const onResizeDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -109,7 +129,10 @@ function ChordSlot({
 
   return (
     <li
-      ref={setNodeRef}
+      ref={(el) => {
+        setNodeRef(el);
+        itemRef.current = el;
+      }}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
       className={`snap-start shrink-0 ${isBarStart ? 'border-l-2 border-line pl-1.5' : ''}`}
     >
@@ -166,6 +189,7 @@ function ChordToolbar({
   replacing,
   onFlavor,
   onDetail,
+  onExplore,
 }: {
   event: ChordEvent;
   flavorOpen: boolean;
@@ -173,6 +197,8 @@ function ChordToolbar({
   replacing: boolean;
   onFlavor: () => void;
   onDetail: () => void;
+  /** Opens the guitar module with this chord selected (§7 Phase 3 item 1). */
+  onExplore: () => void;
 }) {
   const removeEvent = useStore((s) => s.removeEvent);
   const duplicateEvent = useStore((s) => s.duplicateEvent);
@@ -197,6 +223,7 @@ function ChordToolbar({
       </label>
       <button onClick={onFlavor} aria-pressed={flavorOpen} className={btn}>Flavor</button>
       <button onClick={onDetail} aria-pressed={detailOpen} className={btn}>Piano / guitar</button>
+      <button onClick={onExplore} className={btn}>Explore guitar voicings</button>
       <button onClick={() => (replacing ? cancelReplace() : startReplace(event.id))} aria-pressed={replacing} className={btn}>
         {replacing ? 'Cancel replace' : 'Replace'}
       </button>
@@ -218,7 +245,7 @@ function EmptyDropZone({ sectionId }: { sectionId: string }) {
   );
 }
 
-function SectionBlock({ section, isOnly }: { section: Section; isOnly: boolean }) {
+function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly: boolean; navigate: Navigate }) {
   const song = useStore((s) => s.song);
   const selectedId = useStore((s) => s.selectedEventId);
   const playingId = useStore((s) => s.playingEventId);
@@ -330,6 +357,7 @@ function SectionBlock({ section, isOnly }: { section: Section; isOnly: boolean }
             setFlavorId(null);
             setDetailOpen(!detailOpen);
           }}
+          onExplore={() => navigate({ module: 'guitar', eventId: toolbarEvent.id })}
         />
       )}
       {flavorEvent && (
@@ -345,7 +373,11 @@ function SectionBlock({ section, isOnly }: { section: Section; isOnly: boolean }
       )}
       {detailEvent && (
         <div className="mt-2">
-          <ChordDetail chord={detailEvent.chord} onClose={() => setDetailOpen(false)} />
+          <ChordDetail
+            chord={detailEvent.chord}
+            onClose={() => setDetailOpen(false)}
+            onExplore={() => navigate({ module: 'guitar', eventId: detailEvent.id })}
+          />
         </div>
       )}
     </section>
@@ -433,7 +465,7 @@ function ArrangementChip({ id, name, onRemove }: { id: string; name: string; onR
   );
 }
 
-export default function Timeline() {
+export default function Timeline({ navigate }: { navigate: Navigate }) {
   const song = useStore((s) => s.song);
   const addSection = useStore((s) => s.addSection);
   const reorderEvents = useStore((s) => s.reorderEvents);
@@ -467,7 +499,7 @@ export default function Timeline() {
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <div className="space-y-3">
           {song.sections.map((section) => (
-            <SectionBlock key={section.id} section={section} isOnly={song.sections.length === 1} />
+            <SectionBlock key={section.id} section={section} isOnly={song.sections.length === 1} navigate={navigate} />
           ))}
         </div>
       </DndContext>

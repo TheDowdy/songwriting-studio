@@ -71,7 +71,7 @@ const board = () =>
   );
 
 // ---------------------------------------------------------------- opening the tab
-await marker(1, 0).click(); // unlock audio in explore mode
+await marker(1, 0).click(); // unlock audio on the default (Scales) tab
 await page.getByRole('tab', { name: 'Identify' }).click();
 await sleep(200);
 check(
@@ -262,7 +262,10 @@ check(
 );
 await page.getByRole('button', { name: /Down|Up/ }).click();
 
-// Strum gesture.
+// Strum gesture. The geometry is read after picking the shape, not before: whether the previous
+// selection named a chord can change the page's layout above the neck (the chord-focus header),
+// so the neck's on-screen position isn't stable across a pick that changes that.
+await pick('0-x-x-0-x-0');
 const geo = await store(() => {
   const c = document.querySelector('.fretboard-svg').getScreenCTM();
   return {
@@ -270,7 +273,6 @@ const geo = await store(() => {
     x: c.a * 500 + c.e,
   };
 });
-await pick('0-x-x-0-x-0');
 await clearPlucks();
 await page.mouse.move(geo.x, geo.ys[0] + 25);
 await page.mouse.down();
@@ -366,11 +368,11 @@ await sleep(150);
 check('changing tuning re-reads the same frets', (await name()) !== 'G/D');
 
 // ---------------------------------------------------------------- leaving
-await page.getByRole('tab', { name: 'Explore' }).click();
+await page.getByRole('tab', { name: 'Scales' }).click();
 await sleep(200);
 check(
-  'Explore mode: the neck is plain again and the strum shape released',
-  (await board()).every((m) => m.role === null && !m.shape) &&
+  'leaving Identify: no picked shape lit, and the strum shape released',
+  (await board()).every((m) => !m.shape) &&
     (await store(() => window.__fluidfrets.store.getState().strumShape)) === null,
 );
 const geo2 = await store(() => {

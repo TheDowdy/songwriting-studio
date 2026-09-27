@@ -12,6 +12,7 @@ import {
   shapeNotes,
   shapeText,
   targetFromChord,
+  targetFromPcs,
   type VoicingRules,
 } from './voicings';
 
@@ -261,6 +262,28 @@ describe('selection helpers', () => {
     const target = chord({ rootPc: C });
     expect(findVoicings(STANDARD, 22, target)).toBe(findVoicings(STANDARD, 22, target));
     expect(findVoicings(STANDARD, 22, target)).not.toBe(findVoicings(STANDARD, 21, target));
+  });
+});
+
+describe('targetFromPcs (chord-header addendum)', () => {
+  it('marks every pitch class required and flags the third(s)', () => {
+    const target = targetFromPcs(G, [G, 11, 2]); // G major triad: G B D
+    expect(target.rootPc).toBe(G);
+    expect(target.bassPc).toBeNull();
+    expect(target.tones.every((t) => t.required)).toBe(true);
+    expect(target.tones.find((t) => t.pc === 11)?.third).toBe(true); // B, a major 3rd above G
+    expect(target.tones.find((t) => t.pc === 2)?.third).toBe(false); // D, the 5th
+  });
+
+  it('a minor third also counts as the third', () => {
+    const target = targetFromPcs(A, [A, 0, E]); // A minor triad: A C E
+    expect(target.tones.find((t) => t.pc === 0)?.third).toBe(true);
+  });
+
+  it('finds the same best voicing findVoicings would for the equivalent chord spec', () => {
+    const target = targetFromPcs(G, [G, 11, 2]);
+    const viaChord = chord({ rootPc: G });
+    expect(best(search(target))).toBe(best(search(viaChord)));
   });
 });
 

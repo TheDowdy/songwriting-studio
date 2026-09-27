@@ -116,6 +116,23 @@ export function targetFromChord(info: ChordInfo): VoicingTarget {
   };
 }
 
+/**
+ * The search target for a plain set of pitch classes with a known root (e.g. a diatonic triad or
+ * seventh chord built on a scale degree, PLAN.md chord-header addendum): every pitch class is
+ * required, and one a third or a tenth above the root is flagged so the scorer can still penalise
+ * a doubled third.
+ */
+export function targetFromPcs(rootPc: number, pcs: readonly number[]): VoicingTarget {
+  return {
+    rootPc,
+    tones: pcs.map((pc) => {
+      const semitones = pitchClass(pc - rootPc);
+      return { pc, required: true, third: semitones === 3 || semitones === 4 };
+    }),
+    bassPc: null,
+  };
+}
+
 const popcount = (n: number) => {
   let c = 0;
   for (; n; n &= n - 1) c++;

@@ -55,7 +55,8 @@ const readBoard = () =>
       shape: g.hasAttribute('data-shape'),
       muted: g.hasAttribute('data-muted'),
       label: g.querySelector('text')?.textContent,
-      r: Number(g.querySelector('.marker-dot')?.getAttribute('r')),
+      // Drawn area, not `r`: roots are squares (no radius attribute).
+      r: ((el) => { if (!el) return NaN; const b = el.getBBox(); return el.tagName === 'rect' ? b.width * b.height : Math.PI * (b.width / 2) ** 2; })(g.querySelector('.marker-dot')),
       fill: g.querySelector('.marker-dot')?.getAttribute('fill'),
     })),
   );
@@ -65,6 +66,16 @@ const shapeOnBoard = async () =>
     .sort((a, b) => a.string - b.string)
     .map((m) => `${m.string}:${m.fret}`)
     .join(' ');
+/** (string, midi) of every lit chord-tone marker — the sounding pitches, capo already baked in
+ *  (§7 Phase 3 change 2 verification: compare against what actually got plucked). */
+const shapeMidis = async () =>
+  (await readBoard())
+    .filter((m) => m.shape)
+    .map((m) => `${m.string}:${m.midi}`)
+    .sort()
+    .join(' ');
+const pluckedMidis = async () =>
+  (await plucks()).map((n) => `${n.string}:${n.midi}`).sort().join(' ');
 
 // ---------------------------------------------------------------- opening the tab
 await marker(1, 0).click(); // unlock audio
@@ -218,6 +229,7 @@ check(
   (await readBoard()).some((m) => m.string === 0 && m.fret === 0 && m.muted),
 );
 const status0 = await text('voicing-status');
+await clearPlucks();
 await page.getByRole('button', { name: /Next/ }).click();
 const status1 = await text('voicing-status');
 check(
@@ -225,8 +237,21 @@ check(
   /Voicing \d+ of \d+/.test(status1) && status0 !== status1,
   `${status0} → ${status1}`,
 );
+await sleep(400);
+check(
+  'Next plucks the newly selected voicing (§7 Phase 3 change 2)',
+  (await plucks()).length > 0 && (await pluckedMidis()) === (await shapeMidis()),
+  `plucked ${await pluckedMidis()} vs shape ${await shapeMidis()}`,
+);
+await clearPlucks();
 await page.getByRole('button', { name: /Prev/ }).click();
 check('Prev steps back', (await text('voicing-status')) === status0);
+await sleep(400);
+check(
+  'Prev plucks the newly selected voicing',
+  (await plucks()).length > 0 && (await pluckedMidis()) === (await shapeMidis()),
+  `plucked ${await pluckedMidis()} vs shape ${await shapeMidis()}`,
+);
 const total = Number(status0.match(/of (\d+)/)[1]);
 await store(() =>
   window.__fluidfrets.store
@@ -240,10 +265,17 @@ check(
 );
 
 // Diagrams.
+await clearPlucks();
 await page.locator('.voicing-thumb', { hasText: '' }).nth(3).click();
 check(
   'clicking a mini diagram jumps to that voicing',
   (await text('voicing-status')).startsWith('Voicing 4 of'),
+);
+await sleep(400);
+check(
+  'clicking a voicing in the list plucks it (§7 Phase 3 change 2)',
+  (await plucks()).length > 0 && (await pluckedMidis()) === (await shapeMidis()),
+  `plucked ${await pluckedMidis()} vs shape ${await shapeMidis()}`,
 );
 const opens = await page.locator('.voicing-thumb').first().locator('circle').count();
 check('mini diagrams draw dots', opens > 0);
@@ -256,6 +288,7 @@ await store(() =>
 );
 await settle();
 const card = await page.locator('.voicing-card').boundingBox();
+await clearPlucks();
 await page.mouse.move(card.x + card.width * 0.7, card.y + 20);
 await page.mouse.down();
 await page.mouse.move(card.x + card.width * 0.3, card.y + 22, { steps: 6 });
@@ -264,6 +297,12 @@ check(
   'swiping left on the voicing card goes to the next voicing',
   (await text('voicing-status')).startsWith('Voicing 6 of'),
   await text('voicing-status'),
+);
+await sleep(400);
+check(
+  'swiping to a new voicing plucks it too',
+  (await plucks()).length > 0 && (await pluckedMidis()) === (await shapeMidis()),
+  `plucked ${await pluckedMidis()} vs shape ${await shapeMidis()}`,
 );
 await page.mouse.move(card.x + card.width * 0.3, card.y + 20);
 await page.mouse.down();
@@ -342,8 +381,15 @@ check(
   (await text('shape-text')) === '0-2-2-x-0-0',
   await text('shape-text'),
 );
+await clearPlucks();
 await page.getByRole('button', { name: 'Best voicing' }).click();
 check('“Best voicing” resets the shape', (await text('shape-text')) === '0-2-2-1-0-0');
+await sleep(400);
+check(
+  '"Best voicing" plucks the newly selected voicing too',
+  (await plucks()).length > 0 && (await pluckedMidis()) === (await shapeMidis()),
+  `plucked ${await pluckedMidis()} vs shape ${await shapeMidis()}`,
+);
 
 // Edit mode: root taps edit instead of selecting.
 await page.getByRole('button', { name: 'Edit shape' }).click();
@@ -356,6 +402,7 @@ check(
 );
 await page.getByRole('button', { name: 'Edit shape' }).click();
 await page.getByRole('button', { name: 'Best voicing' }).click();
+await sleep(400); // let that voicing's own strum (§7 Phase 3 change 2) finish before isolating the next one
 
 // A non-chord note is just played.
 await clearPlucks();
@@ -638,13 +685,14 @@ check(
 );
 
 // Leaving chord mode.
-await page.getByRole('tab', { name: 'Explore' }).click();
+await page.getByRole('tab', { name: 'Scales' }).click();
 await settle();
 check(
-  'Explore mode: notes drawn plainly again, strum shape released',
-  (await readBoard()).every((m) => m.role === null && !m.shape) &&
+  'leaving the Chords tab: no chord shape lit, and the strum shape released',
+  (await readBoard()).every((m) => !m.shape) &&
     (await store(() => window.__fluidfrets.store.getState().strumShape)) === null,
 );
+check('there is no Explore tab', (await page.getByRole('tab', { name: 'Explore' }).count()) === 0);
 
 check('no console or page errors', errors.length === 0, errors.join(' | '));
 await browser.close();

@@ -177,6 +177,9 @@ export function ScalePanel() {
           </span>
         </p>
       )}
+      <p className="muted hint">
+        Tap a note to hear it, drag across the strings to strum, and turn the pegs to retune.
+      </p>
 
       <div className="panel-row playback" role="group" aria-labelledby={`${id}-play`}>
         <span id={`${id}-play`} className="panel-label">

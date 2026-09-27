@@ -56,13 +56,20 @@ const readBoard = () =>
     })),
   );
 
-// ---------------------------------------------------------------- explore mode is unchanged
+// ---------------------------------------------------------------- default tab (Explore removed, §7 Phase 3 change 1)
+check(
+  'tool mode opens on the Scales tab by default',
+  (await page.getByRole('tab', { name: 'Scales' }).getAttribute('aria-selected')) === 'true',
+);
 let board = await readBoard();
 check(
-  'explore mode: every note drawn the same, no scale roles',
-  board.length > 100 && board.every((m) => m.role === null),
+  'the default scale (C major) draws real scale roles, not every note the same',
+  board.length > 100 &&
+    board.some((m) => m.role === 'tonic') &&
+    board.some((m) => m.role === 'out'),
+  JSON.stringify([...new Set(board.map((m) => m.role))]),
 );
-check('explore mode: no legend', (await page.locator('.legend').count()) === 0);
+check('a legend is shown for the default scale', (await page.locator('.legend').count()) > 0);
 
 // ---------------------------------------------------------------- E minor pentatonic
 await page.getByRole('tab', { name: 'Scales' }).click();
@@ -110,12 +117,9 @@ check(
 check(
   'tonic marker is larger and has its own colour',
   await page.evaluate(() => {
+    // Drawn area, not `r`: the tonic is a square (no radius attribute).
     const r = (s, f) =>
-      Number(
-        document
-          .querySelector(`[data-string="${s}"][data-fret="${f}"] .marker-dot`)
-          .getAttribute('r'),
-      );
+      ((el) => { if (!el) return NaN; const b = el.getBBox(); return el.tagName === 'rect' ? b.width * b.height : Math.PI * (b.width / 2) ** 2; })(document.querySelector(`[data-string="${s}"][data-fret="${f}"] .marker-dot`));
     const fill = (s, f) =>
       document
         .querySelector(`[data-string="${s}"][data-fret="${f}"] .marker-dot`)
@@ -514,14 +518,14 @@ check(
 );
 await page.getByRole('button', { name: /Play/ }).click();
 await sleep(400);
-await page.getByRole('tab', { name: 'Explore' }).click();
+await page.getByRole('tab', { name: 'Identify' }).click();
 const atLeave = (await store(() => window.__plucks)).length;
 await sleep(700);
 check(
-  'switching to Explore stops playback and removes scale styling',
+  'switching to Identify stops playback and removes scale styling',
   (await store(() => window.__plucks)).length - atLeave <= 1 &&
     !(await store(() => window.__fluidfrets.store.getState().playing)) &&
-    (await readBoard()).every((m) => m.role === null),
+    (await readBoard()).every((m) => m.role === 'scale'),
 );
 
 check('no console or page errors', errors.length === 0, errors.join(' | '));

@@ -23,7 +23,8 @@ interface StringProps {
   spaces: readonly number[];
   spelling: Spelling;
   leftHanded: boolean;
-  /** Null in explore mode. */
+  /** Null when nothing is being displayed for the current tab (shouldn't normally happen now the
+   *  Explore tab is gone, kept as a safe fallback). */
   display: DisplayModel | null;
   /** Pale board (maple): dark outlines for out-of-key notes. */
   lightBoard: boolean;
@@ -38,6 +39,12 @@ function labelSize(r: number, label: string): number {
 /** Gap between a marker and its overlay ring, and the ring's line width. */
 const RING_GAP = 2.4;
 const RING_WIDTH = 2.4;
+/** A root's square, as a fraction of the circle's radius: about the same area as the circle. */
+const SQUARE_HALF = 0.9;
+/** A diamond's half-diagonal, as a fraction of the circle's radius (room for the label). */
+const DIAMOND_HALF = 1.25;
+/** Opacity of a note outside the shown fingering, or outside a chord laid over a scale. */
+const DIM_OPACITY = 0.5;
 
 /**
  * All the note markers of one string. Each is placed from its pitch (fret = midi − string
@@ -64,9 +71,15 @@ const StringMarkers = memo(function StringMarkers({
     palette: display.palette,
     hideOutOfScale: display.hideOutOfScale,
     chromatic: display.chromatic,
+    strongRoot: display.strongRoot,
   };
   // undefined: string not in the fingering (drawn normally); null: muted; number: the fret played.
   const shapeFret = display?.shape ? display.shape[string] : undefined;
+  // While a fingering (or an Identify pick) is shown, every note outside it is dimmed, so the
+  // notes in it stand out just by being at full strength.
+  const hasShape = !!display?.shape?.some((f) => typeof f === 'number');
+  // Likewise a chord laid over a scale: its notes stay at full strength, the rest dim a little.
+  const hasOverlay = !hasShape && !!display && Object.values(display.views).some((v) => v?.overlay);
 
   return (
     <g>
@@ -76,11 +89,18 @@ const StringMarkers = memo(function StringMarkers({
         const pc = pitchClass(midi);
         // Only a marker sitting exactly on a fret is a tap target (always true at rest).
         const onFret = Math.abs(fret - Math.round(fret)) < 1e-6 && fret >= 0 && fret <= fretCount;
-        // A note in the fingering gets the overlay ring whatever its role, and is never hidden.
+        // A note in the fingering is drawn at full strength whatever its role, and never hidden.
         const inShape = onFret && shapeFret === Math.round(fret);
         const baseView = display?.views[pc];
-        const view = inShape && baseView ? { ...baseView, overlay: true } : baseView;
-        const style = markerStyle(view, styleOptions, lightBoard);
+        const inOverlay = !!baseView?.overlay;
+        const dimmed = hasShape ? !inShape : hasOverlay && !inOverlay;
+        // No rings any more: fingering and overlay notes stand out by everything else dimming.
+        const style = markerStyle(
+          baseView && { ...baseView, overlay: false },
+          styleOptions,
+          lightBoard,
+          inShape || inOverlay,
+        );
         if (!style.visible) return null;
         const label =
           display?.labels?.[pc] ?? formatNoteName(spelling[pc] as (typeof spelling)[number]);
@@ -105,10 +125,12 @@ const StringMarkers = memo(function StringMarkers({
           );
         }
         const sounding = onFret && playheadFret === Math.round(fret);
+        const half = r * SQUARE_HALF;
         return (
           <g
             key={midi}
-            opacity={edge}
+            opacity={edge * (dimmed ? DIM_OPACITY : 1)}
+            data-dimmed={dimmed ? '' : undefined}
             data-string={onFret ? string : undefined}
             data-fret={onFret ? Math.round(fret) : undefined}
             data-midi={midi}
@@ -124,30 +146,55 @@ const StringMarkers = memo(function StringMarkers({
                 <circle
                   cx={cx}
                   cy={cy}
-                  r={r + RING_GAP}
+                  r={r + RING_GAP * style.ringScale}
                   stroke={skin.ringHalo}
-                  strokeWidth={RING_WIDTH + 2.2}
+                  strokeWidth={(RING_WIDTH + 2.2) * style.ringScale}
                 />
                 <circle
                   cx={cx}
                   cy={cy}
-                  r={r + RING_GAP}
+                  r={r + RING_GAP * style.ringScale}
                   stroke={skin.ring}
-                  strokeWidth={RING_WIDTH}
+                  strokeWidth={RING_WIDTH * style.ringScale}
                 />
               </g>
             )}
             <g opacity={style.opacity}>
-              <circle
-                className="marker-dot"
-                cx={cx}
-                cy={cy}
-                r={r}
-                fill={style.fill}
-                stroke={sounding ? skin.playhead : style.stroke}
-                strokeWidth={sounding ? 3.6 : style.strokeWidth}
-                style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-              />
+              {style.diamond ? (
+                <polygon
+                  className="marker-dot"
+                  points={`${cx},${cy - r * DIAMOND_HALF} ${cx + r * DIAMOND_HALF},${cy} ${cx},${cy + r * DIAMOND_HALF} ${cx - r * DIAMOND_HALF},${cy}`}
+                  strokeLinejoin="round"
+                  fill={style.fill}
+                  stroke={sounding ? skin.playhead : style.stroke}
+                  strokeWidth={sounding ? 3.6 : style.strokeWidth}
+                  style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                />
+              ) : style.square ? (
+                <rect
+                  className="marker-dot"
+                  x={cx - half}
+                  y={cy - half}
+                  width={half * 2}
+                  height={half * 2}
+                  rx={half * 0.3}
+                  fill={style.fill}
+                  stroke={sounding ? skin.playhead : style.stroke}
+                  strokeWidth={sounding ? 3.6 : style.strokeWidth}
+                  style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                />
+              ) : (
+                <circle
+                  className="marker-dot"
+                  cx={cx}
+                  cy={cy}
+                  r={r}
+                  fill={style.fill}
+                  stroke={sounding ? skin.playhead : style.stroke}
+                  strokeWidth={sounding ? 3.6 : style.strokeWidth}
+                  style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                />
+              )}
               {style.dashed && (
                 <circle
                   cx={cx}

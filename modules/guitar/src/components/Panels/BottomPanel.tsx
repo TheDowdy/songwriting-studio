@@ -7,7 +7,6 @@ import { IdentifyPanel } from './IdentifyPanel';
 import { ScalePanel } from './ScalePanel';
 
 const TABS: { mode: AppMode; label: string }[] = [
-  { mode: 'explore', label: 'Explore' },
   { mode: 'scale', label: 'Scales' },
   { mode: 'chord', label: 'Chords' },
   { mode: 'identify', label: 'Identify' },
@@ -18,7 +17,8 @@ const startsCollapsed = () =>
   typeof matchMedia === 'function' && matchMedia('(max-height: 500px)').matches;
 
 /**
- * The tabbed panel under the neck (§13): Explore (chromatic), Scales, Chords and Identify. It folds away to give the neck the whole screen.
+ * The tabbed panel under the neck (§13): Scales, Chords and Identify (the Explore tab was removed —
+ * §7 Phase 3 change 1). It folds away to give the neck the whole screen.
  */
 export function BottomPanel() {
   const mode = useStore((s) => s.mode);
@@ -28,7 +28,7 @@ export function BottomPanel() {
     if (next === mode) return;
     stopScale();
     stopChordPlayback();
-    useStore.getState().setMode(next);
+    useStore.getState().chooseMode(next);
     setCollapsed(false);
   };
 
@@ -73,18 +73,7 @@ export function BottomPanel() {
         </button>
       </div>
       <div id="panel-body" role="tabpanel" aria-labelledby={`tab-${mode}`} hidden={collapsed}>
-        {mode === 'scale' ? (
-          <ScalePanel />
-        ) : mode === 'chord' ? (
-          <ChordPanel />
-        ) : mode === 'identify' ? (
-          <IdentifyPanel />
-        ) : (
-          <p className="panel-body muted">
-            Every note in the current tuning. Tap a note to hear it, drag across the strings to
-            strum, and turn the pegs to retune. Open the Scales tab to see a key on the neck.
-          </p>
-        )}
+        {mode === 'scale' ? <ScalePanel /> : mode === 'chord' ? <ChordPanel /> : <IdentifyPanel />}
       </div>
     </section>
   );

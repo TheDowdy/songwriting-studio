@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { audioEngine } from '../../audio/engine';
 import { clearSettings } from '../../state/storage';
 import { useStore } from '../../state/store';
-import { selectTuning } from '../../state/tuningActions';
+import { applyTuning, selectTuning } from '../../state/tuningActions';
 import { midiToName } from '@sw/core/fret/notes';
 import {
   deleteTuning,
@@ -52,9 +52,9 @@ export function SettingsDialog({ open, onClose }: Props) {
     else {
       setMessage(null);
       setSavedTunings(result.saved);
-      const { tuning, setTuning } = useStore.getState();
+      const { tuning } = useStore.getState();
       const renamed = result.saved.find((t) => t.id === id);
-      if (renamed && tuning.id === id) setTuning(renamed);
+      if (renamed && tuning.id === id) applyTuning(renamed);
     }
   };
 
@@ -63,7 +63,7 @@ export function SettingsDialog({ open, onClose }: Props) {
     state.setSavedTunings(deleteTuning(state.savedTunings, id));
     // If the deleted tuning was selected, the strings stay but are now just "Custom".
     if (state.tuning.id === id) {
-      state.setTuning(resolveTuning(state.tuning.strings, useStore.getState().savedTunings));
+      applyTuning(resolveTuning(state.tuning.strings, useStore.getState().savedTunings));
     }
     setMessage(null);
   };

@@ -29,7 +29,10 @@
     "check:settings": "npm run check:settings --workspace=apps/web",
     "check:a11y": "npm run check:a11y --workspace=apps/web",
     "check:perf": "npm run check:perf --workspace=apps/web",
-    "check:shell": "npm run check:shell --workspace=apps/web"
+    "check:clock": "npm run check:clock --workspace=apps/web",
+    "check:shell": "npm run check:shell --workspace=apps/web",
+    "check:song-guitar": "npm run check:song-guitar --workspace=apps/web",
+    "check:chord-header": "npm run check:chord-header --workspace=apps/web"
   },
   "devDependencies": {
     "@types/node": "^24.0.0"

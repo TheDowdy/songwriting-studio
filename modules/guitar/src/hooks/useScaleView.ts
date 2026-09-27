@@ -20,7 +20,7 @@ export interface LegendItem {
   view: PitchView;
 }
 
-/** What the fretboard draws in scale or chord mode; explore mode has no display model. */
+/** What the fretboard draws in scale or chord mode. */
 export interface DisplayModel {
   /** Spelling of all 12 pitch classes: the key's/chord's own names where they apply. */
   spelling: Spelling;
@@ -38,6 +38,9 @@ export interface DisplayModel {
    * undefined = not part of the fingering (drawn normally).
    */
   shape: (number | null | undefined)[] | null;
+  /** Root markers draw with extra emphasis (bigger, stronger ring): the guitar module's
+   *  "Progression chord" mode (§7 Phase 3 item 3). Absent/false everywhere else. */
+  strongRoot?: boolean;
   legend: {
     items: LegendItem[];
     /** What the three plain marker styles are called. */

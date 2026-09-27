@@ -7,6 +7,7 @@ import { createElement } from 'react';
 import ProgressionModule from './App';
 import { prefetchSamples } from './audio/engine';
 import { stop as stopPlayback } from './state/playback';
+import { useStore } from './state/store';
 
 /** Music-note tab icon. */
 const icon = createElement(
@@ -37,3 +38,14 @@ export default progressionModule;
  *  instrument samples into the HTTP cache before any audio context exists, so the first chord
  *  played on any instrument never falls back to the synthesized guitar. */
 export { prefetchSamples };
+
+// Test hook, exactly like the guitar module's own (@sw/module-guitar): lets browser checks build a
+// progression directly through the same store the UI uses, rather than reproducing every click.
+// Installed as a side effect of importing this module, so it exists as soon as the shell assembles
+// `MODULES` — before any route renders.
+if (
+  typeof window !== 'undefined' &&
+  (import.meta.env.DEV || new URLSearchParams(location.search).has('debug'))
+) {
+  (window as unknown as { __songwriting: unknown }).__songwriting = { store: useStore };
+}

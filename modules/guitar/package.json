@@ -16,6 +16,7 @@
   "dependencies": {
     "@sw/audio": "*",
     "@sw/core": "*",
+    "@sw/song-store": "*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "zustand": "^5.0.15"

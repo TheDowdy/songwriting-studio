@@ -301,6 +301,96 @@
   margin-top: -0.25rem;
 }
 
+/* Chord-focus header, above the neck: whatever chord is in focus (Chords tab, a chord overlay in
+   Scales, or an Identify reading), its notes and a small diagram of its voicing. Hidden (the
+   component renders nothing) when no chord is in focus, so it then takes no space. */
+.mod-guitar .chord-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.25rem;
+  width: 100%;
+  max-width: 1700px;
+  margin-bottom: 0.75rem;
+}
+.mod-guitar .chord-header-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+}
+.mod-guitar .chord-header-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.mod-guitar .chord-header-name {
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.mod-guitar .chord-header-label {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+.mod-guitar .chord-header-notes {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mod-guitar .chord-header-note {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 2rem;
+  padding: 0.15rem 0.5rem;
+  background: var(--surface-2);
+  border-radius: 8px;
+  line-height: 1.2;
+}
+.mod-guitar .chord-header-note-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.mod-guitar .chord-header-note-interval {
+  font-size: 0.65rem;
+  opacity: 0.7;
+}
+.mod-guitar .chord-header .chord-diagram {
+  flex: none;
+  height: 78px;
+  max-height: 90px;
+  width: auto;
+}
+@media (max-width: 480px) {
+  .mod-guitar .chord-header {
+    gap: 0.3rem 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .mod-guitar .chord-header-name {
+    font-size: 1.5rem;
+  }
+  .mod-guitar .chord-header-note {
+    min-width: 1.6rem;
+    padding: 0.1rem 0.35rem;
+  }
+  .mod-guitar .chord-header .chord-diagram {
+    height: 64px;
+  }
+}
+@media (max-height: 500px) {
+  .mod-guitar .chord-header {
+    margin-bottom: 0.35rem;
+  }
+  .mod-guitar .chord-header .chord-diagram {
+    height: 56px;
+  }
+}
+
 /* Bottom panel, scale mode and legend (Phase 6) */
 .mod-guitar .bottom-panel {
   background: var(--surface);
@@ -618,6 +708,90 @@
   border-color: var(--accent);
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Progression strip and capo badge (Songwriting Studio Phase 3) */
+.mod-guitar .progression-strip {
+  padding: 0.5rem 1rem;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.mod-guitar .strip-scroll {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0 0 0.25rem;
+  list-style: none;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.mod-guitar .strip-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: none;
+}
+.mod-guitar .strip-section-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.mod-guitar .strip-chords {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mod-guitar .strip-chord {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.05rem;
+  min-width: 52px;
+  min-height: 44px;
+  padding: 0.25rem 0.5rem;
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg);
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.mod-guitar .strip-chord-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.1;
+}
+.mod-guitar .strip-chord-numeral {
+  font-family: ui-monospace, monospace;
+  font-size: 0.7rem;
+  opacity: 0.75;
+}
+.mod-guitar .strip-chord[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 2px var(--accent);
+  border-color: var(--accent);
+}
+.mod-guitar .capo-badge {
+  padding: 0.1rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-fg);
+  background: var(--accent);
+  border-radius: 999px;
+}
+@media (max-height: 500px) {
+  .mod-guitar .progression-strip {
+    padding: 0.3rem 0.75rem;
+  }
+  .mod-guitar .strip-chord {
+    min-height: 36px;
+    padding: 0.15rem 0.4rem;
+  }
 }
 
 /* Phase 10: accessibility, large neck */

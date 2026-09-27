@@ -11,12 +11,21 @@ import { selectCenter, useStore } from './state/store';
 import { startChords, suggestNext } from '@sw/core';
 import type { ChordRef } from '@sw/core';
 
+/** The shell's `navigate` (§4 ModuleProps), narrowed to what this module actually calls: jumping
+ *  to the guitar module with a chord selected (§7 Phase 3 item 1). Declared locally rather than
+ *  imported from the shell — a module never imports the shell. */
+export type Navigate = (to: { module: string; eventId?: string }) => void;
+
+interface Props {
+  navigate: Navigate;
+}
+
 /**
  * The progression module's view (§4 ModuleDefinition.Component). The page-level header (song
  * title, module tabs, theme toggle, settings) is the shell's job now, not this module's — see
  * apps/web/src/shell.
  */
-export default function ProgressionModule() {
+export default function ProgressionModule({ navigate }: Props) {
   useLivePlaybackSync();
 
   const song = useStore((s) => s.song);
@@ -49,7 +58,7 @@ export default function ProgressionModule() {
           onPreview={preview}
           onAdd={addChord}
         />
-        <Timeline />
+        <Timeline navigate={navigate} />
       </div>
       {sheetOpen && <SheetView onClose={() => setSheetOpen(false)} />}
     </div>
