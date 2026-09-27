@@ -1,0 +1,39 @@
+/**
+ * The progression module's contract (§4). `apps/web/src/shell/modules.ts` assembles this (and
+ * the guitar module) into `MODULES`; this file never imports from the shell or from the guitar
+ * module — only `@sw/core`, `@sw/song-store`, `@sw/audio`, `@sw/ui`, and its own `src/`.
+ */
+import { createElement } from 'react';
+import ProgressionModule from './App';
+import { prefetchSamples } from './audio/engine';
+import { stop as stopPlayback } from './state/playback';
+
+/** Music-note tab icon. */
+const icon = createElement(
+  'svg',
+  { viewBox: '0 0 24 24', width: 18, height: 18, 'aria-hidden': true, fill: 'currentColor' },
+  createElement('path', {
+    d: 'M9 18V5l11-2v13M9 18a3 3 0 1 1-3-3 3 3 0 0 1 3 3Zm11-2a3 3 0 1 1-3-3 3 3 0 0 1 3 3Z',
+    stroke: 'currentColor',
+    fill: 'none',
+    strokeWidth: 1.6,
+    strokeLinejoin: 'round',
+  }),
+);
+
+export const progressionModule = {
+  id: 'progression',
+  title: 'Progression',
+  icon,
+  scope: 'song' as const,
+  Component: ProgressionModule,
+  /** Stop the transport (and any preview) when the user switches to another module (§5). */
+  onDeactivate: stopPlayback,
+};
+
+export default progressionModule;
+
+/** Called once by the shell at startup (§7 Phase 2 / the guitar-sample fix): downloads the
+ *  instrument samples into the HTTP cache before any audio context exists, so the first chord
+ *  played on any instrument never falls back to the synthesized guitar. */
+export { prefetchSamples };

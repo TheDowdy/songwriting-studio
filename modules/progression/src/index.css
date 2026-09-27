@@ -1,0 +1,139 @@
+/*
+ * Progression module rules. Design tokens (--bg, --fg, --accent…) and the shared button/focus
+ * rules come from the shell's global CSS (apps/web/src/global.css + @sw/ui/tokens.css) — that
+ * file also holds the Tailwind import and the `@theme inline` mapping (app-shell concerns, not
+ * per-module). Shape system: containers 12px (rounded-xl), controls 8px (rounded-lg). Nothing else.
+ */
+
+/* Node map */
+.map-svg {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.map-node {
+  cursor: pointer;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: node-pop 0.35s ease-out both;
+}
+
+.map-node:focus-visible {
+  outline: none;
+}
+
+.map-node:focus-visible circle.node-body {
+  stroke-width: 4;
+}
+
+.map-arrow {
+  animation: arrow-in 0.4s ease-out both;
+}
+
+@keyframes node-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes arrow-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-node,
+  .map-arrow {
+    animation: none;
+  }
+}
+
+/* A chunky, always-visible scrollbar for the timeline rows (the default is a hairline on phones). */
+.timeline-scroll { scrollbar-width: auto; scrollbar-color: var(--muted) var(--surface-2); }
+.timeline-scroll::-webkit-scrollbar { height: 12px; }
+.timeline-scroll::-webkit-scrollbar-track { background: var(--surface-2); border-radius: 6px; }
+.timeline-scroll::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 6px; }
+
+/* Sheet music: always black on white, whatever the app theme, so it prints as shown. */
+.sheet-paper {
+  background: #fff;
+  color: #111;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 36px 30px 40px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  font-family: var(--font-sans);
+}
+.sheet-head h1 {
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+.sheet-head p {
+  margin-top: 4px;
+  text-align: center;
+  font-size: 13px;
+  color: #444;
+}
+.sheet-section {
+  margin-top: 22px;
+  break-inside: avoid;
+}
+.sheet-section h2 {
+  font-size: 15px;
+  font-weight: 650;
+  border-bottom: 1px solid #111;
+  padding-bottom: 2px;
+  margin-bottom: 2px;
+}
+.sheet-system {
+  break-inside: avoid;
+}
+.sheet-empty {
+  margin-top: 40px;
+  text-align: center;
+  color: #555;
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+  body.sheet-open,
+  body.sheet-open html {
+    background: #fff !important;
+  }
+  /* .sheet-overlay is portalled onto document.body (see SheetView.tsx), so hiding every other
+     direct child of body — the whole shell, header included, whichever module opened this —
+     leaves only the sheet showing. */
+  body.sheet-open > *:not(.sheet-overlay) {
+    display: none !important;
+  }
+  .sheet-overlay {
+    position: static !important;
+    inset: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+  .sheet-toolbar {
+    display: none !important;
+  }
+  .sheet-overlay > div {
+    padding: 0 !important;
+  }
+  .sheet-paper {
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    max-width: none;
+  }
+}

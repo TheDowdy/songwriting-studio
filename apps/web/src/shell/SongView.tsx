@@ -1,0 +1,92 @@
+import { useEffect } from 'react';
+import { useLocation, useSearch } from 'wouter';
+import { useSong } from '@sw/song-store/react';
+import { AudioBanner } from './AudioBanner';
+import { Header } from './Header';
+import { getLastModule, setLastModule } from './lastModule';
+import { DEFAULT_SONG_MODULE_ID, moduleById, SONG_MODULES, type ModuleProps } from './modules';
+
+interface Props {
+  params: { songId: string; moduleId?: string };
+}
+
+/** `#/song/:songId/:moduleId?` (PLAN.md §4): the shell header plus the active module, all sharing
+ *  the one song-store song — there is no per-module copy of the song. */
+export default function SongView({ params }: Props) {
+  const { songId } = params;
+  const [, navigate] = useLocation();
+  const search = useSearch();
+  const song = useSong((s) => s.library[songId]);
+  const currentSongId = useSong((s) => s.currentSongId);
+  const loadSong = useSong((s) => s.loadSong);
+  const setTitle = useSong((s) => s.setTitle);
+
+  const moduleId = params.moduleId ?? getLastModule(songId) ?? DEFAULT_SONG_MODULE_ID;
+  const activeModule = moduleById(moduleId) ?? SONG_MODULES[0]!;
+
+  // Make this song the store's current one, so every module (which reads the store's current
+  // song, not a copy) shows it. Nothing renders below until that's actually true, so a
+  // navigation between two songs never flashes the previous one.
+  useEffect(() => {
+    if (song && currentSongId !== songId) loadSong(songId);
+  }, [song, songId, currentSongId, loadSong]);
+
+  useEffect(() => {
+    if (song) setLastModule(songId, activeModule.id);
+  }, [song, songId, activeModule.id]);
+
+  // Stop whatever the previous module was doing (audio, gestures) when the module (or song, or
+  // this view) changes or unmounts (PLAN.md §5).
+  useEffect(() => activeModule.onDeactivate, [activeModule]);
+
+  if (!song) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-10 text-center">
+        <p className="text-lg font-medium">Song not found.</p>
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="mt-4 h-10 rounded-lg border border-line px-4 text-sm font-medium hover:bg-surface-2"
+        >
+          Back to library
+        </button>
+      </div>
+    );
+  }
+  if (currentSongId !== songId) return null; // switching; the effect above resolves this
+
+  const query = new URLSearchParams(search);
+  const focus: ModuleProps['focus'] = {
+    eventId: query.get('event') ?? undefined,
+    sectionId: query.get('section') ?? undefined,
+  };
+
+  const moduleNavigate: ModuleProps['navigate'] = ({ module, songId: toSongId, eventId }) => {
+    const target = toSongId ?? songId;
+    navigate(`/song/${target}/${module}${eventId ? `?event=${encodeURIComponent(eventId)}` : ''}`);
+  };
+
+  return (
+    <div className="mod-shell flex min-h-dvh flex-col">
+      <Header
+        title={song.title}
+        onRenameTitle={setTitle}
+        modules={SONG_MODULES}
+        activeModuleId={activeModule.id}
+        hrefFor={(id) => `/song/${songId}/${id}`}
+        backHref="/"
+      />
+      {/* The guitar module shows its own richer banner (it also reports engine failures); the
+          shell's generic one only needs to cover every other module. */}
+      {activeModule.id !== 'guitar' && <AudioBanner />}
+      <div className="min-h-0 flex-1">
+        <activeModule.Component
+          key={`${songId}:${activeModule.id}`}
+          songId={songId}
+          focus={focus}
+          navigate={moduleNavigate}
+        />
+      </div>
+    </div>
+  );
+}
