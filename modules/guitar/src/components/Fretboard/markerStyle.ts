@@ -88,6 +88,9 @@ function baseMarkerStyle(view: PitchView | undefined, o: ScaleStyleOptions | nul
 
   if (view.role === 'out') {
     if (!ring && !inShape && o.hideOutOfScale) return { ...PLAIN_MARKER, visible: false };
+    // A chord note outside the scale (a chord laid over the scale, or a note in the fingering) is
+    // drawn solid at full strength, so it's as easy to spot as the chord's in-scale notes.
+    if (inShape) return { ...PLAIN_MARKER, strokeWidth: 1.4 };
     return {
       visible: true,
       // Transparent, not "none", so the empty middle of the outline can still be tapped.
@@ -95,7 +98,7 @@ function baseMarkerStyle(view: PitchView | undefined, o: ScaleStyleOptions | nul
       stroke: skin.markerFill,
       strokeWidth: 1.4,
       text: skin.markerFill,
-      opacity: ring || inShape ? OUT_OVERLAY_OPACITY : OUT_OPACITY,
+      opacity: ring ? OUT_OVERLAY_OPACITY : OUT_OPACITY,
       scale: shrink,
       ring,
       ringScale: 1,

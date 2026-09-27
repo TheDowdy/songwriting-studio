@@ -40,10 +40,8 @@ const RING_GAP = 2.4;
 const RING_WIDTH = 2.4;
 /** A root's square, as a fraction of the circle's radius: about the same area as the circle. */
 const SQUARE_HALF = 0.9;
-/** Opacity of a note outside the shown fingering. */
-const DIM_OPACITY = 0.3;
-/** Opacity of a scale note outside a chord laid over the scale: dimmed by about 30 %. */
-const OVERLAY_DIM_OPACITY = 0.7;
+/** Opacity of a note outside the shown fingering, or outside a chord laid over a scale. */
+const DIM_OPACITY = 0.5;
 
 /**
  * All the note markers of one string. Each is placed from its pitch (fret = midi − string
@@ -128,7 +126,7 @@ const StringMarkers = memo(function StringMarkers({
         return (
           <g
             key={midi}
-            opacity={edge * (dimmed ? (hasShape ? DIM_OPACITY : OVERLAY_DIM_OPACITY) : 1)}
+            opacity={edge * (dimmed ? DIM_OPACITY : 1)}
             data-dimmed={dimmed ? '' : undefined}
             data-string={onFret ? string : undefined}
             data-fret={onFret ? Math.round(fret) : undefined}
