@@ -32,6 +32,14 @@ describe('store (thin wrapper over @sw/song-store)', () => {
     expect(useStore.getState().song.id).toBe(songStore.getState().currentSongId);
   });
 
+  it('a song opened from outside the module (the shell) makes its first section active', () => {
+    useStore.getState().addChord(I);
+    songStore.getState().newSong(c);
+    const s = useStore.getState();
+    expect(s.activeSectionId).toBe(s.song.sections[0]!.id);
+    expect(s.selectedEventId).toBeNull();
+  });
+
   it('starts with no centre chord', () => {
     expect(selectCenter(useStore.getState()).chord).toBeNull();
   });

@@ -104,7 +104,16 @@ export const useStore = create<AppState>((set, get) => {
   // `useStore((s) => s.song)` call site keeps working unchanged.
   songStore.subscribe((s) => {
     const song = s.currentSong();
-    if (song && song !== get().song) set({ song });
+    if (!song || song === get().song) return;
+    // A different song (opened from the Library, or new) starts with its first section active and
+    // nothing selected; an edit to the same song keeps the selection unless its section is gone.
+    if (song.id !== get().song.id) {
+      set({ song, ...resetSelection, activeSectionId: song.sections[0]!.id });
+    } else if (!song.sections.some((sec) => sec.id === get().activeSectionId)) {
+      set({ song, activeSectionId: song.sections[0]!.id });
+    } else {
+      set({ song });
+    }
   });
 
   return {

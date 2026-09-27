@@ -1,6 +1,10 @@
 @import 'tailwindcss';
 @import '@sw/ui/tokens.css';
 
+/* Tailwind only scans apps/web by default, so point it at the modules that use Tailwind. Not the
+   guitar module: it has its own CSS, and its class names (e.g. `hidden`) would pick up utilities. */
+@source '../../../modules/progression/src';
+
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);

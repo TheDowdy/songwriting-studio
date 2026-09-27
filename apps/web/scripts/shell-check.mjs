@@ -52,6 +52,14 @@ await page.getByRole('button', { name: 'New song' }).click();
 await page.waitForFunction(() => location.hash.startsWith('#/song/'));
 check('creating a song opens it', /#\/song\//.test(await page.evaluate(() => location.hash)));
 check('the progression module is showing', await page.locator('[aria-label="Chord map"]').isVisible());
+// The modules' Tailwind classes only exist if the shell's CSS scans modules/ (`@source`): without
+// them the chord map loses its max-w-[520px] and fills the whole column.
+const mapWidth = await page.locator('.map-svg').evaluate((el) => el.getBoundingClientRect().width);
+check("the progression module's Tailwind classes are generated", mapWidth <= 520, `chord map ${Math.round(mapWidth)}px wide`);
+check(
+  "a new song's first section is active",
+  (await page.locator('section.border-accent').count()) === 1,
+);
 
 // Switch to the guitar module and confirm a tap there starts audio too.
 await page.getByRole('tab', { name: 'Guitar' }).click();
