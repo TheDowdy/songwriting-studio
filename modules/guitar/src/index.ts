@@ -7,9 +7,11 @@
 import { createElement } from 'react';
 import GuitarModule from './App';
 import { audioEngine } from './audio/engine';
+import { applyCapo } from './state/capoActions';
 import { stopChordPlayback } from './state/chordActions';
 import { stopScale } from './state/scalePlayback';
 import { useStore } from './state/store';
+import { applyTuning } from './state/tuningActions';
 
 /** Fretboard tab icon: three strings over frets. */
 const icon = createElement(
@@ -41,5 +43,14 @@ if (
   typeof window !== 'undefined' &&
   (import.meta.env.DEV || new URLSearchParams(location.search).has('debug'))
 ) {
-  (window as unknown as { __fluidfrets: unknown }).__fluidfrets = { audioEngine, store: useStore };
+  // `applyTuning`/`applyCapo` are the context-aware wrappers real UI paths (pegs, presets, the
+  // capo control) go through (§7 Phase 3 item 4) — browser checks that simulate "the user changed
+  // the tuning/capo" should call these, not the store's own dumb `setTuning`/`jumpToTuning`/
+  // `setCapo`, which only ever change what's drawn, not what's persisted or which song owns it.
+  (window as unknown as { __fluidfrets: unknown }).__fluidfrets = {
+    audioEngine,
+    store: useStore,
+    applyTuning,
+    applyCapo,
+  };
 }

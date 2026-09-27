@@ -41,7 +41,10 @@ async function setTheme(page, label) {
   const { page, errors } = await open();
   const nonDefault = await page.evaluate(() => {
     const s = window.__fluidfrets.store.getState();
-    s.jumpToTuning({ id: 'custom', name: 'Custom', strings: [38, 43, 50, 55, 59, 62] });
+    // Through the real tool-mode path (§7 Phase 3 item 4): `jumpToTuning` alone only changes what's
+    // drawn now, not the tool's persisted tuning (that's `toolTuning`, kept separate from a song's
+    // tuning in song context) — `applyTuning` is what pegs/presets actually call.
+    window.__fluidfrets.applyTuning({ id: 'custom', name: 'Custom', strings: [38, 43, 50, 55, 59, 62] });
     s.setFretCount(20);
     s.setAccidentalPref('flat');
     s.setLeftHanded(true);

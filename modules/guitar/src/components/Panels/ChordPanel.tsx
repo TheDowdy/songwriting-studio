@@ -188,13 +188,10 @@ export function ChordPanel() {
   return (
     <div className="panel-body chord-panel">
       {songId && progressionChord && (
-        <div className="chord-summary" data-testid="progression-chord-header">
-          <h2 className="chord-name">{chordName(progressionChord)}</h2>
-          <p>
-            <span className="muted">Numeral</span> {progressionChord.numeral}
-          </p>
+        <p className="muted" data-testid="progression-chord-header">
+          From the progression: <strong>{chordName(progressionChord)}</strong> ({progressionChord.numeral}){' '}
           {capo > 0 && <span className="capo-badge">{`Capo ${capo}`}</span>}
-        </div>
+        </p>
       )}
       {!songId && (
       <>
