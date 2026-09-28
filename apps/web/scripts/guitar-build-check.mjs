@@ -61,14 +61,14 @@ check('the chord just added is focused', (await page.getByTestId('progression-ch
 // ---------------------------------------------------------------- voice: commit G, change its flavour, re-fit
 await block('G').click();
 await sleep(150);
-await page.getByRole('button', { name: 'Use this voicing' }).click();
+await page.getByRole('button', { name: 'Use this voicing', exact: true }).click();
 await sleep(100);
 await toolbarButton('Flavour').click();
 await page.getByTestId('flavour-panel').locator('.chip', { hasText: /^7 \(♭7\)$/ }).click();
 await sleep(200);
 check('Flavour turns G into G7', (await stripNames()).includes('G7'), JSON.stringify(await stripNames()));
 check('…and flags G’s committed voicing as stale', (await page.locator('.strip-chord.stale').count()) === 1);
-await page.getByTestId('stale-voicing').getByRole('button', { name: 'Re-fit' }).click();
+await page.getByTestId('stale-voicing').getByRole('button', { name: 'Re-fit', exact: true }).click();
 await sleep(200);
 check('Re-fit fixes it', (await page.locator('.strip-chord.stale').count()) === 0);
 

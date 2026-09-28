@@ -1,10 +1,11 @@
 import { findEvent, toChordSpec, withInversion, type GuitarVoicing } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
-import { nearestVoicing, shapeNotes } from '@sw/core/fret/voicings';
+import { nearestVoicing, shapeNotes, shiftCapo } from '@sw/core/fret/voicings';
 import { songStore } from '@sw/song-store';
 import { defaultBassMode, inversionForBassPc } from './bassMode';
 import { chordContext } from './chordActions';
 import { useStore } from './store';
+import { recordUndo } from './undoRecord';
 
 /**
  * Focuses the guitar module's Chords tab on one progression event (§7 Phase 3 items 1–3): looked
@@ -76,6 +77,12 @@ export function committedVoicingFor(songId: string | null, eventId: string | nul
  * — see `inversionForBassPc`.
  */
 export function commitCurrentVoicing(): void {
+  recordUndo('Use this voicing');
+  commitShownShape();
+}
+
+/** `commitCurrentVoicing` without recording an undo step (the caller already has). */
+function commitShownShape(): void {
   const state = useStore.getState();
   const { songId, progressionEventId, progressionChord, chordShape, tuning, capo, voicingIndex, editingShape } = state;
   if (!songId || !progressionEventId || !progressionChord || !chordShape) return;
@@ -105,6 +112,7 @@ export function commitCurrentVoicing(): void {
 export function clearCurrentVoicing(): void {
   const { progressionEventId } = useStore.getState();
   if (!progressionEventId) return;
+  recordUndo('Remove voicing');
   songStore.getState().clearVoicing(progressionEventId);
 }
 
@@ -119,9 +127,11 @@ export function refitCurrentVoicing(): void {
   const old = committedVoicingFor(songId, progressionEventId);
   if (!old) return;
   const { voicings } = chordContext();
-  const fit = nearestVoicing(old.frets, voicings);
+  // Compared where the hand is on the neck: the old shape moved to the current capo.
+  const fit = nearestVoicing(shiftCapo(old.frets, old.capo, useStore.getState().capo), voicings);
   if (!fit) return;
+  recordUndo('Re-fit');
   useStore.getState().setEditingShape(false); // a re-fit result is a found voicing, never "edited"
   useStore.getState().setChordShape(fit.frets.slice(), voicings.indexOf(fit)); // `fit` is one of `voicings`, so always found
-  commitCurrentVoicing();
+  commitShownShape();
 }

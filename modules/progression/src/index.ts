@@ -8,6 +8,7 @@ import ProgressionModule from './App';
 import { prefetchSamples } from './audio/engine';
 import { stop as stopPlayback, toNoteStrikes } from './state/playback';
 import { useStore } from './state/store';
+import { voicingStatus } from '@sw/core';
 
 /** Music-note tab icon. */
 const icon = createElement(
@@ -52,5 +53,7 @@ if (
   (window as unknown as { __songwriting: unknown }).__songwriting = {
     store: useStore,
     strikes: () => toNoteStrikes(useStore.getState().song),
+    // Whether a committed voicing still fits (Phase 7 check).
+    voicingStatus,
   };
 }

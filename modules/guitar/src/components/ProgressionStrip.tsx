@@ -17,6 +17,7 @@ import { useSong } from '@sw/song-store/react';
 import { ChordDiagram } from '@sw/ui';
 import { addSection, duplicateSection, focusAndPlay, renameSection, reorderChord } from '../state/progressionEdits';
 import { playProgression, stopProgression } from '../state/progressionPlayback';
+import { undoLastGuitarChange } from '../state/undo';
 import { useStore } from '../state/store';
 
 const ORIGIN_TINT = {
@@ -139,10 +140,18 @@ function SectionName({ section }: { section: Section }) {
   );
 }
 
-/** Play the song or a section through the guitar synth (Phase 6 item 2), at the song's tempo. */
-function Transport({ bpm, hasChords }: { bpm: number; hasChords: boolean }) {
+/** Play the song or a section through the guitar synth (Phase 6 item 2), at the song's tempo; plus
+ *  the re-voice panel's button when voicings no longer fit, and Undo (Phase 7 items 2–3). */
+function Transport({ song, hasChords }: { song: Song; hasChords: boolean }) {
   const playing = useStore((s) => s.progressionPlaying);
   const loop = useStore((s) => s.progressionLoop);
+  const undo = useStore((s) => s.guitarUndo);
+  const revoiceOpen = useStore((s) => s.revoiceOpen);
+  const bpm = song.bpm;
+  let stale = 0;
+  for (const section of song.sections) {
+    for (const event of section.events) if (event.attachments?.guitar && voicingStatus(event, song) !== 'ok') stale++;
+  }
   return (
     <div className="strip-transport" role="group" aria-label="Play the progression">
       {playing ? (
@@ -174,6 +183,23 @@ function Transport({ bpm, hasChords }: { bpm: number; hasChords: boolean }) {
         <span>Loop</span>
       </label>
       <span className="muted strip-tempo">{bpm} BPM</span>
+      <span className="strip-transport-end">
+        {stale > 0 && (
+          <button
+            type="button"
+            className="button revoice-button"
+            aria-pressed={revoiceOpen}
+            onClick={() => useStore.getState().setRevoiceOpen(!revoiceOpen)}
+          >
+            ⚠ Re-voice {stale} {stale === 1 ? 'chord' : 'chords'}
+          </button>
+        )}
+        {undo && undo.songId === song.id && (
+          <button type="button" className="button" onClick={() => undoLastGuitarChange()}>
+            ↶ Undo {undo.label}
+          </button>
+        )}
+      </span>
     </div>
   );
 }
@@ -216,7 +242,7 @@ export function ProgressionStrip() {
 
   return (
     <section className="progression-strip" aria-label="Progression">
-      <Transport bpm={song.bpm} hasChords={hasChords} />
+      <Transport song={song} hasChords={hasChords} />
       {!hasChords && <p className="muted">This song has no chords yet — pick one below to start.</p>}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <ol className="strip-scroll">

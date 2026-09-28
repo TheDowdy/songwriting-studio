@@ -17,6 +17,7 @@ import { songStore } from '@sw/song-store';
 import { selectBestVoicing, strumChord } from './chordActions';
 import { clearProgressionFocus, selectProgressionEvent } from './progressionChordActions';
 import { useStore } from './store';
+import { recordUndo } from './undoRecord';
 
 function currentSong() {
   return songStore.getState().currentSong();
@@ -43,6 +44,7 @@ export function addChordAfter(afterEventId: string | null, chord: ChordRef, into
   if (!song) return;
   const sectionId = afterEventId ? findEvent(song, afterEventId)?.section.id : intoSectionId ?? song.sections[0]?.id;
   if (!sectionId) return;
+  recordUndo('Add chord');
   const id = songStore.getState().addChord(sectionId, afterEventId, chord);
   if (id) focusAndPlay(id);
 }
@@ -51,6 +53,7 @@ export function addChordAfter(afterEventId: string | null, chord: ChordRef, into
  *  shape for another chord says nothing about this one (a flavour or inversion change keeps it,
  *  flagged, so it can be re-fitted near where it was). */
 export function replaceChord(eventId: string, chord: ChordRef): void {
+  recordUndo('Replace');
   songStore.getState().setEventChord(eventId, chord);
   songStore.getState().clearVoicing(eventId);
   focusAndPlay(eventId);
@@ -60,6 +63,7 @@ export function replaceChord(eventId: string, chord: ChordRef): void {
 export function setChordFlavour(eventId: string, chord: ChordRef, spec: ChordSpec): void {
   const song = currentSong();
   if (!song) return;
+  recordUndo('Flavour');
   songStore.getState().setEventChord(eventId, withChordSpec(chord, spec, song.key));
   selectBestVoicing({ play: true });
 }
@@ -67,6 +71,7 @@ export function setChordFlavour(eventId: string, chord: ChordRef, spec: ChordSpe
 export function setChordInversion(eventId: string, chord: ChordRef, inversion: number): void {
   const song = currentSong();
   if (!song) return;
+  recordUndo('Inversion');
   songStore.getState().setEventChord(eventId, withInversion(chord, inversion, song.key));
   selectBestVoicing({ play: true });
 }
@@ -78,6 +83,7 @@ export function chordFromBuilder(spec: ChordSpec): ChordRef | null {
 }
 
 export function duplicateChord(eventId: string): void {
+  recordUndo('Duplicate');
   const id = songStore.getState().duplicateEvent(eventId);
   if (id) focusAndPlay(id);
 }
@@ -90,29 +96,37 @@ export function removeChord(eventId: string): void {
   const flat = flattenSong(song);
   const at = flat.findIndex((e) => e.id === eventId);
   const neighbour = flat.slice(at + 1).find((e) => e.id !== eventId) ?? flat.slice(0, at).reverse().find((e) => e.id !== eventId);
+  recordUndo('Remove');
   songStore.getState().removeEvent(eventId);
   if (neighbour) selectProgressionEvent(neighbour.id);
   else clearProgressionFocus();
 }
 
 export function adjustChordBeats(eventId: string, delta: number): void {
+  recordUndo('Beats');
   songStore.getState().adjustEventBeats(eventId, delta);
 }
 
 /** Moves a chord within its section (the strip's drag to reorder). */
 export function reorderChord(sectionId: string, fromIndex: number, toIndex: number): void {
+  recordUndo('Reorder');
   songStore.getState().reorderEvents(sectionId, fromIndex, toIndex);
 }
 
 export function addSection(): void {
+  recordUndo('Add section');
   const id = songStore.getState().addSection();
   if (id) useStore.getState().setStripAddSectionId(id);
 }
 
 export function renameSection(sectionId: string, name: string): void {
+  const song = currentSong();
+  if (song?.sections.find((s) => s.id === sectionId)?.name === name.trim()) return;
+  recordUndo('Rename section');
   songStore.getState().renameSection(sectionId, name);
 }
 
 export function duplicateSection(sectionId: string): void {
+  recordUndo('Duplicate section');
   songStore.getState().duplicateSection(sectionId);
 }

@@ -81,7 +81,7 @@ const lowestString1st = shapeAt1st.findIndex((f) => f !== null);
 const bassMidi1st = tuningStrings[lowestString1st] + shapeAt1st[lowestString1st]; // capo is 0 here
 check('the shown shape\'s bass is really B (the 3rd of G7, its 1st inversion)', ((bassMidi1st % 12) + 12) % 12 === 11, `frets ${shapeAt1st.join('-')}`);
 
-await page.getByRole('button', { name: 'Use this voicing' }).click();
+await page.getByRole('button', { name: 'Use this voicing', exact: true }).click();
 await sleep(100);
 check(
   'committing an inversion updates the progression chord\'s numeral',
@@ -100,7 +100,7 @@ check(
 // Back to Root: committing again clears the inversion.
 await bassControl.getByRole('button', { name: 'Root' }).click();
 await page.getByRole('button', { name: 'Best voicing' }).click();
-await page.getByRole('button', { name: 'Use this voicing' }).click();
+await page.getByRole('button', { name: 'Use this voicing', exact: true }).click();
 await sleep(100);
 check(
   'switching back to Root and re-committing clears the inversion',
@@ -122,14 +122,14 @@ check('…and clears the chord\'s own slash bass', eventRoot.chord.bass === unde
 // ---------------------------------------------------------------- committed voicing wins over "best" on refocus
 await bassControl.getByRole('button', { name: 'Root' }).click();
 await page.getByRole('button', { name: 'Best voicing' }).click();
-await page.getByRole('button', { name: 'Use this voicing' }).click();
+await page.getByRole('button', { name: 'Use this voicing', exact: true }).click();
 await sleep(100);
 const g7Committed = (await shapeText());
 
 await page.getByRole('button', { name: /^Chord: C,/ }).click(); // C major's strip block
 await sleep(100);
 await page.getByRole('button', { name: 'Best voicing' }).click();
-await page.getByRole('button', { name: 'Use this voicing' }).click();
+await page.getByRole('button', { name: 'Use this voicing', exact: true }).click();
 await sleep(100);
 const cCommitted = await shapeText();
 check('C major\'s committed voicing differs from G7\'s (sanity: they are different shapes)', cCommitted !== g7Committed, `${cCommitted} vs ${g7Committed}`);
@@ -155,13 +155,13 @@ check('the progression strip shows a mini diagram for a committed voicing', stri
 
 // ---------------------------------------------------------------- stale badge + Re-fit (Phase 4 "Done when")
 check('no stale badge yet (capo/tuning unchanged since committing)', (await page.getByTestId('stale-voicing').count()) === 0);
-await page.evaluate(() => window.__fluidfrets.applyCapo(2));
+await page.evaluate(() => window.__fluidfrets.applyCapo(2, { confirmed: true }));
 await sleep(150);
 check('changing the capo flags the committed voicing as stale', (await page.getByTestId('stale-voicing').count()) === 1);
 // Both chords' voicings were committed under capo 0, so a capo change flags both — check the
 // currently-focused one (C) specifically, the one Re-fit below is about to fix.
 check('…and flags it in the progression strip too', (await page.locator('.strip-chord.stale', { hasText: 'C' }).count()) === 1);
-await page.getByTestId('stale-voicing').getByRole('button', { name: 'Re-fit' }).click();
+await page.getByTestId('stale-voicing').getByRole('button', { name: 'Re-fit', exact: true }).click();
 await sleep(150);
 check('Re-fit clears the stale badge', (await page.getByTestId('stale-voicing').count()) === 0);
 check('…and in the strip, for that chord', (await page.locator('.strip-chord.stale', { hasText: 'C' }).count()) === 0);
@@ -169,21 +169,21 @@ const refitEvent = await eventOf(cId);
 check('…and the re-fit voicing is recorded under the new capo', refitEvent.attachments.guitar.capo === 2, refitEvent.attachments.guitar.capo);
 
 // A chord edit elsewhere (a flavour change) also goes stale, not just a tuning/capo change.
-await page.evaluate(() => window.__fluidfrets.applyCapo(0));
+await page.evaluate(() => window.__fluidfrets.applyCapo(0, { confirmed: true }));
 await sleep(100);
 await page.evaluate((id) => window.__songwriting.store.getState().setEventChord(id, { ...window.__songwriting.store.getState().song.sections[0].events.find((e) => e.id === id).chord, quality: 'min' }), cId);
 await sleep(150);
 check('changing the chord itself (not the tuning) also flags the voicing as stale', (await page.getByTestId('stale-voicing').count()) === 1);
-await page.getByTestId('stale-voicing').getByRole('button', { name: 'Re-fit' }).click();
+await page.getByTestId('stale-voicing').getByRole('button', { name: 'Re-fit', exact: true }).click();
 await sleep(150);
 check('Re-fit also fixes a chord-changed staleness', (await page.getByTestId('stale-voicing').count()) === 0);
 
 // ---------------------------------------------------------------- Remove voicing
-check('"Remove voicing" is offered while something is committed', (await page.getByRole('button', { name: 'Remove voicing' }).count()) === 1);
-await page.getByRole('button', { name: 'Remove voicing' }).click();
+check('"Remove voicing" is offered while something is committed', (await page.getByRole('button', { name: 'Remove voicing', exact: true }).count()) === 1);
+await page.getByRole('button', { name: 'Remove voicing', exact: true }).click();
 await sleep(100);
 check('removing the voicing clears its attachment', !(await eventOf(cId)).attachments?.guitar);
-check('…and "Remove voicing" is no longer offered', (await page.getByRole('button', { name: 'Remove voicing' }).count()) === 0);
+check('…and "Remove voicing" is no longer offered', (await page.getByRole('button', { name: 'Remove voicing', exact: true }).count()) === 0);
 check('…and the committed badge is gone', (await page.getByTestId('committed-badge').count()) === 0);
 
 // ---------------------------------------------------------------- Phase 4 "Done when": survives a reload

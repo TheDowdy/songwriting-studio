@@ -638,3 +638,100 @@ export function nearestVoicing(
   }
   return best;
 }
+
+// ------------------------------------------------------------------ re-voicing (Songwriting Studio Phase 7)
+
+/**
+ * A shape's frets re-expressed relative to a different capo, so shapes committed under one capo
+ * compare by where the hand actually is on the neck: fret `f` above capo `from` is fret
+ * `f + from − to` above capo `to` (possibly below it, or negative — only distances matter).
+ */
+export function shiftCapo(frets: readonly (number | null)[], from: number, to: number): (number | null)[] {
+  return frets.map((f) => (f === null ? null : f + from - to));
+}
+
+/** Strings that sound in one shape and not the other. */
+export function stringSetDifference(a: readonly (number | null)[], b: readonly (number | null)[]): number {
+  let d = 0;
+  for (let i = 0; i < Math.max(a.length, b.length); i++) if (((a[i] ?? null) === null) !== ((b[i] ?? null) === null)) d++;
+  return d;
+}
+
+/** How much each part of `revoiceCost` weighs: position first, then the shape's own score, then
+ *  keeping the same strings sounding (Phase 7 item 2's (a), (b), (c)). */
+const REVOICE_SCORE_WEIGHT = 0.3;
+const REVOICE_STRING_WEIGHT = 0.5;
+
+/** How good `v` is as a replacement for an old shape (lower is better): see `revoiceCandidates`. */
+export function revoiceCost(oldFrets: readonly (number | null)[], oldCapo: number, v: Voicing, newCapo: number): number {
+  const old = shiftCapo(oldFrets, oldCapo, newCapo);
+  return shapeDistance(old, v.frets) + REVOICE_SCORE_WEIGHT * v.score + REVOICE_STRING_WEIGHT * stringSetDifference(old, v.frets);
+}
+
+/**
+ * The best replacements for a voicing that no longer fits (Phase 7 item 2), best first: near
+ * where the hand was on the neck (the old shape moved to the new capo), then a good shape by the
+ * usual score, then the same strings sounding. `voicings` is the chord's search in the new setup.
+ */
+export function revoiceCandidates(
+  oldFrets: readonly (number | null)[],
+  oldCapo: number,
+  voicings: readonly Voicing[],
+  newCapo: number,
+  count = 3,
+): { voicing: Voicing; cost: number }[] {
+  return voicings
+    .map((voicing) => ({ voicing, cost: revoiceCost(oldFrets, oldCapo, voicing, newCapo) }))
+    .sort((a, b) => a.cost - b.cost)
+    .slice(0, count);
+}
+
+/**
+ * The smoothest choice through a sequence (Phase 7 "Re-voice all"): one option per position,
+ * minimising the options' own costs plus `transition` between neighbours (Viterbi). Returns the
+ * chosen index at each position; an empty position is skipped over (its neighbours still connect).
+ */
+export function smoothestChoice<T>(
+  options: readonly (readonly { item: T; cost: number }[])[],
+  transition: (a: T, b: T) => number,
+): number[] {
+  const picks: number[] = options.map(() => -1);
+  const positions = options.map((_, i) => i).filter((i) => (options[i] as unknown[]).length > 0);
+  if (positions.length === 0) return picks;
+  // best[k][j]: cheapest path ending at option j of the k-th non-empty position.
+  const best: number[][] = [];
+  const from: number[][] = [];
+  positions.forEach((pos, k) => {
+    const here = options[pos] as { item: T; cost: number }[];
+    if (k === 0) {
+      best.push(here.map((o) => o.cost));
+      from.push(here.map(() => -1));
+      return;
+    }
+    const prev = options[positions[k - 1] as number] as { item: T; cost: number }[];
+    const row: number[] = [];
+    const back: number[] = [];
+    here.forEach((o) => {
+      let min = Infinity;
+      let arg = 0;
+      prev.forEach((p, pj) => {
+        const c = (best[k - 1] as number[])[pj] as number + transition(p.item, o.item);
+        if (c < min) {
+          min = c;
+          arg = pj;
+        }
+      });
+      row.push(min + o.cost);
+      back.push(arg);
+    });
+    best.push(row);
+    from.push(back);
+  });
+  const last = best[best.length - 1] as number[];
+  let j = last.indexOf(Math.min(...last));
+  for (let k = positions.length - 1; k >= 0; k--) {
+    picks[positions[k] as number] = j;
+    j = (from[k] as number[])[j] as number;
+  }
+  return picks;
+}

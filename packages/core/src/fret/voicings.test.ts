@@ -13,6 +13,10 @@ import {
   crossReach,
   looseMutes,
   nearestVoicing,
+  revoiceCandidates,
+  shiftCapo,
+  smoothestChoice,
+  stringSetDifference,
   searchVoicings,
   shapeDistance,
   shapeNotes,
@@ -427,5 +431,43 @@ describe('hand-shape features (the B♭ report)', () => {
     expect(blocked('1-3-2-2-1-1')).toBe(1); // D2+G2 held flat with A3 tucked in below
     expect(blocked('1-3-3-2-1-1')).toBe(0); // the F barre's flat A3+D3 sits above the barre
     expect(blocked('x-1-3-3-3-1')).toBe(0);
+  });
+});
+
+describe('re-voicing (Phase 7)', () => {
+  it('shiftCapo keeps the hand where it was on the neck', () => {
+    // Open C under no capo is the same physical place as frets two lower under capo 2.
+    expect(shiftCapo([null, 3, 2, 0, 1, 0], 0, 2)).toEqual([null, 1, 0, -2, -1, -2]);
+  });
+
+  it('stringSetDifference counts strings that sound in only one shape', () => {
+    expect(stringSetDifference([null, 3, 2, 0, 1, 0], [3, 2, 0, 0, 0, 3])).toBe(1);
+  });
+
+  it('revoiceCandidates: DADGAD candidates for an open-position standard-tuning G stay low on the neck', () => {
+    const DADGAD = [38, 45, 50, 55, 57, 62];
+    const voicings = search(chord({ rootPc: G }), {}, DADGAD);
+    const top = revoiceCandidates([3, 2, 0, 0, 0, 3], 0, voicings, 0);
+    expect(top).toHaveLength(3);
+    for (const { voicing } of top) expect(voicing.position).toBeLessThanOrEqual(5);
+    // Best first.
+    expect(top[0]!.cost).toBeLessThanOrEqual(top[1]!.cost);
+  });
+
+  it('smoothestChoice prefers a path that moves less, even if one step alone scores worse', () => {
+    const options = [
+      [{ item: 0, cost: 0 }],
+      [
+        { item: 10, cost: 0 }, // cheapest alone, but far away
+        { item: 1, cost: 1 },
+      ],
+      [{ item: 0, cost: 0 }],
+    ];
+    expect(smoothestChoice(options, (a, b) => Math.abs(a - b))).toEqual([0, 1, 0]);
+  });
+
+  it('smoothestChoice skips empty positions', () => {
+    const options = [[{ item: 0, cost: 0 }], [], [{ item: 5, cost: 0 }, { item: 1, cost: 0 }]];
+    expect(smoothestChoice(options, (a, b) => Math.abs(a - b))).toEqual([0, -1, 1]);
   });
 });

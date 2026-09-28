@@ -1046,3 +1046,69 @@
 .mod-guitar .strip-tempo {
   font-variant-numeric: tabular-nums;
 }
+
+/* Tuning/capo changes and the re-voicing assistant (Songwriting Studio Phase 7) */
+.mod-guitar .strip-transport-end {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+.mod-guitar .revoice-button {
+  color: #e06c5a;
+  border-color: color-mix(in srgb, #e06c5a 55%, var(--line));
+}
+.mod-guitar .revoice-panel {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: color-mix(in srgb, #e06c5a 8%, var(--surface));
+  border-bottom: 1px solid var(--line);
+}
+.mod-guitar .revoice-list {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mod-guitar .revoice-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+.mod-guitar .revoice-chord {
+  min-width: 5.5rem;
+}
+.mod-guitar .revoice-old {
+  display: grid;
+  justify-items: center;
+  margin: 0;
+  opacity: 0.6;
+  font-size: 0.7rem;
+}
+.mod-guitar .revoice-arrow {
+  color: var(--muted);
+}
+.mod-guitar .revoice-candidate {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.1rem;
+  padding: 0.3rem;
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg);
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.mod-guitar .revoice-candidate:hover {
+  border-color: var(--accent);
+}
+.mod-guitar .revoice-best {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--muted);
+}

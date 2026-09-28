@@ -38,7 +38,7 @@ import {
 import { sanitizeSaved, sanitizeTuning } from '@sw/core/fret/savedTunings';
 import { STANDARD_TUNING, type Tuning } from '@sw/core/fret/tunings';
 import { DEFAULT_VOICING_RULES, type VoicingRules } from '@sw/core/fret/voicings';
-import type { ChordRef } from '@sw/core';
+import type { ChordRef, Song } from '@sw/core';
 import type { BassMode } from './bassMode';
 
 export const MIN_FRETS = 18;
@@ -94,6 +94,14 @@ export interface AppState {
   progressionPlaying: boolean;
   /** Loop the song or section while playing it here. Not persisted. */
   progressionLoop: boolean;
+  /** The song as it was before the last change made in the guitar module (Phase 7 item 3: a single
+   *  level of undo), and what that change was. Not persisted. */
+  guitarUndo: { songId: string; label: string; song: Song } | null;
+  /** A tuning or capo change waiting for the user to confirm it (Phase 7 item 1): it would leave
+   *  `count` committed voicings for the old setup, kept and flagged. Not persisted. */
+  pendingGuitarChange: { kind: 'tuning'; tuning: Tuning; count: number } | { kind: 'capo'; capo: number; count: number } | null;
+  /** The re-voice panel (Phase 7 item 2) is open. Not persisted. */
+  revoiceOpen: boolean;
   accidentalPref: AccidentalPref;
   leftHanded: boolean;
   fretSpacing: FretSpacing;
@@ -177,6 +185,9 @@ export interface AppState {
   setStripAddSectionId: (sectionId: string | null) => void;
   setProgressionPlaying: (playing: boolean) => void;
   setProgressionLoop: (loop: boolean) => void;
+  setGuitarUndo: (undo: AppState['guitarUndo']) => void;
+  setPendingGuitarChange: (pending: AppState['pendingGuitarChange']) => void;
+  setRevoiceOpen: (open: boolean) => void;
   setAccidentalPref: (pref: AccidentalPref) => void;
   setLeftHanded: (leftHanded: boolean) => void;
   setFretSpacing: (spacing: FretSpacing) => void;
@@ -266,6 +277,9 @@ export const useStore = create<AppState>()(
       stripAddSectionId: null,
       progressionPlaying: false,
       progressionLoop: true,
+      guitarUndo: null,
+      pendingGuitarChange: null,
+      revoiceOpen: false,
       accidentalPref: 'sharp',
       leftHanded: false,
       fretSpacing: 'auto',
@@ -318,6 +332,9 @@ export const useStore = create<AppState>()(
       setStripAddSectionId: (stripAddSectionId) => set({ stripAddSectionId }),
       setProgressionPlaying: (progressionPlaying) => set({ progressionPlaying }),
       setProgressionLoop: (progressionLoop) => set({ progressionLoop }),
+      setGuitarUndo: (guitarUndo) => set({ guitarUndo }),
+      setPendingGuitarChange: (pendingGuitarChange) => set({ pendingGuitarChange }),
+      setRevoiceOpen: (revoiceOpen) => set({ revoiceOpen }),
       setAccidentalPref: (accidentalPref) => set({ accidentalPref }),
       setLeftHanded: (leftHanded) => set({ leftHanded }),
       setFretSpacing: (fretSpacing) => set({ fretSpacing }),

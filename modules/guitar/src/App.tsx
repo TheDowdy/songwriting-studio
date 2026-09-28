@@ -6,12 +6,15 @@ import { BottomPanel } from './components/Panels/BottomPanel';
 import { Legend } from './components/Panels/Legend';
 import { ProgressionStrip } from './components/ProgressionStrip';
 import { StripToolbar } from './components/StripToolbar';
+import { ConfirmGuitarChange } from './components/ConfirmGuitarChange';
+import { RevoicePanel } from './components/RevoicePanel';
 import { Toolbar } from './components/Toolbar/Toolbar';
 import { useAudioSync } from './hooks/useAudioSync';
 import { useChordSelection } from './hooks/useChordSelection';
 import { useIdentifySync } from './hooks/useIdentifySync';
 import { useAudioUnlock } from './hooks/useAudioUnlock';
 import { useSongContext } from './hooks/useSongContext';
+import { useStore } from './state/store';
 
 interface Props {
   /** null when opened as a stand-alone tool (`#/tools/guitar`); a song id in song context. */
@@ -32,6 +35,7 @@ export default function GuitarModule({ songId = null, focus = {} }: Props) {
   useIdentifySync();
   useAudioUnlock();
   useSongContext(songId, focus.eventId);
+  const revoiceOpen = useStore((s) => s.revoiceOpen);
   return (
     <div className="mod-guitar">
       <Toolbar />
@@ -42,7 +46,9 @@ export default function GuitarModule({ songId = null, focus = {} }: Props) {
         <Legend />
       </main>
       {songId && <ProgressionStrip />}
+      {songId && revoiceOpen && <RevoicePanel />}
       {songId && <StripToolbar />}
+      <ConfirmGuitarChange />
       <BottomPanel />
     </div>
   );

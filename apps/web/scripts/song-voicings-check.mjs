@@ -54,7 +54,7 @@ await page.waitForSelector('.fretboard-svg');
 for (const name of ['C', 'G7']) {
   await page.locator('.strip-chord', { hasText: new RegExp(`^${name}`) }).first().click();
   await sleep(150);
-  await page.getByRole('button', { name: 'Use this voicing' }).click();
+  await page.getByRole('button', { name: 'Use this voicing', exact: true }).click();
   await sleep(100);
 }
 const cVoicing = (await eventOf(cId)).attachments?.guitar;
