@@ -55,6 +55,10 @@ interface Props {
   onAdd: (chord: ChordRef) => void;
   /** The song's tuning and capo, for the chord detail's Guitar view (standard tuning if omitted). */
   guitar?: GuitarSetup;
+  /** Replace mode is armed on a timeline block (owner request, Phase 9 polish): the next chord
+   *  added here replaces it instead of inserting after it. Shown as a banner and on the Add
+   *  button, since nothing on the map itself otherwise hints at it. */
+  replacing?: boolean;
 }
 
 function NodeLabel({ chord, r }: { chord: ChordRef; r: number }) {
@@ -72,7 +76,7 @@ function NodeLabel({ chord, r }: { chord: ChordRef; r: number }) {
   );
 }
 
-export default function NodeMap({ musicKey, center, suggestions, startRing, onPreview, onAdd, guitar }: Props) {
+export default function NodeMap({ musicKey, center, suggestions, startRing, onPreview, onAdd, guitar, replacing }: Props) {
   const [focusId, setFocusId] = useState<string | null>(null);
   const [flavorOpen, setFlavorOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -113,6 +117,11 @@ export default function NodeMap({ musicKey, center, suggestions, startRing, onPr
 
   return (
     <section aria-label="Chord map" className="w-full rounded-xl border border-line bg-surface px-3 pb-3 pt-2 shadow-[var(--shadow)]">
+      {replacing && (
+        <p role="status" className="mb-2 rounded-lg bg-accent px-3 py-2 text-center text-sm font-medium text-accent-fg">
+          Replacing this chord — tap one below, then press Replace.
+        </p>
+      )}
       <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="map-svg mx-auto block h-auto w-full max-w-[520px]" role="group" aria-label="Suggested next chords">
         <defs>
           {(Object.keys(ORIGIN_COLOR) as Origin[]).map((o) => (
@@ -287,7 +296,7 @@ export default function NodeMap({ musicKey, center, suggestions, startRing, onPr
                 onClick={() => onAdd(pendingChord ?? focused.chord)}
                 className="shrink-0 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-accent-fg"
               >
-                + Add
+                {replacing ? 'Replace' : '+ Add'}
               </button>
             </div>
             {flavorOpen && (

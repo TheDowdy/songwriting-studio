@@ -35,6 +35,7 @@ export default function ProgressionModule({ navigate }: Props) {
   const playingEventId = useStore((s) => s.playingEventId);
   const isPlaying = useStore((s) => s.isPlaying);
   const addChord = useStore((s) => s.addChord);
+  const replaceTargetId = useStore((s) => s.replaceTargetId);
 
   const { chord: center, previous } = useMemo(
     () => selectCenter({ song, selectedEventId, playingEventId, isPlaying }),
@@ -60,6 +61,7 @@ export default function ProgressionModule({ navigate }: Props) {
           onPreview={preview}
           onAdd={addChord}
           guitar={song.guitar}
+          replacing={!!replaceTargetId}
         />
         <Timeline navigate={navigate} />
       </div>

@@ -673,6 +673,7 @@
 .mod-guitar .guitar-controls {
   position: relative;
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   gap: 0.5rem;
 }
