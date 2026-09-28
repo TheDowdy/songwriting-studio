@@ -1,4 +1,4 @@
-import { chordStack, chroma, fmt, pianoVoicing } from '@sw/core';
+import { chordTones, chroma, fmt, pianoVoicing } from '@sw/core';
 import type { ChordRef } from '@sw/core';
 
 const WHITE_PCS = new Set([0, 2, 4, 5, 7, 9, 11]);
@@ -21,7 +21,7 @@ interface Props {
 export default function PianoKeyboard({ chord }: Props) {
   const voicing = pianoVoicing(chord);
   const highlighted = new Set(voicing);
-  const spelling = new Map(chordStack(chord).map((n) => [chroma(n), fmt(n)]));
+  const spelling = new Map(chordTones(chord).map((n) => [chroma(n), fmt(n)]));
   const label = (midi: number) => spelling.get(((midi % 12) + 12) % 12) ?? '';
 
   const notes = Array.from({ length: HIGH - LOW + 1 }, (_, i) => LOW + i);

@@ -39,3 +39,4 @@ export * from './song';
 export * from './schema';
 export * from './operations';
 export * from './convert';
+export * from './eventVoicing';

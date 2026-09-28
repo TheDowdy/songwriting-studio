@@ -66,3 +66,28 @@ describe('midiFilename', () => {
     expect(midiFilename({ ...songWithChords(), title: '   ' })).toBe('song.mid');
   });
 });
+
+describe('guitar voicings (Phase 5 item 3)', () => {
+  const openC = { frets: [null, 3, 2, 0, 1, 0], tuning: [40, 45, 50, 55, 59, 64], capo: 0, source: 'picked' as const };
+  const withVoicing = (instrument: Song['instrument']): Song => {
+    const song = songWithChords();
+    const section = song.sections[0]!;
+    const events = section.events.map((e, i) => (i === 0 ? { ...e, attachments: { guitar: openC } } : e));
+    return { ...song, instrument, sections: [{ ...section, events }] };
+  };
+  const firstChordNotes = (song: Song, track: number) =>
+    buildMidi(song)
+      .tracks[track]!.notes.filter((n) => n.time === 0)
+      .map((n) => n.midi)
+      .sort((a, b) => a - b);
+
+  it('on guitar, both tracks contain exactly the committed shape’s notes', () => {
+    const song = withVoicing('guitar');
+    expect(firstChordNotes(song, 1)).toEqual([48, 52, 55, 60, 64]);
+    expect(firstChordNotes(song, 0)).toEqual([48, 52, 55, 60, 64]);
+  });
+
+  it('on any other instrument, the committed shape is ignored', () => {
+    expect(firstChordNotes(withVoicing('piano'), 1)).not.toEqual([48, 52, 55, 60, 64]);
+  });
+});

@@ -1,4 +1,4 @@
-import { chordName, chordStack, chroma, flattenDetailed, voiceLeadChord } from '@sw/core';
+import { chordName, chordTones, chroma, eventVoicing, flattenDetailed } from '@sw/core';
 import type { Key, Mode, Song, TimeSig } from '@sw/core';
 
 /** Everything the sheet-music view needs, with all musical decisions made and no drawing. */
@@ -175,7 +175,7 @@ export function buildSheet(song: Song, keyLabel: string): SheetData {
   const voicings = new Map<string, number[]>();
   let prev: number[] | null = null;
   for (const f of flat) {
-    const voicing = voiceLeadChord(f.event.chord, prev);
+    const voicing = eventVoicing(f.event, song.instrument, prev);
     prev = voicing;
     const id = `${f.arrangementIndex}:${f.event.id}`;
     if (!voicings.has(id)) voicings.set(id, voicing);
@@ -188,7 +188,7 @@ export function buildSheet(song: Song, keyLabel: string): SheetData {
       symbol: chordName(event.chord),
       numeral: event.chord.numeral,
       midi: voicings.get(`${arrangementIndex}:${event.id}`) ?? [],
-      spellings: chordStack(event.chord),
+      spellings: chordTones(event.chord),
       beats: event.beats,
     }));
     return [{ name: section.name, repeat: Math.max(1, section.repeat), bars: layoutBars(events, song.timeSig) }];

@@ -95,3 +95,25 @@ describe('voiceLeadChord', () => {
     expect([...v].sort((a, b) => a - b)).toEqual(v);
   });
 });
+
+describe('colour (Phase 5 item 4: rich chords from the guitar module play as named)', () => {
+  const pcs = (v: number[]) => [...new Set(v.map((n) => n % 12))].sort((a, b) => a - b);
+
+  it('a C9 sounds its 9th (D) as well as C E G B♭', () => {
+    const c9 = { ...diatonicChord(c, 0), flavor: '7' as const, seventh: 'dom7' as const, colour: { extension: '9' as const } };
+    expect(pcs(pianoVoicing(c9))).toEqual([0, 2, 4, 7, 10]);
+    expect(pcs(voiceLeadChord(c9, pianoVoicing(diatonicChord(c, 0))))).toEqual([0, 2, 4, 7, 10]);
+  });
+
+  it('an altered 5th replaces the natural one (C7♯5: G♯, no G)', () => {
+    const c7s5 = { ...diatonicChord(c, 0), flavor: '7' as const, seventh: 'dom7' as const, colour: { alterations: ['#5' as const] } };
+    expect(pcs(pianoVoicing(c7s5))).toEqual([0, 4, 8, 10]);
+  });
+
+  it('a slash bass that is not a chord tone still sits in the bass (C/D)', () => {
+    const cOverD = { ...diatonicChord(c, 0), bass: 'D' };
+    const v = pianoVoicing(cOverD);
+    expect(v[0] % 12).toBe(2);
+    expect(v[1] % 12).toBe(2);
+  });
+});

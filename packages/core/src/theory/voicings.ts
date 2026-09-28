@@ -1,4 +1,4 @@
-import { chordStack, inversionOf } from './chords';
+import { chordTones } from './chords';
 import { chroma } from './scales';
 import type { ChordRef } from './types';
 
@@ -11,11 +11,17 @@ function atOrAbove(floor: number, pitchClass: number): number {
   return floor + ((pitchClass - floor) % 12 + 12) % 12;
 }
 
-/** The chord's stack, starting from its inversion's bass tone (root position if not inverted). */
+/**
+ * The chord's tones — colour included (§3.1, Phase 5 item 4: a C9 plays its 9th) — starting from
+ * its bass: the slash bass for an inversion or slash chord, otherwise the root. `chordTones` lists
+ * root, third, fifth, seventh, then any colour, and appends a slash bass that isn't a chord tone,
+ * so rotating to the bass keeps everything else in that order.
+ */
 function orderedStack(chord: ChordRef): string[] {
-  const stack = chordStack(chord);
-  const inv = inversionOf(chord);
-  return [...stack.slice(inv), ...stack.slice(0, inv)];
+  const tones = chordTones(chord);
+  const bassPc = chroma(chord.bass ?? chord.root);
+  const at = Math.max(0, tones.findIndex((n) => chroma(n) === bassPc));
+  return [...tones.slice(at), ...tones.slice(0, at)];
 }
 
 /**

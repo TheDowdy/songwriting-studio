@@ -151,7 +151,7 @@ function ChordSlot({
         <button
           onClick={() => {
             selectEvent(event.id);
-            if (!isPlaying) void previewChordInSong(event.chord, event.beats);
+            if (!isPlaying) void previewChordInSong(event.chord, event.beats, event.attachments);
           }}
           {...attributes}
           {...listeners}

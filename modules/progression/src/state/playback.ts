@@ -1,17 +1,18 @@
 import { useEffect } from 'react';
 import { renderPattern } from '../audio/patterns';
 import { previewStrikes, startPlayback, stopPlayback, updatePlayback, type NoteStrike, type PlaybackOptions } from '../audio/engine';
-import { flattenDetailed, sectionLoopBounds, voiceLeadChord } from '@sw/core';
-import type { ChordRef, Song } from '@sw/core';
+import { eventVoicing, flattenDetailed, sectionLoopBounds } from '@sw/core';
+import type { ChordEvent, ChordRef, Song } from '@sw/core';
 import { useStore } from './store';
 
-/** The full note-strike list for the song: each chord voice-led from the one before it, then
- *  expanded into its pattern's strikes (block/pulse/strum/arpeggio/bass+chord). */
+/** The full note-strike list for the song: each chord voice-led from the one before it — or, on
+ *  the guitar instrument, its committed voicing's actual notes (Phase 5 item 3) — then expanded
+ *  into its pattern's strikes (block/pulse/strum/arpeggio/bass+chord). */
 export function toNoteStrikes(song: Song): NoteStrike[] {
   const strikes: NoteStrike[] = [];
   let prevVoicing: number[] | null = null;
   for (const { event, offsetBeats } of flattenDetailed(song)) {
-    const voicing = voiceLeadChord(event.chord, prevVoicing);
+    const voicing = eventVoicing(event, song.instrument, prevVoicing);
     prevVoicing = voicing;
     const upperCount = voicing.length - 1;
     const strikesForChord = renderPattern(song.pattern, upperCount, event.beats, song.timeSig);
@@ -31,10 +32,11 @@ export function toNoteStrikes(song: Song): NoteStrike[] {
 }
 
 /** Sound one chord the way the song will: the selected pattern, instrument and tempo, one bar
- *  long unless `beats` is given (e.g. a timeline chord's own length). */
-export function previewChordInSong(chord: ChordRef, beats?: number): Promise<void> {
+ *  long unless `beats` is given (e.g. a timeline chord's own length). A placed chord passes its
+ *  `attachments` too, so on guitar it previews its committed voicing, as playback will. */
+export function previewChordInSong(chord: ChordRef, beats?: number, attachments?: ChordEvent['attachments']): Promise<void> {
   const { song } = useStore.getState();
-  const voicing = voiceLeadChord(chord, null);
+  const voicing = eventVoicing({ chord, attachments }, song.instrument, null);
   const strikes = renderPattern(song.pattern, voicing.length - 1, beats ?? song.timeSig.beats, song.timeSig).map((s) => ({
     eventId: '',
     isChordStart: false,

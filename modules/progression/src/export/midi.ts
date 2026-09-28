@@ -1,6 +1,6 @@
 import { Midi } from '@tonejs/midi';
 import { toNoteStrikes } from '../state/playback';
-import { flattenDetailed, voiceLeadChord } from '@sw/core';
+import { eventVoicing, flattenDetailed } from '@sw/core';
 import type { Song } from '@sw/core';
 
 /** song.bpm counts `timeSig.unit` note values per minute (section 8.1); MIDI tempo is always
@@ -12,7 +12,8 @@ function quarterBpm(song: Song): number {
 /**
  * The whole arrangement as a Standard MIDI File (section 10): one track with the notes as heard
  * (the selected pattern, strums staggered as they sound), and a second, simpler track of block
- * chords. Tempo and time signature are set in the header.
+ * chords. On the guitar instrument both use each committed voicing's actual notes (Phase 5 item
+ * 3). Tempo and time signature are set in the header.
  */
 export function buildMidi(song: Song): Midi {
   const midi = new Midi();
@@ -38,7 +39,7 @@ export function buildMidi(song: Song): Midi {
   blockTrack.name = 'Block chords';
   let prevVoicing: number[] | null = null;
   for (const { event, offsetBeats } of flattenDetailed(song)) {
-    const voicing = voiceLeadChord(event.chord, prevVoicing);
+    const voicing = eventVoicing(event, song.instrument, prevVoicing);
     prevVoicing = voicing;
     const time = offsetBeats * secondsPerBeat;
     const duration = Math.max(0.02, event.beats * secondsPerBeat * 0.97);
