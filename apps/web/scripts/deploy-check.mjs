@@ -9,7 +9,7 @@ import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { chromium } from 'playwright-core';
 
-const PREFIX = '/apps/fluid-frets/';
+const PREFIX = '/apps/songwriting-studio/';
 const PORT = 5197;
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -165,7 +165,38 @@ check(
   (await page.evaluate(() => window.__fluidfrets.audioEngine.getOutputPeak())) > 0.02 &&
     (await page.evaluate(() => window.__fluidfrets.audioEngine.synthEngine)) === 'worklet',
 );
+// The Library route has never been visited in this run — this is the service worker's *eager*
+// shell precache (installed on first activation, PLAN.md §7 Phase 9), not just something the
+// runtime cache happened to remember from an earlier visit.
+await page.goto(base + '?debug#/');
+check(
+  'offline: the Library loads too, though it was never visited online (eager shell precache)',
+  (await page.getByRole('button', { name: 'New song' }).count()) === 1,
+);
 await context.setOffline(false);
+
+// ---------------------------------------------------------------- the whole app under the sub-path
+// Phase 2/9: this isn't just the guitar tool — the Library and both modules in song context need
+// to work from the same sub-path too.
+await page.goto(base + '?debug#/');
+check('the Library opens under the sub-path', (await page.getByRole('button', { name: 'New song' }).count()) === 1);
+await page.getByRole('button', { name: 'New song' }).click();
+await page.waitForFunction(() => location.hash.startsWith('#/song/'));
+check('creating a song opens it under the sub-path', /#\/song\//.test(await page.evaluate(() => location.hash)));
+check('the progression module renders', (await page.locator('[aria-label="Chord map"]').count()) === 1);
+await page.getByRole('tab', { name: 'Guitar' }).click();
+await page.waitForSelector('.fretboard-svg');
+// Song context defaults to the Chords tab showing just one chord's tones (far fewer markers than
+// the tool's own Scales-tab default), so this checks for the fretboard itself plus some markers.
+check(
+  'the guitar module renders in song context',
+  (await page.locator('.fretboard-svg').count()) === 1 && (await page.locator('[data-string]').count()) > 10,
+);
+check(
+  'every request across the whole app stayed under the prefix, and none failed',
+  hits.every((h) => h.startsWith(PREFIX)) && failed404.length === 0,
+  failed404.join(' | '),
+);
 
 const cspErrors = errors.filter((e) => /Content Security Policy|Refused to/i.test(e));
 check(

@@ -157,6 +157,35 @@ check(
   fmt(scalePlay),
 );
 
+// The neck in song context (PLAN.md §7 Phase 9): a progression strip renders above the fretboard,
+// so re-run the peg-drag workload there to catch any regression the strip's own re-renders cause.
+const baseUrl = url.split('#')[0]; // already carries ?debug
+await page.goto(baseUrl + '#/');
+await page.getByRole('button', { name: 'New song' }).click();
+await page.waitForFunction(() => location.hash.startsWith('#/song/'));
+await page.waitForSelector('[aria-label="Chord map"]');
+await page.evaluate(() =>
+  window.__songwriting.store.getState().addChord({ root: 'G', quality: 'maj', seventh: 'dom7', flavor: '7', origin: 'diatonic', numeral: 'V7' }),
+);
+await page.getByRole('tab', { name: 'Guitar' }).click();
+await page.waitForSelector('.fretboard-svg');
+await page.evaluate(() => window.__fluidfrets.store.getState().setStrumOnTuningChange(false));
+// Song context's default Chords tab hides non-chord-tone markers, so the string-1/fret-0 marker
+// used to unlock audio elsewhere may not be rendered here — any click counts as the user gesture.
+await page.locator('.fretboard-svg').click();
+await page.waitForFunction(() => window.__fluidfrets.audioEngine.getStatus() === 'running');
+await page.waitForTimeout(300);
+
+await cdp.send('Emulation.setCPUThrottlingRate', { rate });
+await page.waitForTimeout(300);
+const songDrag = await frames(pegDrag);
+console.log(`   song context, CPU ×${rate}: peg drag — ${fmt(songDrag)}`);
+check(
+  `song context, peg drag at CPU ×${rate}: 95 % of frames within 25 ms, none over 100 ms`,
+  songDrag.p95 <= 25 && songDrag.max <= 100,
+  fmt(songDrag),
+);
+
 await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
 await browser.close();
 const failed = results.filter((r) => !r).length;

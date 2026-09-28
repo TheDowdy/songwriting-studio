@@ -178,29 +178,32 @@ export default function NodeMap({ musicKey, center, suggestions, startRing, onPr
                 </text>
               </>
             )}
-            {center && (
-              <g
-                transform={`translate(${R_CENTER * 0.74} ${-R_CENTER * 0.74})`}
-                role="button"
-                tabIndex={0}
-                aria-label={`Add another ${chordName(center)} to the progression`}
-                onClick={(e) => {
+          </g>
+          {/* A sibling of the role="button" chord above, not nested inside it — the same
+              coordinate space either way (that g adds no transform of its own), but an
+              interactive control nested inside another is inaccessible. */}
+          {center && (
+            <g
+              transform={`translate(${R_CENTER * 0.74} ${-R_CENTER * 0.74})`}
+              role="button"
+              tabIndex={0}
+              aria-label={`Add another ${chordName(center)} to the progression`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAdd(center);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
                   e.stopPropagation();
                   onAdd(center);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onAdd(center);
-                  }
-                }}
-              >
-                <circle r={15} fill="var(--accent)" stroke="var(--surface)" strokeWidth={2} />
-                <path d="M -6 0 H 6 M 0 -6 V 6" stroke="var(--accent-fg)" strokeWidth={3} strokeLinecap="round" />
-              </g>
-            )}
-          </g>
+                }
+              }}
+            >
+              <circle r={15} fill="var(--accent)" stroke="var(--surface)" strokeWidth={2} />
+              <path d="M -6 0 H 6 M 0 -6 V 6" stroke="var(--accent-fg)" strokeWidth={3} strokeLinecap="round" />
+            </g>
+          )}
           </g>
 
           {/* Ring */}
@@ -237,22 +240,32 @@ export default function NodeMap({ musicKey, center, suggestions, startRing, onPr
                     </text>
                   </g>
                 )}
-                {isFocused && (
-                  <g
-                    transform={`translate(${R_NODE * 0.78} ${-R_NODE * 0.78})`}
-                    role="button"
-                    aria-label={`Add ${chordName(n.chord)} to progression`}
-                    onClick={(e) => {
+              </g>
+              {/* A sibling of the role="button" chord above, not nested inside it — see the
+                  centre chord's own "add" button for why. */}
+              {isFocused && (
+                <g
+                  transform={`translate(${R_NODE * 0.78} ${-R_NODE * 0.78})`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Add ${chordName(n.chord)} to progression`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAdd(n.chord);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
                       e.stopPropagation();
                       onAdd(n.chord);
-                    }}
-                    onDoubleClick={(e) => e.stopPropagation()}
-                  >
-                    <circle r={15} fill={color} stroke="var(--surface)" strokeWidth={2} />
-                    <path d="M -6 0 H 6 M 0 -6 V 6" stroke="var(--surface)" strokeWidth={3} strokeLinecap="round" />
-                  </g>
-                )}
-              </g>
+                    }
+                  }}
+                  onDoubleClick={(e) => e.stopPropagation()}
+                >
+                  <circle r={15} fill={color} stroke="var(--surface)" strokeWidth={2} />
+                  <path d="M -6 0 H 6 M 0 -6 V 6" stroke="var(--surface)" strokeWidth={3} strokeLinecap="round" />
+                </g>
+              )}
               </g>
             );
           })}

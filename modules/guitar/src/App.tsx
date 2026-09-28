@@ -40,11 +40,13 @@ export default function GuitarModule({ songId = null, focus = {} }: Props) {
     <div className="mod-guitar">
       <Toolbar />
       <AudioBanner />
-      <main className="stage">
+      {/* Not a landmark: the shell already wraps the active module in one `<main>` per page
+          (PLAN.md §7 Phase 9) — a nested one is a duplicate/non-top-level landmark. */}
+      <div className="stage">
         <ChordHeader />
         <Fretboard />
         <Legend />
-      </main>
+      </div>
       {songId && <ProgressionStrip />}
       {songId && revoiceOpen && <RevoicePanel />}
       {songId && <StripToolbar />}

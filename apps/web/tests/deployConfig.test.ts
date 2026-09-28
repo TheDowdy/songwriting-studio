@@ -56,7 +56,7 @@ describe('deployment files', () => {
   it('every location that sets its own headers also includes the security headers', () => {
     const blocks = [...nginx.matchAll(/location [^{]+\{([^}]*)\}/g)].map((m) => m[1] as string);
     for (const b of blocks.filter((x) => x.includes('add_header'))) {
-      expect(b).toContain('include /etc/nginx/fluid-frets/security-headers.conf;');
+      expect(b).toContain('include /etc/nginx/songwriting-studio/security-headers.conf;');
     }
   });
 
@@ -70,7 +70,7 @@ describe('deployment files', () => {
       expect(existsSync(src.replace(/\/$/, '')) || src === '.', src).toBe(true);
     }
     // The paths the Dockerfile installs are the ones nginx.conf reads.
-    expect(docker).toContain('/etc/nginx/fluid-frets/security-headers.conf');
+    expect(docker).toContain('/etc/nginx/songwriting-studio/security-headers.conf');
     expect(docker).toContain('/etc/nginx/conf.d/default.conf');
     expect(docker).toContain('/usr/share/nginx/html');
     expect(nginx).toContain('root /usr/share/nginx/html;');

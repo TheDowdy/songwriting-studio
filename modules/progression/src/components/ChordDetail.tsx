@@ -42,8 +42,8 @@ function GuitarView({ chord, attachments, guitar }: { chord: ChordRef; attachmen
       <ChordDiagram frets={frets} tuning={tuning} rootPc={chroma(chord.root)} capo={capo} />
       <figcaption className="text-xs text-muted">
         {committed ? <strong className="text-fg">Your voicing</strong> : 'Suggested voicing'}
-        {status === 'chord-changed' && <span className="text-[#b8483a]"> · no longer matches the chord</span>}
-        {status === 'tuning-changed' && <span className="text-[#b8483a]"> · no longer matches the tuning or capo</span>}
+        {status === 'chord-changed' && <span className="text-[var(--danger)]"> · no longer matches the chord</span>}
+        {status === 'tuning-changed' && <span className="text-[var(--danger)]"> · no longer matches the tuning or capo</span>}
       </figcaption>
     </figure>
   );

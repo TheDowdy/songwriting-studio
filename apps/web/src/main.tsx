@@ -4,10 +4,16 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { prefetchSamples } from '@sw/module-progression';
 import App from './shell/App';
-import { initShellSettings } from './shell/settings';
+import { initShellSettings, useShellSettings } from './shell/settings';
 import './global.css';
 
 initShellSettings();
+
+// Test hook, exactly like each module's own (@sw/module-progression, @sw/module-guitar): lets
+// browser checks drive the shell-wide theme (PLAN.md §7 Phase 9: check:a11y across both themes).
+if (import.meta.env.DEV || new URLSearchParams(location.search).has('debug')) {
+  (window as unknown as { __shell: unknown }).__shell = { store: useShellSettings };
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

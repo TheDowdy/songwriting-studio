@@ -105,7 +105,7 @@ function SavedRow({
         <button onClick={duplicate} className="rounded-lg px-2 py-1 hover:bg-surface-2">
           Duplicate
         </button>
-        <button onClick={remove} className="rounded-lg px-2 py-1 text-red-500 hover:bg-surface-2">
+        <button onClick={remove} className="rounded-lg px-2 py-1 text-[var(--danger)] hover:bg-surface-2">
           Delete
         </button>
       </div>
@@ -231,7 +231,7 @@ export default function SongPanel({ onOpenSheet, navigate }: { onOpenSheet: () =
           <p className="text-xs text-muted">
             Everything you change is saved automatically to this browser. "New song" starts a blank one; "Save a copy" duplicates the open song.
           </p>
-          {importError && <p className="text-sm text-red-500">{importError}</p>}
+          {importError && <p className="text-sm text-[var(--danger)]">{importError}</p>}
 
           {songs.length > 0 ? (
             <ul className="space-y-1.5">

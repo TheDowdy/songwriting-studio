@@ -1,6 +1,7 @@
 /**
- * Accessibility: runs axe-core (WCAG 2 A/AA + best practice) over every tab, both themes, and the
- * dialogs / popover, then drives the keyboard: Tab order, the fretboard cursor, pegs, panels.
+ * Accessibility: runs axe-core (WCAG 2 A/AA + best practice) over the library, both modules inside
+ * a song, the stand-alone guitar tool's every tab, both themes throughout, and the dialogs /
+ * popover, then drives the keyboard: Tab order, the fretboard cursor, pegs, panels.
  * Usage: URL=http://localhost:5173/?debug#/tools/guitar node scripts/a11y-check.mjs
  */
 import { createRequire } from 'node:module';
@@ -10,13 +11,13 @@ import { chromium } from 'playwright-core';
 const require = createRequire(import.meta.url);
 const axeSource = readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 const url = process.env.URL ?? 'http://localhost:5173/?debug#/tools/guitar';
+const baseUrl = url.split('#')[0];
 const browser = await chromium.launch({ channel: 'chrome' });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 const page = await context.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
-await page.goto(url);
 
 const results = [];
 const check = (name, ok, detail = '') => {
@@ -24,8 +25,6 @@ const check = (name, ok, detail = '') => {
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? ' — ' + detail : ''}`);
 };
 const sleep = (ms) => page.waitForTimeout(ms);
-await page.evaluate(() => window.__fluidfrets.store.getState().setStrumOnTuningChange(false));
-await page.addScriptTag({ content: axeSource });
 
 async function axe(label) {
   const r = await page.evaluate(async () =>
@@ -45,6 +44,42 @@ async function axe(label) {
   );
   check(`axe: ${label}`, bad.length === 0, bad.join(' ;; '));
 }
+const setShellTheme = (theme) => page.evaluate((t) => window.__shell.store.getState().setTheme(t), theme);
+
+// ---------------------------------------------------------------- the library, both themes
+await page.goto(baseUrl + '?debug#/');
+await page.addScriptTag({ content: axeSource });
+for (const theme of ['light', 'dark']) {
+  await setShellTheme(theme);
+  await sleep(150);
+  await axe(`${theme} theme, Library`);
+}
+
+// ---------------------------------------------------------------- both modules inside a song, both themes
+await page.getByRole('button', { name: 'New song' }).click();
+await page.waitForFunction(() => location.hash.startsWith('#/song/'));
+await page.waitForSelector('[aria-label="Chord map"]');
+await page.evaluate(() =>
+  window.__songwriting.store.getState().addChord({ root: 'G', quality: 'maj', seventh: 'dom7', flavor: '7', origin: 'diatonic', numeral: 'V7' }),
+);
+for (const theme of ['light', 'dark']) {
+  await setShellTheme(theme);
+  await sleep(150);
+  await axe(`${theme} theme, Progression module (a song with a chord)`);
+}
+await page.getByRole('tab', { name: 'Guitar' }).click();
+await page.waitForSelector('.fretboard-svg');
+for (const theme of ['light', 'dark']) {
+  await setShellTheme(theme);
+  await sleep(150);
+  await axe(`${theme} theme, Guitar module in song context`);
+}
+await setShellTheme('light');
+
+// ---------------------------------------------------------------- the stand-alone guitar tool: every tab, both themes
+await page.goto(url);
+await page.evaluate(() => window.__fluidfrets.store.getState().setStrumOnTuningChange(false));
+await page.addScriptTag({ content: axeSource });
 
 const tabs = ['Scales', 'Chords', 'Identify'];
 for (const theme of ['dark', 'light']) {

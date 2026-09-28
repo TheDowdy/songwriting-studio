@@ -25,6 +25,7 @@
   --t-diatonic: #d3e6da;
   --t-borrowed: #f6e1b0;
   --t-secondary: #f5cdd6;
+  --danger: #b91c1c;
   --shadow: 0 1px 0 rgb(20 32 26 / 0.04), 0 10px 28px -16px rgb(20 32 26 / 0.28);
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
@@ -48,6 +49,7 @@
   --t-diatonic: #1b3a2d;
   --t-borrowed: #3d3117;
   --t-secondary: #40202b;
+  --danger: #e06c5a;
   --shadow: 0 10px 28px -16px rgb(0 0 0 / 0.6);
 }
 
@@ -71,6 +73,7 @@
     --t-diatonic: #1b3a2d;
     --t-borrowed: #3d3117;
     --t-secondary: #40202b;
+    --danger: #e06c5a;
     --shadow: 0 10px 28px -16px rgb(0 0 0 / 0.6);
   }
 }

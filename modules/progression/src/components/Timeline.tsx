@@ -534,6 +534,10 @@ function ArrangementChip({ id, name, onRemove }: { id: string; name: string; onR
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
       {...attributes}
       {...listeners}
+      // dnd-kit's own `attributes.role` is 'button' (so a screen reader knows the whole item is a
+      // keyboard drag handle); this li also contains the real "Remove" button below, and a button
+      // nested inside another interactive role is inaccessible — `listitem` is accurate anyway.
+      role="listitem"
       className="flex items-center gap-1 rounded-lg border border-line bg-surface-2 py-1 pl-3 pr-1 text-sm"
     >
       {name}

@@ -254,7 +254,7 @@
 }
 .mod-guitar .dialog-warning {
   margin: 0.75rem 0 0;
-  color: #e06c5a;
+  color: var(--danger);
 }
 .mod-guitar .muted {
   opacity: 0.75;
@@ -276,7 +276,7 @@
   border-color: var(--accent);
 }
 .mod-guitar .button.danger {
-  color: #e06c5a;
+  color: var(--danger);
 }
 .mod-guitar .button:disabled {
   opacity: 0.5;
@@ -357,8 +357,12 @@
   font-size: 0.95rem;
 }
 .mod-guitar .chord-header-note-interval {
+  /* No opacity dimming: the interval sits on an arbitrary colour-mode background (inline `style`
+   *  on the parent `<li>`), and dimming a colour already chosen for contrast against that
+   *  background can fail WCAG AA. Font size/weight alone (vs. the bold note name) reads as
+   *  secondary. */
   font-size: 0.65rem;
-  opacity: 0.7;
+  font-weight: 500;
 }
 .mod-guitar .chord-header .chord-diagram {
   flex: none;
@@ -826,12 +830,12 @@
   margin: 0.5rem 0 0;
   padding: 0.35rem 0.6rem;
   color: var(--fg);
-  background: color-mix(in srgb, #e06c5a 18%, var(--bg));
-  border: 1px solid color-mix(in srgb, #e06c5a 55%, var(--line));
+  background: color-mix(in srgb, var(--danger) 18%, var(--bg));
+  border: 1px solid color-mix(in srgb, var(--danger) 55%, var(--line));
   border-radius: 8px;
 }
 .mod-guitar .stale-badge {
-  color: #e06c5a;
+  color: var(--danger);
 }
 /* The strip's committed blocks show a mini diagram alongside the name/numeral, and flag a stale
  *  one exactly as the panel does (`.dialog-warning`'s colour). */
@@ -839,7 +843,7 @@
   color: inherit;
 }
 .mod-guitar .strip-chord.stale {
-  box-shadow: inset 0 0 0 2px #e06c5a;
+  box-shadow: inset 0 0 0 2px var(--danger);
 }
 .mod-guitar .strip-chord-stale-badge {
   display: grid;
@@ -848,7 +852,7 @@
   height: 31px;
   font-size: 1.5rem;
   line-height: 1;
-  color: #e06c5a;
+  color: var(--danger);
 }
 .mod-guitar .chord-diagram--mini {
   display: block;
@@ -1056,14 +1060,14 @@
   margin-left: auto;
 }
 .mod-guitar .revoice-button {
-  color: #e06c5a;
-  border-color: color-mix(in srgb, #e06c5a 55%, var(--line));
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--line));
 }
 .mod-guitar .revoice-panel {
   display: grid;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: color-mix(in srgb, #e06c5a 8%, var(--surface));
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
   border-bottom: 1px solid var(--line);
 }
 .mod-guitar .revoice-list {

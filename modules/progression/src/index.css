@@ -163,7 +163,7 @@
   height: 31px;
   font-size: 1.5rem;
   line-height: 1;
-  color: #b8483a;
+  color: var(--danger);
 }
 
 /* The rich chord builder under the Flavor picker's "More…" (@sw/ui ChordBuilderChips, Phase 5

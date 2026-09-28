@@ -65,7 +65,7 @@ export default function Library() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-4 py-8">
+    <main className="mx-auto max-w-2xl space-y-6 px-4 py-8">
       <h1 className="text-2xl font-semibold tracking-tight">{APP_NAME}</h1>
 
       <section>
@@ -97,7 +97,7 @@ export default function Library() {
           </div>
         </div>
         {error && (
-          <p className="mt-2 text-sm text-red-500" role="alert">
+          <p className="mt-2 text-sm text-[var(--danger)]" role="alert">
             {error}
           </p>
         )}
@@ -122,7 +122,7 @@ export default function Library() {
                 <button
                   type="button"
                   onClick={() => remove(meta.id, meta.title)}
-                  className="shrink-0 rounded-lg px-2 py-1 text-xs text-red-500 hover:bg-surface-2"
+                  className="shrink-0 rounded-lg px-2 py-1 text-xs text-[var(--danger)] hover:bg-surface-2"
                 >
                   Delete
                 </button>
@@ -152,6 +152,6 @@ export default function Library() {
           </ul>
         </section>
       )}
-    </div>
+    </main>
   );
 }

@@ -85,14 +85,14 @@ export default function SongView({ params }: Props) {
       {/* The guitar module shows its own richer banner (it also reports engine failures); the
           shell's generic one only needs to cover every other module. */}
       {activeModule.id !== 'guitar' && <AudioBanner />}
-      <div className="min-h-0 flex-1">
+      <main className="min-h-0 flex-1">
         <activeModule.Component
           key={`${songId}:${activeModule.id}`}
           songId={songId}
           focus={focus}
           navigate={moduleNavigate}
         />
-      </div>
+      </main>
     </div>
   );
 }

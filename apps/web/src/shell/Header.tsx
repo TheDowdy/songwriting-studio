@@ -37,31 +37,37 @@ export function Header({ title, onRenameTitle, modules, activeModuleId, hrefFor,
         </Link>
       )}
 
-      {title !== undefined &&
-        (editingTitle ? (
-          <input
-            autoFocus
-            defaultValue={title}
-            className="h-10 min-w-0 flex-1 rounded-lg border border-line bg-bg px-2 text-base font-semibold"
-            onBlur={(e) => {
-              setEditingTitle(false);
-              onRenameTitle?.(e.target.value.trim() || title);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') e.currentTarget.blur();
-              if (e.key === 'Escape') setEditingTitle(false);
-            }}
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => setEditingTitle(true)}
-            className="h-10 min-w-0 flex-1 truncate rounded-lg px-2 text-left text-base font-semibold hover:bg-surface-2"
-            title="Rename song"
-          >
-            {title}
-          </button>
-        ))}
+      {title !== undefined && (
+        // A real <h1> (PLAN.md §7 Phase 9: page-has-heading-one) — `contents` keeps it out of the
+        // flex layout entirely, so this changes nothing visually.
+        <h1 className="contents">
+          {editingTitle ? (
+            <input
+              autoFocus
+              defaultValue={title}
+              aria-label="Song title"
+              className="h-10 min-w-0 flex-1 rounded-lg border border-line bg-bg px-2 text-base font-semibold"
+              onBlur={(e) => {
+                setEditingTitle(false);
+                onRenameTitle?.(e.target.value.trim() || title);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') e.currentTarget.blur();
+                if (e.key === 'Escape') setEditingTitle(false);
+              }}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setEditingTitle(true)}
+              className="h-10 min-w-0 flex-1 truncate rounded-lg px-2 text-left text-base font-semibold hover:bg-surface-2"
+              title="Rename song"
+            >
+              {title}
+            </button>
+          )}
+        </h1>
+      )}
 
       <nav aria-label="Modules" role="tablist" className="flex gap-1">
         {modules.map((m) => (
