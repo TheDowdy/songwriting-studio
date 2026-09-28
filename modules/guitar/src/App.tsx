@@ -5,6 +5,7 @@ import { Fretboard } from './components/Fretboard/Fretboard';
 import { BottomPanel } from './components/Panels/BottomPanel';
 import { Legend } from './components/Panels/Legend';
 import { ProgressionStrip } from './components/ProgressionStrip';
+import { StripToolbar } from './components/StripToolbar';
 import { Toolbar } from './components/Toolbar/Toolbar';
 import { useAudioSync } from './hooks/useAudioSync';
 import { useChordSelection } from './hooks/useChordSelection';
@@ -41,6 +42,7 @@ export default function GuitarModule({ songId = null, focus = {} }: Props) {
         <Legend />
       </main>
       {songId && <ProgressionStrip />}
+      {songId && <StripToolbar />}
       <BottomPanel />
     </div>
   );

@@ -733,11 +733,19 @@
   flex: none;
 }
 .mod-guitar .strip-section-name {
+  padding: 0;
+  font: inherit;
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  background: none;
+  border: 0;
+  cursor: text;
+}
+.mod-guitar .strip-section-name:hover {
+  color: var(--fg);
 }
 .mod-guitar .strip-chords {
   display: flex;
@@ -875,4 +883,154 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
+}
+
+/* Editing the progression from the guitar module (Songwriting Studio Phase 6) */
+.mod-guitar .strip-toolbar {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.mod-guitar .strip-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+.mod-guitar .strip-toolbar-chord {
+  margin-right: 0.35rem;
+  font-size: 1rem;
+}
+.mod-guitar .beats-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.mod-guitar .beats-control .button {
+  min-width: 40px;
+  padding: 0;
+}
+.mod-guitar .beats-value {
+  min-width: 2ch;
+  font-family: ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.mod-guitar .strip-toolbar-panel {
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--line);
+}
+.mod-guitar .choice-panel {
+  display: grid;
+  gap: 0.4rem;
+}
+.mod-guitar .choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+.mod-guitar .choice-label {
+  min-width: 6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.mod-guitar .choice-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 48px;
+  min-height: 40px;
+  padding: 0.2rem 0.5rem;
+  font: inherit;
+  color: var(--fg);
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.mod-guitar .choice-chip-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1.1;
+}
+.mod-guitar .choice-chip-numeral {
+  font-family: ui-monospace, monospace;
+  font-size: 0.7rem;
+  opacity: 0.75;
+}
+.mod-guitar .build-any {
+  display: grid;
+  gap: 0.4rem;
+  justify-items: start;
+}
+
+/* Editable strip (Songwriting Studio Phase 6) */
+.mod-guitar .strip-group-head {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 24px;
+}
+.mod-guitar .strip-section-repeat {
+  text-transform: none;
+}
+.mod-guitar .strip-section-input {
+  width: 9rem;
+  min-height: 24px;
+  padding: 0 0.3rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.mod-guitar .strip-section-action {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.mod-guitar .strip-section-action:hover {
+  color: var(--fg);
+  background: var(--surface-2);
+}
+.mod-guitar .strip-add-chord,
+.mod-guitar .strip-add-section {
+  min-width: 52px;
+  min-height: 44px;
+  padding: 0.25rem 0.6rem;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: transparent;
+  border: 2px dashed var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.mod-guitar .strip-add-chord[aria-pressed='true'] {
+  color: var(--fg);
+  border-color: var(--accent);
+}
+.mod-guitar .strip-group-new {
+  justify-content: flex-end;
+}
+/* No committed voicing: it plays its suggested shape, and the dashed edge says so. */
+.mod-guitar .strip-chord.uncommitted {
+  border-style: dashed;
+}
+.mod-guitar .strip-chord.sounding {
+  color: var(--play-fg, var(--fg));
+  background: var(--play) !important;
+}
+.mod-guitar .strip-chord {
+  touch-action: manipulation;
 }

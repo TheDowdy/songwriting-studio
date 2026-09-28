@@ -1,18 +1,22 @@
-import { useMemo } from 'react';
-import { chordName, chroma, flattenDetailed, voicingStatus, type ChordEvent, type FlatEvent, type Song } from '@sw/core';
+import { useState } from 'react';
+import {
+  DndContext,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import { SortableContext, horizontalListSortingStrategy, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { chordName, chroma, voicingStatus, type ChordEvent, type Section, type Song } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { useSong } from '@sw/song-store/react';
 import { ChordDiagram } from '@sw/ui';
-import { selectBestVoicing } from '../state/chordActions';
-import { selectProgressionEvent } from '../state/progressionChordActions';
+import { addSection, duplicateSection, focusAndPlay, renameSection, reorderChord } from '../state/progressionEdits';
 import { useStore } from '../state/store';
-
-/** Selecting a block is a direct user gesture (owner request, §7 Phase 3 change 2): it also plays
- *  the chord's shape, the one the neck then shows — the best voicing `selectProgressionEvent`'s own
- *  chord-selection effect would pick anyway, just sounded here because a click chose it. */
-function selectAndPlay(eventId: string): void {
-  if (selectProgressionEvent(eventId)) selectBestVoicing({ play: true });
-}
 
 const ORIGIN_TINT = {
   diatonic: 'var(--t-diatonic)',
@@ -25,109 +29,207 @@ const ORIGIN_COLOR = {
   secondary: 'var(--c-secondary)',
 };
 
-interface Group {
-  arrangementIndex: number;
-  sectionId: string;
-  name: string;
-  items: FlatEvent[];
-}
+/** On touch, a block only starts dragging after a short press-and-hold (the progression module's
+ *  own delay), so a plain swipe over the strip still scrolls it. */
+const TOUCH_DRAG = { activationConstraint: { delay: 250, tolerance: 8 } };
+/** With a mouse, a click stays a click until the pointer has moved a few pixels. */
+const MOUSE_DRAG = { activationConstraint: { distance: 6 } };
 
-/** One chord block. A committed voicing (§3.2) shows its mini diagram, flagged if it's gone stale
- *  (Phase 4 item 4–5) — exactly the badge `ChordPanel` shows when that chord is focused. */
-function StripChord({ event, song, selected }: { event: ChordEvent; song: Song; selected: boolean }) {
+/** A block's sortable id: the same chord shows once per arrangement slot its section fills. */
+const blockId = (slot: number, eventId: string) => `${slot}:${eventId}`;
+
+/**
+ * One chord block. A committed voicing (§3.2) shows its mini diagram, or a warning in its place if
+ * it no longer fits (Phase 4 items 4–5). A chord with no committed voicing plays its suggested
+ * shape and says so (Phase 6 item 2). Clicking focuses and sounds exactly what the neck then
+ * shows; press-and-hold (or drag with a mouse) reorders it within its section (Phase 6 item 1).
+ */
+function StripChord({ slot, event, song, selected }: { slot: number; event: ChordEvent; song: Song; selected: boolean }) {
+  const playing = useStore((s) => s.progressionPlaying && s.progressionEventId === event.id);
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: blockId(slot, event.id),
+  });
   const voicing = event.attachments?.guitar;
   const stale = voicing ? voicingStatus(event, song) !== 'ok' : false;
   return (
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
+    >
+      <button
+        {...attributes}
+        {...listeners}
+        type="button"
+        className={`strip-chord${stale ? ' stale' : ''}${voicing ? '' : ' uncommitted'}${playing ? ' sounding' : ''}`}
+        aria-pressed={selected}
+        aria-label={`Chord: ${chordName(event.chord)}, ${event.chord.numeral}, ${event.chord.origin}${
+          voicing ? (stale ? ', voicing needs a re-fit' : ', voicing committed') : ', no voicing committed (plays the suggested shape)'
+        }`}
+        style={{
+          backgroundColor: ORIGIN_TINT[event.chord.origin],
+          borderColor: ORIGIN_COLOR[event.chord.origin],
+        }}
+        onClick={() => focusAndPlay(event.id)}
+      >
+        <span className="strip-chord-name">{chordName(event.chord)}</span>
+        <span className="strip-chord-numeral">{event.chord.numeral}</span>
+        {voicing && (
+          <span className="strip-chord-diagram">
+            {/* A stale voicing shows a warning in place of its old shape, as in the progression
+                module's timeline (owner's call). */}
+            {stale ? (
+              <span className="strip-chord-stale-badge" aria-hidden="true">
+                ⚠
+              </span>
+            ) : (
+              <ChordDiagram
+                frets={voicing.frets}
+                tuning={capoedTuning(voicing.tuning, voicing.capo)}
+                rootPc={chroma(event.chord.root)}
+                size="mini"
+              />
+            )}
+          </span>
+        )}
+      </button>
+    </li>
+  );
+}
+
+/** A section's name, renamed in place (Phase 6 item 1: section rename). */
+function SectionName({ section }: { section: Section }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(section.name);
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        className="strip-section-input"
+        aria-label="Section name"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          renameSection(section.id, draft);
+          setEditing(false);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+          if (e.key === 'Escape') {
+            setDraft(section.name);
+            setEditing(false);
+          }
+        }}
+      />
+    );
+  }
+  return (
     <button
       type="button"
-      className={`strip-chord${stale ? ' stale' : ''}`}
-      aria-pressed={selected}
-      aria-label={`Chord: ${chordName(event.chord)}, ${event.chord.numeral}, ${event.chord.origin}${
-        voicing ? (stale ? ', voicing needs a re-fit' : ', voicing committed') : ''
-      }`}
-      style={{
-        backgroundColor: ORIGIN_TINT[event.chord.origin],
-        borderColor: ORIGIN_COLOR[event.chord.origin],
+      className="strip-section-name"
+      title="Rename this section"
+      onClick={() => {
+        setDraft(section.name);
+        setEditing(true);
       }}
-      onClick={() => selectAndPlay(event.id)}
     >
-      <span className="strip-chord-name">{chordName(event.chord)}</span>
-      <span className="strip-chord-numeral">{event.chord.numeral}</span>
-      {voicing && (
-        <span className="strip-chord-diagram">
-          {/* A stale voicing shows a warning in place of its old shape, as in the progression
-              module's timeline (owner's call). */}
-          {stale ? (
-            <span className="strip-chord-stale-badge" aria-hidden="true">
-              ⚠
-            </span>
-          ) : (
-            <ChordDiagram
-              frets={voicing.frets}
-              tuning={capoedTuning(voicing.tuning, voicing.capo)}
-              rootPc={chroma(event.chord.root)}
-              size="mini"
-            />
-          )}
-        </span>
-      )}
+      {section.name}
+      {section.repeat > 1 && <span className="strip-section-repeat"> ×{section.repeat}</span>}
     </button>
   );
 }
 
-function groupByArrangementSlot(flat: FlatEvent[], nameOf: (sectionId: string) => string): Group[] {
-  const groups: Group[] = [];
-  for (const item of flat) {
-    const last = groups[groups.length - 1];
-    if (last && last.arrangementIndex === item.arrangementIndex) {
-      last.items.push(item);
-    } else {
-      groups.push({ arrangementIndex: item.arrangementIndex, sectionId: item.sectionId, name: nameOf(item.sectionId), items: [item] });
-    }
-  }
-  return groups;
-}
-
 /**
- * The progression strip (§7 Phase 3 item 2): sections in arrangement order, read-only, above the
- * bottom panel, shown only in song context. Chord blocks show name, numeral and origin tint as in
- * the progression module; tapping one focuses the Chords tab on that chord (§7 Phase 3 item 3).
- * Horizontally scrollable so a long song stays compact.
+ * The progression strip (§7 Phase 3 item 2, editable since Phase 6): each arrangement slot's
+ * section in order, its chords shown once (a repeat count on the name), with rename/duplicate on
+ * each section, "+ Section" at the end, and "+ Add chord" in an empty section. The arrangement
+ * itself stays editable only in the progression module. Horizontally scrollable so a long song
+ * stays compact.
  */
 export function ProgressionStrip() {
   const song = useSong((s) => s.currentSong());
   const progressionEventId = useStore((s) => s.progressionEventId);
+  const addSectionId = useStore((s) => s.stripAddSectionId);
+  const sensors = useSensors(
+    useSensor(MouseSensor, MOUSE_DRAG),
+    useSensor(TouchSensor, TOUCH_DRAG),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
-  const groups = useMemo(() => {
-    if (!song) return [];
-    const flat = flattenDetailed(song);
-    return groupByArrangementSlot(flat, (id) => song.sections.find((s) => s.id === id)?.name ?? '?');
-  }, [song]);
+  if (!song) return null;
+  const slots = song.arrangement
+    .map((sectionId, slot) => ({ slot, section: song.sections.find((s) => s.id === sectionId) }))
+    .filter((x): x is { slot: number; section: Section } => !!x.section);
 
-  if (!song || groups.length === 0) {
-    return (
-      <section className="progression-strip" aria-label="Progression">
-        <p className="muted">This song has no chords yet — add some in the Progression tab.</p>
-      </section>
-    );
-  }
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return;
+    const [fromSlot, fromId] = String(active.id).split(':');
+    const [toSlot, toId] = String(over.id).split(':');
+    if (fromSlot !== toSlot) return; // reorder within a section only
+    const section = slots.find((x) => String(x.slot) === fromSlot)?.section;
+    if (!section) return;
+    const from = section.events.findIndex((e) => e.id === fromId);
+    const to = section.events.findIndex((e) => e.id === toId);
+    if (from >= 0 && to >= 0) reorderChord(section.id, from, to);
+  };
+
+  const hasChords = song.sections.some((s) => s.events.length > 0);
 
   return (
     <section className="progression-strip" aria-label="Progression">
-      <ol className="strip-scroll">
-        {groups.map((g) => (
-          <li key={g.arrangementIndex} className="strip-group">
-            <span className="strip-section-name">{g.name}</span>
-            <ol className="strip-chords">
-              {g.items.map(({ event }) => (
-                <li key={`${g.arrangementIndex}:${event.id}`}>
-                  <StripChord event={event} song={song} selected={event.id === progressionEventId} />
-                </li>
-              ))}
-            </ol>
+      {!hasChords && <p className="muted">This song has no chords yet — pick one below to start.</p>}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+        <ol className="strip-scroll">
+          {slots.map(({ slot, section }) => (
+            <li key={slot} className="strip-group">
+              <span className="strip-group-head">
+                <SectionName section={section} />
+                <button
+                  type="button"
+                  className="strip-section-action"
+                  aria-label={`Duplicate ${section.name}`}
+                  title="Duplicate this section"
+                  onClick={() => duplicateSection(section.id)}
+                >
+                  ⧉
+                </button>
+              </span>
+              <SortableContext
+                items={section.events.map((e) => blockId(slot, e.id))}
+                strategy={horizontalListSortingStrategy}
+              >
+                <ol className="strip-chords">
+                  {section.events.map((event) => (
+                    <StripChord
+                      key={blockId(slot, event.id)}
+                      slot={slot}
+                      event={event}
+                      song={song}
+                      selected={event.id === progressionEventId}
+                    />
+                  ))}
+                  {section.events.length === 0 && hasChords && (
+                    <li>
+                      <button
+                        type="button"
+                        className="strip-add-chord"
+                        aria-pressed={addSectionId === section.id}
+                        onClick={() => useStore.getState().setStripAddSectionId(section.id)}
+                      >
+                        + Add chord
+                      </button>
+                    </li>
+                  )}
+                </ol>
+              </SortableContext>
+            </li>
+          ))}
+          <li className="strip-group strip-group-new">
+            <button type="button" className="strip-add-section" onClick={() => addSection()}>
+              + Section
+            </button>
           </li>
-        ))}
-      </ol>
+        </ol>
+      </DndContext>
     </section>
   );
 }

@@ -86,6 +86,12 @@ export interface AppState {
    *  3), reset to the chord's own inversion whenever the focus changes. Meaningless (and not
    *  shown) outside song context. Not persisted. */
   bassMode: BassMode;
+  /** An empty section the strip's "+ Add chord" asked for (Phase 6 item 1): the strip toolbar then
+   *  offers its first chord. Null otherwise. Not persisted. */
+  stripAddSectionId: string | null;
+  /** The song or a section is playing through the guitar synth (Phase 6 item 2); the sounding
+   *  chord is `progressionEventId`. Not persisted. */
+  progressionPlaying: boolean;
   accidentalPref: AccidentalPref;
   leftHanded: boolean;
   fretSpacing: FretSpacing;
@@ -166,6 +172,8 @@ export interface AppState {
   setSongId: (songId: string | null) => void;
   setProgressionFocus: (eventId: string | null, chord: ChordRef | null) => void;
   setBassMode: (mode: BassMode) => void;
+  setStripAddSectionId: (sectionId: string | null) => void;
+  setProgressionPlaying: (playing: boolean) => void;
   setAccidentalPref: (pref: AccidentalPref) => void;
   setLeftHanded: (leftHanded: boolean) => void;
   setFretSpacing: (spacing: FretSpacing) => void;
@@ -252,6 +260,8 @@ export const useStore = create<AppState>()(
       progressionEventId: null,
       progressionChord: null,
       bassMode: 'root',
+      stripAddSectionId: null,
+      progressionPlaying: false,
       accidentalPref: 'sharp',
       leftHanded: false,
       fretSpacing: 'auto',
@@ -301,6 +311,8 @@ export const useStore = create<AppState>()(
       setSongId: (songId) => set({ songId }),
       setProgressionFocus: (progressionEventId, progressionChord) => set({ progressionEventId, progressionChord }),
       setBassMode: (bassMode) => set({ bassMode }),
+      setStripAddSectionId: (stripAddSectionId) => set({ stripAddSectionId }),
+      setProgressionPlaying: (progressionPlaying) => set({ progressionPlaying }),
       setAccidentalPref: (accidentalPref) => set({ accidentalPref }),
       setLeftHanded: (leftHanded) => set({ leftHanded }),
       setFretSpacing: (fretSpacing) => set({ fretSpacing }),
