@@ -34,7 +34,8 @@ describe('chordHeaderFromInfo', () => {
     const header = chordHeaderFromInfo(info);
     expect(header.target.rootPc).toBe(0);
     expect(header.target.tones.map((t) => t.pc).sort((a, b) => a - b)).toEqual([0, 4, 7, 10]);
-    expect(header.target.tones.every((t) => t.required)).toBe(true);
+    // The 5th is optional beyond a triad (the familiar C7 x-3-2-3-1-0 has no G); the rest isn't.
+    expect(header.target.tones.filter((t) => !t.required).map((t) => t.pc)).toEqual([7]);
     expect(header.target.tones.find((t) => t.pc === 4)?.third).toBe(true);
     expect(header.target.tones.find((t) => t.pc === 7)?.third).toBe(false);
   });

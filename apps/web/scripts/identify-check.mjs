@@ -322,13 +322,15 @@ check(
   await selectionText(),
 );
 
-await pick('x-3-2-2-1-0');
+// x-3-2-2-1-0 used to be the example here, but it's a real C6 voicing (the 5th is optional in a
+// 6th/7th chord), so it's in the list now. A six-fret stretch is still outside any rule set.
+await pick('x-3-2-2-5-8');
 await page.getByRole('button', { name: /Send to Chord mode/ }).click();
 await sleep(300);
 check(
   'an identified shape outside the voicing list still loads (as an edited shape)',
   (await text('chord-name')) === 'C6' &&
-    (await text('shape-text')) === 'x-3-2-2-1-0' &&
+    (await text('shape-text')) === 'x-3-2-2-5-8' &&
     (await text('voicing-status')).startsWith('Edited shape'),
   `${await text('chord-name')} ${await text('shape-text')} ${await text('voicing-status')}`,
 );

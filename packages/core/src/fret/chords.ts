@@ -150,17 +150,19 @@ export function resolveTones(spec: ChordSpec): ChordTone[] {
     tones.set(id, { ...interval, id, required, kind });
   };
   const hasExtension = spec.extension !== 'none';
+  // Beyond a triad the 5th is optional in voicings (§0) — a 6th/7th chord as much as a 9th/11th/13th
+  // (the familiar C7 x-3-2-3-1-0 has no G); a bare triad needs it.
+  const fifthRequired = !hasExtension && spec.seventh === 'none';
 
   add('1', true, 'root');
-  // Beyond a triad the 5th is optional in voicings (§0); a bare triad needs it.
   switch (spec.quality) {
     case 'major':
       add('3', true, 'third');
-      add('5', !hasExtension, 'fifth');
+      add('5', fifthRequired, 'fifth');
       break;
     case 'minor':
       add('b3', true, 'third');
-      add('5', !hasExtension, 'fifth');
+      add('5', fifthRequired, 'fifth');
       break;
     case 'dim':
       add('b3', true, 'third');
@@ -172,11 +174,11 @@ export function resolveTones(spec: ChordSpec): ChordTone[] {
       break;
     case 'sus2':
       add('2', true, 'sus');
-      add('5', !hasExtension, 'fifth');
+      add('5', fifthRequired, 'fifth');
       break;
     case 'sus4':
       add('4', true, 'sus');
-      add('5', !hasExtension, 'fifth');
+      add('5', fifthRequired, 'fifth');
       break;
     case 'power':
       add('5', true, 'fifth');

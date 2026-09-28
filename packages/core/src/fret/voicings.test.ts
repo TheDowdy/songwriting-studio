@@ -8,6 +8,10 @@ import {
   fingering,
   indexOfShape,
   MAX_LISTED_VOICINGS,
+  awkwardSplits,
+  blockedPositions,
+  crossReach,
+  looseMutes,
   nearestVoicing,
   searchVoicings,
   shapeDistance,
@@ -385,5 +389,42 @@ describe('nearestVoicing (Phase 4 item 5: re-fit a stale voicing)', () => {
 
   it('is null for an empty voicing list', () => {
     expect(nearestVoicing([0, 0, 0, 0, 0, 0], [])).toBeNull();
+  });
+});
+
+/** Frets from "x-1-0-3-3-1" text, for the hand-shape feature tests below. */
+const frets = (text: string) => text.split('-').map((f) => (f === 'x' ? null : Number(f)));
+const splits = (text: string) => awkwardSplits(frets(text), fingering(frets(text)).barre);
+const blocked = (text: string) => blockedPositions(frets(text), fingering(frets(text)).barre);
+
+describe('hand-shape features (the B♭ report)', () => {
+  it('awkwardSplits: a fret whose notes need separate fingers across an open string and higher notes', () => {
+    expect(splits('x-1-0-3-3-1')).toBe(1); // the B♭ that used to be picked
+    expect(splits('1-0-3-2-1-1')).toBe(1); // F with the A string left open under the index
+    expect(splits('3-1-0-0-3-3')).toBe(1); // Gm: fret-3 notes either side of a fret-1 note
+  });
+
+  it('awkwardSplits: the ordinary open shapes and barres never count', () => {
+    for (const ok of ['x-1-3-3-3-1', 'x-x-0-2-3-2', '3-2-0-0-0-3', 'x-0-2-0-2-0', 'x-3-2-0-1-0', 'x-0-2-1-2-0', '1-3-3-2-1-1']) {
+      expect(splits(ok), ok).toBe(0);
+    }
+  });
+
+  it('looseMutes: a muted string nothing can damp', () => {
+    expect(looseMutes(frets('x-2-0-x-0-2'))).toBe(1); // G muted between two open strings
+    expect(looseMutes(frets('x-2-0-0-0-x'))).toBe(1); // top string muted above an open one
+    expect(looseMutes(frets('x-x-0-2-3-2'))).toBe(0); // bass-side mutes are free
+    expect(looseMutes(frets('x-3-2-3-1-x'))).toBe(0); // damped by the neighbouring finger
+  });
+
+  it('crossReach: how far a lower-fretted note on a higher string reaches back', () => {
+    expect(crossReach(frets('x-3-2-0-1-0'))).toBe(0); // C reaches two frets: fine
+    expect(crossReach(frets('x-4-6-6-2-0'))).toBe(4); // B2 under D6 and G6: two frets too far each
+  });
+
+  it('blockedPositions: a barre stopping short of an open top string', () => {
+    expect(blocked('1-3-2-2-1-0')).toBe(1);
+    expect(blocked('1-3-2-2-1-1')).toBe(0);
+    expect(blocked('x-1-3-3-3-1')).toBe(0);
   });
 });

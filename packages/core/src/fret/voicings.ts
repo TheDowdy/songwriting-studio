@@ -32,7 +32,23 @@ export const DEFAULT_VOICING_RULES: VoicingRules = {
 export interface ScoreWeights {
   stretch: number;
   finger: number;
-  edgeMute: number;
+  /** Per muted string below the lowest sounding one: cheap, you just don't strum it. */
+  bassMute: number;
+  /** Per muted string above the highest sounding one: the fretting hand has to damp it. */
+  trebleMute: number;
+  /** A fret whose notes need two or more separate fingers in an unplayable-feeling arrangement
+   *  — see `awkwardSplits`. */
+  splitFret: number;
+  /** Per muted string with no fretted neighbour to damp it (an inner string between open ones, or
+   *  the top string above an open one) — hard to keep silent. */
+  looseMute: number;
+  /** Per fret beyond two that a lower-fretted note on a higher string reaches back across a
+   *  higher-fretted one (the hand fanning out; C's x-3-2-0-1-0 reaches two frets and is fine). */
+  crossReach: number;
+  /** Per hand position the fingers physically block: a finger held flat across three or more
+   *  strings with a higher-fretted note beyond it on a higher string, or an index barre that stops
+   *  short of the top string with that string ringing open right above it. */
+  blocked: number;
   innerMute: number;
   /** Per fret of the lowest fretted note: lower on the neck is slightly preferred. */
   position: number;
@@ -58,18 +74,23 @@ export interface ScoreWeights {
 export const DEFAULT_WEIGHTS: ScoreWeights = {
   stretch: 1,
   finger: 1,
-  edgeMute: 0.7,
+  bassMute: 0.3,
+  trebleMute: 1.5,
+  splitFret: 3,
+  looseMute: 3,
+  crossReach: 1,
+  blocked: 2,
   innerMute: 3,
-  position: 0.3,
+  position: 0.5,
   open: -0.6,
   openHigh: 2,
   rootInBass: -1.5,
   thin: 1,
-  barre: 1.5,
-  allOpen: -2,
-  inversion: 1.5,
+  barre: 0.5,
+  allOpen: -4,
+  inversion: 3,
   doubledThird: 1,
-  fullChord: -1.5,
+  fullChord: -0.8,
   sounding: -0.9,
 };
 
@@ -269,14 +290,20 @@ export function searchVoicings(
       if (frets[s] !== null && (thirdMask & (1 << (toneAt[s] as number))) !== 0) thirds++;
     }
     const stretch = minF === Infinity ? 0 : maxF - minF;
-    const edge = lowest + (strings - 1 - highest);
+    const bassMutes = lowest;
+    const trebleMutes = strings - 1 - highest;
     const complete = (mask & allMask) === allMask;
     const score =
       weights.stretch * stretch +
       weights.finger * fingers +
       (barre !== null && barreSpan >= 3 ? weights.barre : 0) +
       (opens === strings && fingers === 0 ? weights.allOpen : 0) +
-      weights.edgeMute * edge +
+      weights.bassMute * bassMutes +
+      weights.trebleMute * trebleMutes +
+      weights.splitFret * awkwardSplits(frets, barre) +
+      weights.looseMute * looseMutes(frets) +
+      weights.crossReach * crossReach(frets) +
+      weights.blocked * blockedPositions(frets, barre) +
       weights.innerMute * inner +
       weights.position * (minF === Infinity ? 0 : minF) +
       (minF !== Infinity && minF > HIGH_POSITION ? weights.openHigh : weights.open) * opens +
@@ -405,6 +432,94 @@ export function bestVoicingWith(
     }
   });
   return best;
+}
+
+/**
+ * How many frets of a shape ask the hand for something awkward (the owner's B♭ report: the scorer
+ * picked x-1-0-3-3-1, whose fret-1 notes sit either side of an open D string with fret-3 notes in
+ * between — no barre can cover them, and no finger can reach them apart). A fret counts when its
+ * notes need two or more separate fingers (not one flattened finger or one barre) and, between the
+ * outermost of them:
+ *  - a note sits two or more frets away (the hand would have to fan across it), or
+ *  - it's the shape's lowest fret, and there is both an open string and a higher-fretted note
+ *    (the index can't barre over the open string, and a second finger at that fret would have to
+ *    cross the others to reach it).
+ * Ordinary open shapes (D, G, A7, C…) never count: their split frets have only neighbouring
+ * frets or open strings in between.
+ */
+export function awkwardSplits(frets: readonly (number | null)[], barre: number | null): number {
+  const fretted = frets.filter((f): f is number => f !== null && f > 0);
+  if (fretted.length === 0) return 0;
+  const lowest = Math.min(...fretted);
+  let count = 0;
+  for (const f of new Set(fretted)) {
+    if (f === barre) continue;
+    const at = frets.flatMap((x, s) => (x === f ? [s] : []));
+    // Runs of adjacent strings at this fret share a (flattened) finger.
+    let groups = 1;
+    for (let i = 1; i < at.length; i++) if ((at[i] as number) !== (at[i - 1] as number) + 1) groups++;
+    if (groups < 2) continue;
+    const between = frets.slice((at[0] as number) + 1, at[at.length - 1] as number).filter((x) => x !== f);
+    const farNote = between.some((x) => x !== null && x > 0 && Math.abs(x - f) >= 2);
+    const trapsOpen =
+      f === lowest && between.some((x) => x === 0) && between.some((x) => x !== null && x > f);
+    if (farNote || trapsOpen) count++;
+  }
+  return count;
+}
+
+/** Muted strings nothing can damp: an inner one with no fretted neighbour, or the top string
+ *  muted right above an open one. See `ScoreWeights.looseMute`. */
+export function looseMutes(frets: readonly (number | null)[]): number {
+  const sounding = frets.flatMap((f, s) => (f !== null ? [s] : []));
+  if (sounding.length === 0) return 0;
+  const low = sounding[0] as number;
+  const high = sounding[sounding.length - 1] as number;
+  const fretted = (s: number) => {
+    const f = frets[s];
+    return f !== null && f !== undefined && f > 0;
+  };
+  let count = 0;
+  for (let s = low + 1; s < high; s++) if (frets[s] === null && !fretted(s - 1) && !fretted(s + 1)) count++;
+  if (high < frets.length - 1 && frets[high] === 0) count++;
+  return count;
+}
+
+/** How far the hand fans: see `ScoreWeights.crossReach`. */
+export function crossReach(frets: readonly (number | null)[]): number {
+  let total = 0;
+  frets.forEach((a, sa) => {
+    if (a === null || a === 0) return;
+    frets.forEach((b, sb) => {
+      if (b === null || b === 0 || sb >= sa) return;
+      // `a` is on a higher string than `b`; reaching back matters only when it's lower-fretted.
+      if (b - a > 2) total += b - a - 2;
+    });
+  });
+  return total;
+}
+
+/** See `ScoreWeights.blocked`. */
+export function blockedPositions(frets: readonly (number | null)[], barre: number | null): number {
+  let count = 0;
+  const higherFretAbove = (from: number, fret: number) =>
+    frets.slice(from + 1).some((f) => f !== null && f > fret);
+  let s = 0;
+  while (s < frets.length) {
+    const f = frets[s];
+    let end = s;
+    while (f !== null && f !== undefined && f > 0 && frets[end + 1] === f) end++;
+    if (f !== null && f !== undefined && f > 0 && f !== barre && end - s + 1 >= 3 && higherFretAbove(end, f)) count++;
+    s = end + 1;
+  }
+  if (barre !== null) {
+    let top = -1;
+    frets.forEach((f, i) => {
+      if (f === barre) top = i;
+    });
+    if (top >= 0 && top < frets.length - 1 && frets[top + 1] === 0) count++;
+  }
+  return count;
 }
 
 /** "x-3-2-0-1-0" style text for a set of frets. */
