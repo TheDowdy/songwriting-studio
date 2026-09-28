@@ -176,23 +176,26 @@ function ChordSlot({
               {shownBeats > 1 && (
                 <span className={`font-mono text-lg font-medium leading-none ${playing ? '' : 'text-muted'}`}>{shownBeats}</span>
               )}
-              <span className="block-diagram" data-testid="block-diagram">
-                <ChordDiagram
-                  frets={voicing.frets}
-                  tuning={capoedTuning(voicing.tuning, voicing.capo)}
-                  rootPc={chroma(event.chord.root)}
-                  capo={voicing.capo}
-                  size="mini"
-                />
-              </span>
+              {/* A stale voicing no longer shows its old shape (the owner's call: the diagram was
+                  misleading next to a changed chord) — a warning takes its place until it's re-fit. */}
+              {stale ? (
+                <span className="block-stale" aria-hidden="true" title="This guitar voicing no longer fits: re-fit it in the guitar module">
+                  ⚠
+                </span>
+              ) : (
+                <span className="block-diagram" data-testid="block-diagram">
+                  <ChordDiagram
+                    frets={voicing.frets}
+                    tuning={capoedTuning(voicing.tuning, voicing.capo)}
+                    rootPc={chroma(event.chord.root)}
+                    capo={voicing.capo}
+                    size="mini"
+                  />
+                </span>
+              )}
             </span>
           ) : (
             <span className={`mt-1 font-mono text-lg font-medium leading-none ${playing ? '' : 'text-muted'}`}>{shownBeats}</span>
-          )}
-          {stale && (
-            <span className="block-stale" aria-hidden="true" title="This guitar voicing no longer fits: re-fit it in the guitar module">
-              ⚠
-            </span>
           )}
         </button>
         <div

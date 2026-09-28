@@ -130,6 +130,7 @@ check(
   'C’s old voicing is now flagged on its block (the chord changed)',
   ((await block('C9').getAttribute('aria-label')) ?? '').includes('needs a re-fit') && (await block('C9').locator('.block-stale').count()) === 1,
 );
+check('…the warning replaces the old diagram (no stale shape shown)', (await block('C9').locator('[data-testid=block-diagram]').count()) === 0);
 await page.evaluate(() => window.__songwriting.store.getState().setInstrument('piano'));
 const c9Notes = await firstStrike(cId);
 check('on piano, C9 sounds its 9th (D) and ♭7 (B♭)', [2, 10].every((pc) => c9Notes.some((n) => n % 12 === pc)), JSON.stringify(c9Notes));
@@ -138,6 +139,11 @@ await page.getByRole('tab', { name: 'Guitar' }).click();
 await page.waitForSelector('.fretboard-svg');
 await sleep(150);
 check('the guitar module shows the rich name too, and flags the stale voicing', (await page.locator('.strip-chord.stale', { hasText: 'C9' }).count()) === 1);
+check(
+  '…with the warning in place of the old diagram there too',
+  (await page.locator('.strip-chord.stale', { hasText: 'C9' }).locator('.chord-diagram').count()) === 0 &&
+    (await page.locator('.strip-chord.stale', { hasText: 'C9' }).locator('.strip-chord-stale-badge').count()) === 1,
+);
 
 check('no console or page errors', errors.length === 0, errors.join(' | '));
 await browser.close();

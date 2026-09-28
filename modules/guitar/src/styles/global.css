@@ -833,7 +833,11 @@
   box-shadow: inset 0 0 0 2px #e06c5a;
 }
 .mod-guitar .strip-chord-stale-badge {
-  font-size: 0.65rem;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 31px;
+  font-size: 1.5rem;
   line-height: 1;
   color: #e06c5a;
 }

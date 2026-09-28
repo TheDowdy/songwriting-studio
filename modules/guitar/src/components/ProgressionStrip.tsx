@@ -55,16 +55,19 @@ function StripChord({ event, song, selected }: { event: ChordEvent; song: Song; 
       <span className="strip-chord-numeral">{event.chord.numeral}</span>
       {voicing && (
         <span className="strip-chord-diagram">
-          <ChordDiagram
-            frets={voicing.frets}
-            tuning={capoedTuning(voicing.tuning, voicing.capo)}
-            rootPc={chroma(event.chord.root)}
-            size="mini"
-          />
-          {stale && (
+          {/* A stale voicing shows a warning in place of its old shape, as in the progression
+              module's timeline (owner's call). */}
+          {stale ? (
             <span className="strip-chord-stale-badge" aria-hidden="true">
               ⚠
             </span>
+          ) : (
+            <ChordDiagram
+              frets={voicing.frets}
+              tuning={capoedTuning(voicing.tuning, voicing.capo)}
+              rootPc={chroma(event.chord.root)}
+              size="mini"
+            />
           )}
         </span>
       )}

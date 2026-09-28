@@ -156,10 +156,12 @@
   height: auto;
 }
 .mod-progression .block-stale {
-  position: absolute;
-  top: 3px;
-  left: 5px;
-  font-size: 0.75rem;
+  /* Takes the mini diagram's place (about 36 × 31 px), so it reads at the same weight. */
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 31px;
+  font-size: 1.5rem;
   line-height: 1;
   color: #b8483a;
 }
