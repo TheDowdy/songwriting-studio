@@ -137,3 +137,79 @@
     max-width: none;
   }
 }
+
+/* Guitar voicings (Songwriting Studio Phase 5): @sw/ui's ChordDiagram on timeline blocks (mini)
+   and in the chord detail's Guitar view. Dots follow the text colour, so a playing block's
+   diagram turns with it; the root takes the accent, as in the guitar module. */
+.mod-progression .chord-diagram .diagram-dot {
+  fill: currentColor;
+}
+.mod-progression .chord-diagram .diagram-dot.root {
+  fill: var(--accent);
+}
+.mod-progression .chord-diagram .diagram-capo {
+  fill: currentColor;
+  opacity: 0.7;
+}
+.mod-progression .detail-diagram svg {
+  width: 132px;
+  height: auto;
+}
+.mod-progression .block-stale {
+  position: absolute;
+  top: 3px;
+  left: 5px;
+  font-size: 0.75rem;
+  line-height: 1;
+  color: #b8483a;
+}
+
+/* The rich chord builder under the Flavor picker's "More…" (@sw/ui ChordBuilderChips, Phase 5
+   item 4) — styled like this module's own buttons. */
+.mod-progression .rich-builder .builder-grid {
+  display: grid;
+  gap: 0.5rem;
+}
+.mod-progression .rich-builder .chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.mod-progression .rich-builder .chip-group legend {
+  float: left;
+  width: 6.5rem;
+  margin-right: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+.mod-progression .rich-builder .chip {
+  min-height: 2rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--fg);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.mod-progression .rich-builder .chip[aria-pressed='true'] {
+  color: var(--accent-fg);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.mod-progression .rich-builder .chip.unavailable {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.mod-progression .rich-builder .chip-message {
+  min-height: 1.25em;
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { chordName } from '@sw/core';
-import type { ChordRef } from '@sw/core';
-import GuitarDiagram from './GuitarDiagram';
+import { chordName, chroma, defaultGuitarShape, voicingStatus } from '@sw/core';
+import type { ChordEvent, ChordRef, GuitarSetup } from '@sw/core';
+import { capoedTuning } from '@sw/core/fret/capo';
+import { ChordDiagram } from '@sw/ui';
 import PianoKeyboard from './PianoKeyboard';
 
 type View = 'piano' | 'guitar';
@@ -24,8 +25,36 @@ function saveView(v: View): void {
   }
 }
 
+/**
+ * The Guitar view (Phase 5 item 2): the chord's committed voicing, labelled "Your voicing" (and
+ * flagged if it no longer fits), or else the shape the guitar module would show first on the
+ * song's tuning and capo — the same scorer, so the two modules never disagree about it.
+ */
+function GuitarView({ chord, attachments, guitar }: { chord: ChordRef; attachments?: ChordEvent['attachments']; guitar: GuitarSetup }) {
+  const committed = attachments?.guitar;
+  const frets = committed ? committed.frets : defaultGuitarShape(chord, guitar);
+  if (!frets) return <p className="text-sm text-muted">No playable shape for this chord in the song's tuning.</p>;
+  const tuning = committed ? capoedTuning(committed.tuning, committed.capo) : capoedTuning(guitar.tuning, guitar.capo);
+  const capo = committed ? committed.capo : guitar.capo;
+  const status = committed ? voicingStatus({ chord, attachments }, { guitar }) : 'none';
+  return (
+    <figure className="detail-diagram inline-flex flex-col items-center gap-1.5" data-testid="detail-guitar">
+      <ChordDiagram frets={frets} tuning={tuning} rootPc={chroma(chord.root)} capo={capo} />
+      <figcaption className="text-xs text-muted">
+        {committed ? <strong className="text-fg">Your voicing</strong> : 'Suggested voicing'}
+        {status === 'chord-changed' && <span className="text-[#b8483a]"> · no longer matches the chord</span>}
+        {status === 'tuning-changed' && <span className="text-[#b8483a]"> · no longer matches the tuning or capo</span>}
+      </figcaption>
+    </figure>
+  );
+}
+
 interface Props {
   chord: ChordRef;
+  /** The placed event's attachments, for its committed guitar voicing (none for a suggestion). */
+  attachments?: ChordEvent['attachments'];
+  /** The song's tuning and capo. */
+  guitar: GuitarSetup;
   onClose: () => void;
   /** Opens the guitar module with this chord selected (§7 Phase 3 item 1). Omitted where there is
    *  no placed event to select — e.g. previewing a not-yet-added suggestion from the chord map. */
@@ -34,7 +63,7 @@ interface Props {
 
 /** Section 7.6: expand a chord to see it on a piano keyboard or a guitar diagram, remembering
  *  which the player last chose. */
-export default function ChordDetail({ chord, onClose, onExplore }: Props) {
+export default function ChordDetail({ chord, attachments, guitar, onClose, onExplore }: Props) {
   const [view, setView] = useState<View>(loadView);
 
   const choose = (v: View) => {
@@ -76,7 +105,7 @@ export default function ChordDetail({ chord, onClose, onExplore }: Props) {
         ))}
       </div>
 
-      <div className="overflow-x-auto py-1">{view === 'piano' ? <PianoKeyboard chord={chord} /> : <GuitarDiagram chord={chord} />}</div>
+      <div className="overflow-x-auto py-1">{view === 'piano' ? <PianoKeyboard chord={chord} /> : <GuitarView chord={chord} attachments={attachments} guitar={guitar} />}</div>
     </div>
   );
 }

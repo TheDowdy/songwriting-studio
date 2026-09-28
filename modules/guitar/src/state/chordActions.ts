@@ -1,6 +1,8 @@
 import { SequencePlayer } from '../audio/scheduler';
 import { capoedFretCount, capoedTuning } from '@sw/core/fret/capo';
-import { describeChord, type ChordInfo } from '@sw/core/fret/chords';
+import { describeChord, type ChordInfo, type ChordSpec } from '@sw/core/fret/chords';
+import type { AccidentalPref } from '@sw/core/fret/notes';
+import type { ChordRef } from '@sw/core';
 import { directionShaping } from '@sw/core/fret/strum';
 import { pitchClass } from '@sw/core/fret/notes';
 import {
@@ -11,9 +13,10 @@ import {
   shapeNotes,
   targetFromChord,
   type Voicing,
+  type VoicingRules,
   type VoicingTarget,
 } from '@sw/core/fret/voicings';
-import { bassPcForMode } from './bassMode';
+import { bassPcForMode, type BassMode } from './bassMode';
 import { emitPluck } from './pluckEvents';
 import { playFret } from './playing';
 import { useStore } from './store';
@@ -35,20 +38,38 @@ export interface ChordContext {
  * itself might already have, so root taps, Prev/Next and the voicing list all only ever show
  * shapes the control currently allows.
  */
-export function chordContext(): ChordContext {
-  const { chordSpec, accidentalPref, tuning, fretCount, voicingRules, capo, songId, progressionChord, bassMode } =
-    useStore.getState();
-  const info = describeChord(chordSpec, accidentalPref);
+/** What `chordContextFor` needs: the store's chord/tuning/rules fields, and in song context the
+ *  bass/inversion control. A plain object, so a component can memoise on exactly these. */
+export interface ChordContextInput {
+  chordSpec: ChordSpec;
+  accidentalPref: AccidentalPref;
+  tuningStrings: readonly number[];
+  fretCount: number;
+  voicingRules: VoicingRules;
+  capo: number;
+  songId: string | null;
+  progressionChord: ChordRef | null;
+  bassMode: BassMode;
+}
+
+export function chordContextFor(i: ChordContextInput): ChordContext {
+  const info = describeChord(i.chordSpec, i.accidentalPref);
   const target: VoicingTarget = targetFromChord(info);
   const effectiveTarget: VoicingTarget =
-    songId && progressionChord ? { ...target, bassPc: bassPcForMode(progressionChord, bassMode) } : target;
+    i.songId && i.progressionChord ? { ...target, bassPc: bassPcForMode(i.progressionChord, i.bassMode) } : target;
   const voicings = findVoicings(
-    capoedTuning(tuning.strings, capo),
-    capoedFretCount(fretCount, capo),
+    capoedTuning(i.tuningStrings, i.capo),
+    capoedFretCount(i.fretCount, i.capo),
     effectiveTarget,
-    voicingRules,
+    i.voicingRules,
   );
   return { info, voicings, best: bestVoicingIndex(voicings) };
+}
+
+/** `chordContextFor` on the store as it is right now. */
+export function chordContext(): ChordContext {
+  const s = useStore.getState();
+  return chordContextFor({ ...s, tuningStrings: s.tuning.strings });
 }
 
 /**

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { chordKey, chordName, keyLabel } from '@sw/core';
-import type { ChordRef, Key, Origin, Suggestion } from '@sw/core';
+import { chordKey, chordName, defaultGuitarSetup, keyLabel } from '@sw/core';
+import type { ChordRef, GuitarSetup, Key, Origin, Suggestion } from '@sw/core';
 import ChordDetail from './ChordDetail';
 import FlavorPicker from './FlavorPicker';
 
@@ -53,6 +53,8 @@ interface Props {
   startRing: ChordRef[];
   onPreview: (chord: ChordRef) => void;
   onAdd: (chord: ChordRef) => void;
+  /** The song's tuning and capo, for the chord detail's Guitar view (standard tuning if omitted). */
+  guitar?: GuitarSetup;
 }
 
 function NodeLabel({ chord, r }: { chord: ChordRef; r: number }) {
@@ -70,7 +72,7 @@ function NodeLabel({ chord, r }: { chord: ChordRef; r: number }) {
   );
 }
 
-export default function NodeMap({ musicKey, center, suggestions, startRing, onPreview, onAdd }: Props) {
+export default function NodeMap({ musicKey, center, suggestions, startRing, onPreview, onAdd, guitar }: Props) {
   const [focusId, setFocusId] = useState<string | null>(null);
   const [flavorOpen, setFlavorOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -297,7 +299,13 @@ export default function NodeMap({ musicKey, center, suggestions, startRing, onPr
                 onClose={() => setFlavorOpen(false)}
               />
             )}
-            {detailOpen && <ChordDetail chord={pendingChord ?? focused.chord} onClose={() => setDetailOpen(false)} />}
+            {detailOpen && (
+              <ChordDetail
+                chord={pendingChord ?? focused.chord}
+                guitar={guitar ?? defaultGuitarSetup()}
+                onClose={() => setDetailOpen(false)}
+              />
+            )}
           </>
         ) : (
           <p className="pt-2 text-center text-sm text-muted">

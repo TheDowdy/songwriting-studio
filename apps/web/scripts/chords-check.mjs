@@ -264,7 +264,9 @@ check(
   (await text('voicing-status')) === `Voicing ${total} of ${total}`,
 );
 
-// Diagrams.
+// Diagrams. Let the "Prev wraps" strum above finish first: its last note is scheduled ~0.3 s
+// after the click, so clearing the log sooner can catch it as part of the next voicing's strum.
+await sleep(500);
 await clearPlucks();
 await page.locator('.voicing-thumb', { hasText: '' }).nth(3).click();
 check(

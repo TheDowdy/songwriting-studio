@@ -464,22 +464,47 @@ export function bestVoicingWith(
  * frets or open strings in between.
  */
 export function awkwardSplits(frets: readonly (number | null)[], barre: number | null): number {
-  const fretted = frets.filter((f): f is number => f !== null && f > 0);
-  if (fretted.length === 0) return 0;
-  const lowest = Math.min(...fretted);
+  // Plain loops, no allocation: this runs for every candidate the search completes.
+  const n = frets.length;
+  let lowest = Infinity;
+  for (let s = 0; s < n; s++) {
+    const f = frets[s];
+    if (f !== null && f !== undefined && f > 0 && f < lowest) lowest = f;
+  }
+  if (lowest === Infinity) return 0;
   let count = 0;
-  for (const f of new Set(fretted)) {
-    if (f === barre) continue;
-    const at = frets.flatMap((x, s) => (x === f ? [s] : []));
-    // Runs of adjacent strings at this fret share a (flattened) finger.
+  for (let s = 0; s < n; s++) {
+    const f = frets[s];
+    if (f === null || f === undefined || f <= 0 || f === barre) continue;
+    // Handle each fret once, from its first (lowest) string.
+    let seen = false;
+    for (let t = 0; t < s; t++) if (frets[t] === f) seen = true;
+    if (seen) continue;
+    const first = s;
+    let last = s;
     let groups = 1;
-    for (let i = 1; i < at.length; i++) if ((at[i] as number) !== (at[i - 1] as number) + 1) groups++;
+    let prev = s;
+    for (let t = s + 1; t < n; t++) {
+      if (frets[t] !== f) continue;
+      // Runs of adjacent strings at this fret share a (flattened) finger.
+      if (t !== prev + 1) groups++;
+      prev = t;
+      last = t;
+    }
     if (groups < 2) continue;
-    const between = frets.slice((at[0] as number) + 1, at[at.length - 1] as number).filter((x) => x !== f);
-    const farNote = between.some((x) => x !== null && x > 0 && Math.abs(x - f) >= 2);
-    const trapsOpen =
-      f === lowest && between.some((x) => x === 0) && between.some((x) => x !== null && x > f);
-    if (farNote || trapsOpen) count++;
+    let farNote = false;
+    let open = false;
+    let higher = false;
+    for (let t = first + 1; t < last; t++) {
+      const x = frets[t];
+      if (x === f || x === null || x === undefined) continue;
+      if (x === 0) open = true;
+      else {
+        if (Math.abs(x - f) >= 2) farNote = true;
+        if (x > f) higher = true;
+      }
+    }
+    if (farNote || (f === lowest && open && higher)) count++;
   }
   return count;
 }
@@ -487,39 +512,50 @@ export function awkwardSplits(frets: readonly (number | null)[], barre: number |
 /** Muted strings nothing can damp: an inner one with no fretted neighbour, or the top string
  *  muted right above an open one. See `ScoreWeights.looseMute`. */
 export function looseMutes(frets: readonly (number | null)[]): number {
-  const sounding = frets.flatMap((f, s) => (f !== null ? [s] : []));
-  if (sounding.length === 0) return 0;
-  const low = sounding[0] as number;
-  const high = sounding[sounding.length - 1] as number;
+  const n = frets.length;
+  let low = -1;
+  let high = -1;
+  for (let s = 0; s < n; s++) {
+    if (frets[s] === null) continue;
+    if (low === -1) low = s;
+    high = s;
+  }
+  if (low === -1) return 0;
   const fretted = (s: number) => {
     const f = frets[s];
     return f !== null && f !== undefined && f > 0;
   };
   let count = 0;
   for (let s = low + 1; s < high; s++) if (frets[s] === null && !fretted(s - 1) && !fretted(s + 1)) count++;
-  if (high < frets.length - 1 && frets[high] === 0) count++;
+  if (high < n - 1 && frets[high] === 0) count++;
   return count;
 }
 
 /** How far the hand fans: see `ScoreWeights.crossReach`. */
 export function crossReach(frets: readonly (number | null)[]): number {
   let total = 0;
-  frets.forEach((a, sa) => {
-    if (a === null || a === 0) return;
-    frets.forEach((b, sb) => {
-      if (b === null || b === 0 || sb >= sa) return;
+  for (let sa = 0; sa < frets.length; sa++) {
+    const a = frets[sa];
+    if (a === null || a === undefined || a === 0) continue;
+    for (let sb = 0; sb < sa; sb++) {
+      const b = frets[sb];
       // `a` is on a higher string than `b`; reaching back matters only when it's lower-fretted.
-      if (b - a > 2) total += b - a - 2;
-    });
-  });
+      if (b !== null && b !== undefined && b !== 0 && b - a > 2) total += b - a - 2;
+    }
+  }
   return total;
 }
 
 /** See `ScoreWeights.blocked`. */
 export function blockedPositions(frets: readonly (number | null)[], barre: number | null): number {
   let count = 0;
-  const higherFretAbove = (from: number, fret: number) =>
-    frets.slice(from + 1).some((f) => f !== null && f > fret);
+  const higherFretAbove = (from: number, fret: number) => {
+    for (let t = from + 1; t < frets.length; t++) {
+      const f = frets[t];
+      if (f !== null && f !== undefined && f > fret) return true;
+    }
+    return false;
+  };
   let s = 0;
   while (s < frets.length) {
     const f = frets[s];
@@ -534,9 +570,7 @@ export function blockedPositions(frets: readonly (number | null)[], barre: numbe
   }
   if (barre !== null) {
     let top = -1;
-    frets.forEach((f, i) => {
-      if (f === barre) top = i;
-    });
+    for (let i = 0; i < frets.length; i++) if (frets[i] === barre) top = i;
     if (top >= 0 && top < frets.length - 1 && frets[top + 1] === 0) count++;
   }
   return count;

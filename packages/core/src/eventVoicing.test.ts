@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { eventVoicing, guitarVoicingNotes } from './eventVoicing';
+import { defaultGuitarShape, eventVoicing, guitarVoicingNotes } from './eventVoicing';
 import type { ChordRef, GuitarVoicing } from './index';
 import { voiceLeadChord } from './theory/voicings';
 
@@ -39,5 +39,19 @@ describe('eventVoicing', () => {
   it('a committed shape with every string muted falls back rather than going silent', () => {
     const silent: GuitarVoicing = { ...openC, frets: [null, null, null, null, null, null] };
     expect(eventVoicing({ chord: C, attachments: { guitar: silent } }, 'guitar', null)).toEqual(voiceLeadChord(C, null));
+  });
+});
+
+describe('defaultGuitarShape', () => {
+  const guitar = { tuning: STANDARD, capo: 0 };
+  it('matches the guitar module’s default (the owner-approved B♭ barre)', () => {
+    const Bb: ChordRef = { ...C, root: 'Bb', numeral: '♭VII' };
+    expect(defaultGuitarShape(Bb, guitar)).toEqual([null, 1, 3, 3, 3, 1]);
+  });
+
+  it('is relative to the capo', () => {
+    // D with a capo on 2 is the open C shape two frets up — shown as the C shape.
+    const D: ChordRef = { ...C, root: 'D', numeral: 'II' };
+    expect(defaultGuitarShape(D, { tuning: STANDARD, capo: 2 })).toEqual([null, 3, 2, 0, 1, 0]);
   });
 });

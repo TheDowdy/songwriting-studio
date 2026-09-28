@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { chordTones, inversionCount, withInversion } from './theory/chords';
 import { chroma } from './theory/scales';
 import type { ChordRef, Flavor, Key, Quality, Seventh } from './theory/types';
-import { chordName, fromChordSpec, spellInKey, toChordSpec, withColour, withFlavor } from './convert';
+import { chordName, fromChordSpec, spellInKey, toChordSpec, withChordSpec, withColour, withFlavor } from './convert';
 import { chordSuffix, describeChord, validateChord, type ChordSpec } from './fret/chords';
 
 const KEY: Key = { tonic: 'C', mode: 'major' };
@@ -313,5 +313,32 @@ describe('withFlavor and withColour drop whatever becomes invalid, keeping the r
     const next = withColour(c, { alterations: ['b9'] }, KEY);
     expect(validateChord(toChordSpec(next))).toBeNull();
     expect(next.colour?.alterations ?? []).not.toContain('b9');
+  });
+});
+
+describe('withChordSpec (Phase 5 item 4: the Flavor picker’s "More…")', () => {
+  const C_MAJOR: Key = { tonic: 'C', mode: 'major' };
+  const Bb_MAJOR: Key = { tonic: 'Bb', mode: 'major' };
+  const I: ChordRef = { root: 'C', quality: 'maj', seventh: 'maj7', flavor: 'triad', origin: 'diatonic', numeral: 'I' };
+
+  it('adds a 9th to a plain triad: named C9, still diatonic, numeral recomputed', () => {
+    const next = withChordSpec(I, { ...toChordSpec(I), extension: '9' }, C_MAJOR);
+    expect(chordName(next)).toBe('C9');
+    expect(next.root).toBe('C');
+    expect(next.numeral).not.toBe('I');
+  });
+
+  it('keeps the root and slash bass spelled as they were', () => {
+    const aSharp: ChordRef = { ...I, root: 'A#', bass: 'C##' as string };
+    const next = withChordSpec(aSharp, { ...toChordSpec(aSharp), extension: '9' }, Bb_MAJOR);
+    expect(next.root).toBe('A#');
+    expect(next.bass).toBe('C##');
+  });
+
+  it('a secondary dominant stays secondary', () => {
+    const V_of_ii: ChordRef = { root: 'A', quality: 'maj', seventh: 'dom7', flavor: '7', origin: 'secondary', numeral: 'V7/ii' };
+    const next = withChordSpec(V_of_ii, { ...toChordSpec(V_of_ii), alterations: ['b9'] }, C_MAJOR);
+    expect(next.origin).toBe('secondary');
+    expect(chordName(next)).toBe('A7♭9');
   });
 });

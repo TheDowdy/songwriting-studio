@@ -297,6 +297,24 @@ export function fromChordSpec(spec: ChordSpec, key: Key): ChordRef {
   return relabel(draft, key);
 }
 
+/**
+ * Apply a rich-builder edit (Phase 5 item 4: the progression Flavor picker's "More…") to a placed
+ * chord. The chord keeps its own root and bass, spelled as they were, and a secondary dominant
+ * stays secondary; only its shape (7th, extension, alterations, added tones, omissions) changes.
+ * The numeral and, for non-secondary chords, the origin are recomputed.
+ */
+export function withChordSpec(chord: ChordRef, spec: ChordSpec, key: Key): ChordRef {
+  const pinned: ChordSpec = { ...spec, rootPc: chroma(chord.root), bassPc: chord.bass ? chroma(chord.bass) : null };
+  const converted = fromChordSpec(pinned, key);
+  const next: ChordRef = {
+    ...converted,
+    root: chord.root,
+    bass: chord.bass,
+    origin: chord.origin === 'secondary' ? 'secondary' : converted.origin,
+  };
+  return relabel(next, key);
+}
+
 /** `chordSuffix(toChordSpec(chord))` when the chord has colour, else PB's own (unchanged)
  *  base name — every existing chord names exactly as it did before colour existed. */
 export function chordName(chord: ChordRef): string {

@@ -6,7 +6,7 @@
 import { createElement } from 'react';
 import ProgressionModule from './App';
 import { prefetchSamples } from './audio/engine';
-import { stop as stopPlayback } from './state/playback';
+import { stop as stopPlayback, toNoteStrikes } from './state/playback';
 import { useStore } from './state/store';
 
 /** Music-note tab icon. */
@@ -47,5 +47,10 @@ if (
   typeof window !== 'undefined' &&
   (import.meta.env.DEV || new URLSearchParams(location.search).has('debug'))
 ) {
-  (window as unknown as { __songwriting: unknown }).__songwriting = { store: useStore };
+  // `strikes()` is exactly what playback would sound for the current song (Phase 5 check: the
+  // guitar instrument plays each committed voicing's notes).
+  (window as unknown as { __songwriting: unknown }).__songwriting = {
+    store: useStore,
+    strikes: () => toNoteStrikes(useStore.getState().song),
+  };
 }

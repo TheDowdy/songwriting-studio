@@ -1,5 +1,11 @@
-import { FLAVORS, chordName, inversionCount, inversionOf, withFlavor, withInversion } from '@sw/core';
+import { useState } from 'react';
+import { FLAVORS, chordName, inversionCount, inversionOf, toChordSpec, withChordSpec, withFlavor, withInversion } from '@sw/core';
 import type { ChordRef, Flavor, Key } from '@sw/core';
+import { ChordBuilderChips, type ChordBuilderGroup } from '@sw/ui';
+
+/** The rich options offered under "More…" (Phase 5 item 4): everything the guitar module's builder
+ *  has except the chord quality, since this picker changes a chord's shape, never its function. */
+const RICH_GROUPS: readonly ChordBuilderGroup[] = ['seventh', 'extension', 'alterations', 'added', 'omit'];
 
 const FLAVOR_LABEL: Record<Flavor, string> = {
   triad: 'Triad',
@@ -23,11 +29,14 @@ interface Props {
 
 /**
  * Flavor and inversion picker (section 7.6): triad / 7 / sus2 / sus4 / add9, plus the chord's
- * inversions. Never changes harmonic function (root, quality or numeral base), only its shape.
+ * inversions, and under "More…" the guitar module's rich options (6ths, 9/11/13, alterations,
+ * added tones, omissions — Phase 5 item 4), with unavailable ones greyed and the reason shown.
+ * Never changes harmonic function (root, quality or numeral base), only its shape.
  */
 export default function FlavorPicker({ chord, musicKey, onPreview, onChoose, onClose }: Props) {
   const invCount = inversionCount(chord);
   const currentInversion = inversionOf(chord);
+  const [moreOpen, setMoreOpen] = useState(() => !!chord.colour);
 
   const choose = (next: ChordRef) => {
     onPreview(next);
@@ -63,7 +72,25 @@ export default function FlavorPicker({ chord, musicKey, onPreview, onChoose, onC
               </button>
             );
           })}
+          <button
+            onClick={() => setMoreOpen((v) => !v)}
+            aria-expanded={moreOpen}
+            className={`rounded-lg border px-3 py-1.5 text-sm font-medium ${
+              moreOpen ? 'border-accent text-fg' : 'border-line bg-surface-2 hover:bg-surface'
+            }`}
+          >
+            More…
+          </button>
         </div>
+        {moreOpen && (
+          <div className="rich-builder mt-2" data-testid="rich-builder">
+            <ChordBuilderChips
+              spec={toChordSpec(chord)}
+              groups={RICH_GROUPS}
+              onChange={(next) => choose(withChordSpec(chord, next, musicKey))}
+            />
+          </div>
+        )}
       </div>
 
       <div>

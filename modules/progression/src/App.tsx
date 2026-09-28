@@ -59,6 +59,7 @@ export default function ProgressionModule({ navigate }: Props) {
           startRing={startRing}
           onPreview={preview}
           onAdd={addChord}
+          guitar={song.guitar}
         />
         <Timeline navigate={navigate} />
       </div>

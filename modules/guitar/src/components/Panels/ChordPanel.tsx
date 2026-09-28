@@ -2,6 +2,7 @@ import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import {
   arpeggiateChord,
   chordContext,
+  chordContextFor,
   selectBestVoicing,
   selectVoicing,
   stepVoicing,
@@ -12,66 +13,16 @@ import { clearCurrentVoicing, commitCurrentVoicing, refitCurrentVoicing } from '
 import { useStore } from '../../state/store';
 import { chordName, findEvent, voicingStatus, type VoicingStatus } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
-import {
-  ADDED,
-  ALTERATIONS,
-  EXTENSIONS,
-  normalizeChord,
-  QUALITIES,
-  SEVENTHS,
-  validateChord,
-  type ChordSpec,
-} from '@sw/core/fret/chords';
+import { normalizeChord, type ChordSpec } from '@sw/core/fret/chords';
 import { MAX_STRUM_MS, MIN_STRUM_MS } from '@sw/core/fret/chordSettings';
 import { identifyChord } from '@sw/core/fret/identify';
 import { chromaticName, formatNoteName } from '@sw/core/fret/notes';
 import { shapeNotes, shapeText } from '@sw/core/fret/voicings';
 import { useSong } from '@sw/song-store/react';
-import { ChordDiagram } from '@sw/ui';
+import { Chip, ChordBuilderChips, ChordDiagram } from '@sw/ui';
 
-const ALTERATION_TEXT: Record<string, string> = {
-  b5: '♭5',
-  '#5': '♯5',
-  b9: '♭9',
-  '#9': '♯9',
-  '#11': '♯11',
-  b13: '♭13',
-};
-const OMIT = [
-  { key: 'omit3' as const, label: 'no3' },
-  { key: 'omit5' as const, label: 'no5' },
-];
 /** Horizontal drag needed on the voicing card to step to the next/previous voicing. */
 const SWIPE_PX = 50;
-
-interface ChipProps {
-  label: string;
-  pressed: boolean;
-  /** Why this option can't be chosen right now, or null. */
-  reason: string | null;
-  onChoose: () => void;
-  onBlocked: (reason: string) => void;
-}
-
-/**
- * A choice chip. An option that would make an invalid chord stays visible but greyed, with the
- * reason as its tooltip; tapping it shows the reason below (touch has no hover).
- */
-function Chip({ label, pressed, reason, onChoose, onBlocked }: ChipProps) {
-  const blocked = reason !== null && !pressed;
-  return (
-    <button
-      type="button"
-      className={`chip${blocked ? ' unavailable' : ''}`}
-      aria-pressed={pressed}
-      aria-disabled={blocked || undefined}
-      title={blocked ? (reason as string) : undefined}
-      onClick={() => (blocked ? onBlocked(reason as string) : onChoose())}
-    >
-      {label}
-    </button>
-  );
-}
 
 /**
  * One entry in the voicing strip. A chord can have hundreds of voicings, so the diagram is only
@@ -143,6 +94,7 @@ export function ChordPanel() {
   const editing = useStore((s) => s.editingShape);
   const pref = useStore((s) => s.accidentalPref);
   const tuning = useStore((s) => s.tuning);
+  const fretCount = useStore((s) => s.fretCount);
   const capo = useStore((s) => s.capo);
   const songId = useStore((s) => s.songId);
   const progressionEventId = useStore((s) => s.progressionEventId);
@@ -150,7 +102,6 @@ export function ChordPanel() {
   const bassMode = useStore((s) => s.bassMode);
   const { setChordSpec, setVoicingRules, setChordDisplay, setChordPlay, setEditingShape, setBassMode } =
     useStore.getState();
-  const [message, setMessage] = useState<string | null>(null);
 
   // The focused event straight from the song store (not the `progressionChord` mirror above,
   // which drops attachments) — reactive, so a commit/clear/re-fit here or a chord edit in the
@@ -170,10 +121,22 @@ export function ChordPanel() {
 
   // Always the same list `chordActions` searches (root taps, Prev/Next, "Best voicing"), so a
   // voicing list index here means the same shape there — including the bass/inversion control's
-  // filter in song context (Phase 4 item 3). `findVoicings` memoises by its own arguments, so
-  // there's no need to also memoise this call: every render already subscribes (via `useStore`
-  // above) to everything `chordContext` itself reads.
-  const { info, voicings } = chordContext();
+  // filter in song context (Phase 4 item 3).
+  const { info, voicings } = useMemo(
+    () =>
+      chordContextFor({
+        chordSpec: spec,
+        accidentalPref: pref,
+        tuningStrings: tuning.strings,
+        fretCount,
+        voicingRules: rules,
+        capo,
+        songId,
+        progressionChord,
+        bassMode,
+      }),
+    [spec, pref, tuning.strings, fretCount, rules, capo, songId, progressionChord, bassMode],
+  );
   const current = index !== null ? voicings[index] : undefined;
 
   // What the shape on the neck actually is, which changes as it is edited.
@@ -190,14 +153,7 @@ export function ChordPanel() {
   const reading = heard[0];
   const matches = reading?.name === info.name;
 
-  const candidate = (patch: Partial<ChordSpec>) => normalizeChord({ ...spec, ...patch });
-  const reasonFor = (patch: Partial<ChordSpec>) => validateChord(candidate(patch));
-  const choose = (patch: Partial<ChordSpec>) => {
-    setMessage(null);
-    setChordSpec(candidate(patch));
-  };
-  const toggle = <T extends string>(list: readonly T[], item: T): T[] =>
-    list.includes(item) ? list.filter((x) => x !== item) : [...list, item];
+  const choose = (patch: Partial<ChordSpec>) => setChordSpec(normalizeChord({ ...spec, ...patch }));
 
   // Swipe on the voicing card to step through the list (touch).
   const swipe = useRef<{ x: number; id: number } | null>(null);
@@ -264,89 +220,7 @@ export function ChordPanel() {
         </label>
       </div>
 
-      <div className="builder-grid">
-        <fieldset className="chip-group">
-          <legend>Chord</legend>
-          {QUALITIES.map((q) => (
-            <Chip
-              key={q.id}
-              label={q.label}
-              pressed={spec.quality === q.id}
-              reason={reasonFor({ quality: q.id })}
-              onChoose={() => choose({ quality: q.id })}
-              onBlocked={setMessage}
-            />
-          ))}
-        </fieldset>
-        <fieldset className="chip-group">
-          <legend>6th / 7th</legend>
-          {SEVENTHS.map((v) => (
-            <Chip
-              key={v.id}
-              label={v.label}
-              pressed={spec.seventh === v.id}
-              reason={reasonFor({ seventh: v.id })}
-              onChoose={() => choose({ seventh: v.id })}
-              onBlocked={setMessage}
-            />
-          ))}
-        </fieldset>
-        <fieldset className="chip-group">
-          <legend>Extension</legend>
-          {EXTENSIONS.map((v) => (
-            <Chip
-              key={v.id}
-              label={v.label}
-              pressed={spec.extension === v.id}
-              reason={reasonFor({ extension: v.id })}
-              onChoose={() => choose({ extension: v.id })}
-              onBlocked={setMessage}
-            />
-          ))}
-        </fieldset>
-        <fieldset className="chip-group">
-          <legend>Alterations</legend>
-          {ALTERATIONS.map((a) => (
-            <Chip
-              key={a}
-              label={ALTERATION_TEXT[a] as string}
-              pressed={spec.alterations.includes(a)}
-              reason={reasonFor({ alterations: toggle(spec.alterations, a) })}
-              onChoose={() => choose({ alterations: toggle(spec.alterations, a) })}
-              onBlocked={setMessage}
-            />
-          ))}
-        </fieldset>
-        <fieldset className="chip-group">
-          <legend>Added</legend>
-          {ADDED.map((a) => (
-            <Chip
-              key={a}
-              label={a}
-              pressed={spec.added.includes(a)}
-              reason={reasonFor({ added: toggle(spec.added, a) })}
-              onChoose={() => choose({ added: toggle(spec.added, a) })}
-              onBlocked={setMessage}
-            />
-          ))}
-        </fieldset>
-        <fieldset className="chip-group">
-          <legend>Omit</legend>
-          {OMIT.map((o) => (
-            <Chip
-              key={o.key}
-              label={o.label}
-              pressed={spec[o.key]}
-              reason={reasonFor({ [o.key]: !spec[o.key] })}
-              onChoose={() => choose({ [o.key]: !spec[o.key] })}
-              onBlocked={setMessage}
-            />
-          ))}
-        </fieldset>
-      </div>
-      <p className="chip-message" role="status" aria-live="polite">
-        {message}
-      </p>
+      <ChordBuilderChips spec={spec} onChange={setChordSpec} />
       </>
       )}
 

@@ -4,10 +4,32 @@
  * anything else, `voiceLeadChord`'s smooth piano-style voicing. Playback, MIDI export and the
  * sheet music all go through this so they agree on what you hear.
  */
-import { capoedTuning } from './fret/capo';
-import { shapeNotes } from './fret/voicings';
-import type { ChordEvent, GuitarVoicing, InstrumentId } from './schema';
+import { toChordSpec } from './convert';
+import { capoedFretCount, capoedTuning } from './fret/capo';
+import { describeChord } from './fret/chords';
+import { bestVoicingIndex, findVoicings, shapeNotes, targetFromChord } from './fret/voicings';
+import type { ChordEvent, GuitarSetup, GuitarVoicing, InstrumentId } from './schema';
+import type { ChordRef } from './theory/types';
 import { voiceLeadChord } from './theory/voicings';
+
+/** Frets on the default neck (the guitar module's own default). */
+const DEFAULT_FRET_COUNT = 22;
+
+/**
+ * The shape the guitar module would show first for `chord` on the song's guitar (Phase 5 item 2:
+ * the progression module's Guitar view, for a chord with no committed voicing) — the same search
+ * and scorer, default rules, on the song's tuning and capo, so both modules agree. Frets are
+ * relative to the capo, like every committed voicing. Null when nothing is playable.
+ */
+export function defaultGuitarShape(chord: ChordRef, guitar: GuitarSetup): (number | null)[] | null {
+  const info = describeChord(toChordSpec(chord), 'sharp');
+  const voicings = findVoicings(
+    capoedTuning(guitar.tuning, guitar.capo),
+    capoedFretCount(DEFAULT_FRET_COUNT, guitar.capo),
+    targetFromChord(info),
+  );
+  return voicings[bestVoicingIndex(voicings)]?.frets.slice() ?? null;
+}
 
 /** A committed voicing's sounding MIDI notes, lowest string first (`[bass, ...upper]`, the shape
  *  every pattern expects). Empty for a shape with every string muted. */

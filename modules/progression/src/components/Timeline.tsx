@@ -17,7 +17,9 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { chordName } from '@sw/core';
+import { chordName, chroma, voicingStatus } from '@sw/core';
+import { capoedTuning } from '@sw/core/fret/capo';
+import { ChordDiagram } from '@sw/ui';
 import type { Navigate } from '../App';
 import { previewChordInSong } from '../state/playback';
 import { BEATS_MAX, useStore } from '../state/store';
@@ -66,6 +68,11 @@ function ChordSlot({
   const isPlaying = useStore((s) => s.isPlaying);
   const selectEvent = useStore((s) => s.selectEvent);
   const setEventBeats = useStore((s) => s.setEventBeats);
+  const guitar = useStore((s) => s.song.guitar);
+  // A committed guitar voicing shows as a mini diagram, flagged when it no longer fits the chord
+  // or the song's tuning/capo (Phase 5 item 1 — the same badge the guitar module's strip shows).
+  const voicing = event.attachments?.guitar;
+  const stale = voicing ? voicingStatus(event, { guitar }) !== 'ok' : false;
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: event.id,
@@ -156,12 +163,37 @@ function ChordSlot({
           {...attributes}
           {...listeners}
           aria-pressed={active}
-          aria-label={`Chord: ${chordName(event.chord)}, ${event.chord.numeral}, ${event.beats} beats`}
+          aria-label={`Chord: ${chordName(event.chord)}, ${event.chord.numeral}, ${event.beats} beats${
+            voicing ? (stale ? ', guitar voicing needs a re-fit' : ', guitar voicing committed') : ''
+          }`}
           className="absolute inset-0 flex flex-col items-center justify-center pr-3"
         >
           <span className="text-base font-bold leading-tight">{chordName(event.chord)}</span>
           <span className={`font-mono text-xs ${playing ? '' : 'text-muted'}`}>{event.chord.numeral}</span>
-          <span className={`mt-1 font-mono text-lg font-medium leading-none ${playing ? '' : 'text-muted'}`}>{shownBeats}</span>
+          {voicing ? (
+            <span className="mt-0.5 flex items-center gap-1.5">
+              {/* A one-beat block has room for the diagram only; its width already says "1". */}
+              {shownBeats > 1 && (
+                <span className={`font-mono text-lg font-medium leading-none ${playing ? '' : 'text-muted'}`}>{shownBeats}</span>
+              )}
+              <span className="block-diagram" data-testid="block-diagram">
+                <ChordDiagram
+                  frets={voicing.frets}
+                  tuning={capoedTuning(voicing.tuning, voicing.capo)}
+                  rootPc={chroma(event.chord.root)}
+                  capo={voicing.capo}
+                  size="mini"
+                />
+              </span>
+            </span>
+          ) : (
+            <span className={`mt-1 font-mono text-lg font-medium leading-none ${playing ? '' : 'text-muted'}`}>{shownBeats}</span>
+          )}
+          {stale && (
+            <span className="block-stale" aria-hidden="true" title="This guitar voicing no longer fits: re-fit it in the guitar module">
+              ⚠
+            </span>
+          )}
         </button>
         <div
           role="slider"
@@ -375,6 +407,8 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
         <div className="mt-2">
           <ChordDetail
             chord={detailEvent.chord}
+            attachments={detailEvent.attachments}
+            guitar={song.guitar}
             onClose={() => setDetailOpen(false)}
             onExplore={() => navigate({ module: 'guitar', eventId: detailEvent.id })}
           />
