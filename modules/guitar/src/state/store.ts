@@ -39,6 +39,7 @@ import { sanitizeSaved, sanitizeTuning } from '@sw/core/fret/savedTunings';
 import { STANDARD_TUNING, type Tuning } from '@sw/core/fret/tunings';
 import { DEFAULT_VOICING_RULES, type VoicingRules } from '@sw/core/fret/voicings';
 import type { ChordRef } from '@sw/core';
+import type { BassMode } from './bassMode';
 
 export const MIN_FRETS = 18;
 export const MAX_FRETS = 24;
@@ -81,6 +82,10 @@ export interface AppState {
    *  (§7 Phase 3 items 1–3). Null outside song context or before anything is focused. */
   progressionEventId: string | null;
   progressionChord: ChordRef | null;
+  /** The bass/inversion control's current choice for the focused progression chord (Phase 4 item
+   *  3), reset to the chord's own inversion whenever the focus changes. Meaningless (and not
+   *  shown) outside song context. Not persisted. */
+  bassMode: BassMode;
   accidentalPref: AccidentalPref;
   leftHanded: boolean;
   fretSpacing: FretSpacing;
@@ -160,6 +165,7 @@ export interface AppState {
   setToolCapo: (capo: number) => void;
   setSongId: (songId: string | null) => void;
   setProgressionFocus: (eventId: string | null, chord: ChordRef | null) => void;
+  setBassMode: (mode: BassMode) => void;
   setAccidentalPref: (pref: AccidentalPref) => void;
   setLeftHanded: (leftHanded: boolean) => void;
   setFretSpacing: (spacing: FretSpacing) => void;
@@ -245,6 +251,7 @@ export const useStore = create<AppState>()(
       songId: null,
       progressionEventId: null,
       progressionChord: null,
+      bassMode: 'root',
       accidentalPref: 'sharp',
       leftHanded: false,
       fretSpacing: 'auto',
@@ -293,6 +300,7 @@ export const useStore = create<AppState>()(
       setToolCapo: (toolCapo) => set({ toolCapo: sanitizeCapo(toolCapo) }),
       setSongId: (songId) => set({ songId }),
       setProgressionFocus: (progressionEventId, progressionChord) => set({ progressionEventId, progressionChord }),
+      setBassMode: (bassMode) => set({ bassMode }),
       setAccidentalPref: (accidentalPref) => set({ accidentalPref }),
       setLeftHanded: (leftHanded) => set({ leftHanded }),
       setFretSpacing: (fretSpacing) => set({ fretSpacing }),

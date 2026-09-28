@@ -4,7 +4,7 @@ import { songStore } from '@sw/song-store';
 import { defaultGuitarTab } from '@sw/core/fret/guitarTabs';
 import { resolveTuning } from '@sw/core/fret/savedTunings';
 import { isValidStrings, STANDARD_TUNING, type Tuning } from '@sw/core/fret/tunings';
-import { clearProgressionFocus, selectProgressionEvent } from '../state/progressionChordActions';
+import { clearProgressionFocus, selectProgressionEvent, syncFocusedChord } from '../state/progressionChordActions';
 import { useStore } from '../state/store';
 
 /** While the tab is still the context's default (nobody has picked one yet — §7 Phase 3 change 1),
@@ -69,6 +69,9 @@ export function useSongContext(songId: string | null, focusEventId: string | und
       }
     }
 
-    return songStore.subscribe(applyGuitarSetup);
+    return songStore.subscribe(() => {
+      applyGuitarSetup();
+      syncFocusedChord(songId);
+    });
   }, [songId, focusEventId]);
 }

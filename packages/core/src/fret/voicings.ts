@@ -423,3 +423,49 @@ export function shapeNotes(
   });
   return notes;
 }
+
+// ------------------------------------------------------------------ re-fit (Songwriting Studio Phase 4 item 5)
+
+/** Toggling a string between muted and fretted counts as further apart than any same-position
+ *  slide, but not so far that it swamps a comparison between two shapes that differ only in which
+ *  strings sound (each of those is already this far apart on every such string). */
+const MUTE_TOGGLE_DISTANCE = 4;
+
+/** How far two shapes are from each other: the sum of each string's fret distance (0 when both
+ *  muted, `MUTE_TOGGLE_DISTANCE` when only one is). Shorter arrays are padded with mutes, so a
+ *  shape for a different string count still compares (rare — tunings share the string count). */
+export function shapeDistance(
+  a: readonly (number | null)[],
+  b: readonly (number | null)[],
+): number {
+  const length = Math.max(a.length, b.length);
+  let distance = 0;
+  for (let i = 0; i < length; i++) {
+    const x = a[i] ?? null;
+    const y = b[i] ?? null;
+    if (x === null && y === null) continue;
+    distance += x === null || y === null ? MUTE_TOGGLE_DISTANCE : Math.abs(x - y);
+  }
+  return distance;
+}
+
+/**
+ * The best replacement for a voicing that's gone stale (§3.2, Phase 4 item 5) — a chord edit that
+ * changed which notes are needed, or a tuning/capo change: the valid voicing nearest the old shape
+ * (minimising `shapeDistance`), ties broken by score. Null only when `voicings` is empty.
+ */
+export function nearestVoicing(
+  oldFrets: readonly (number | null)[],
+  voicings: readonly Voicing[],
+): Voicing | null {
+  let best: Voicing | null = null;
+  let bestDistance = Infinity;
+  for (const v of voicings) {
+    const distance = shapeDistance(oldFrets, v.frets);
+    if (distance < bestDistance || (distance === bestDistance && best !== null && v.score < best.score)) {
+      best = v;
+      bestDistance = distance;
+    }
+  }
+  return best;
+}

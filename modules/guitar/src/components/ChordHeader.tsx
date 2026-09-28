@@ -1,7 +1,7 @@
 import { useChordHeader } from '../hooks/useChordHeader';
 import { formatNoteName } from '@sw/core/fret/notes';
+import { ChordDiagram } from '@sw/ui';
 import { markerStyle, type ScaleStyleOptions } from './Fretboard/markerStyle';
-import { ChordDiagram } from './Panels/ChordDiagram';
 
 /**
  * The chord-focus header (owner request): the notes of whatever chord is currently selected,

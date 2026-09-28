@@ -7,13 +7,14 @@ import {
   stepVoicing,
   strumChord,
 } from '../../state/chordActions';
+import { inversionOptions } from '../../state/bassMode';
+import { clearCurrentVoicing, commitCurrentVoicing, refitCurrentVoicing } from '../../state/progressionChordActions';
 import { useStore } from '../../state/store';
-import { chordName } from '@sw/core';
-import { capoedFretCount, capoedTuning } from '@sw/core/fret/capo';
+import { chordName, findEvent, voicingStatus, type VoicingStatus } from '@sw/core';
+import { capoedTuning } from '@sw/core/fret/capo';
 import {
   ADDED,
   ALTERATIONS,
-  describeChord,
   EXTENSIONS,
   normalizeChord,
   QUALITIES,
@@ -24,8 +25,9 @@ import {
 import { MAX_STRUM_MS, MIN_STRUM_MS } from '@sw/core/fret/chordSettings';
 import { identifyChord } from '@sw/core/fret/identify';
 import { chromaticName, formatNoteName } from '@sw/core/fret/notes';
-import { findVoicings, shapeNotes, shapeText, targetFromChord } from '@sw/core/fret/voicings';
-import { ChordDiagram } from './ChordDiagram';
+import { shapeNotes, shapeText } from '@sw/core/fret/voicings';
+import { useSong } from '@sw/song-store/react';
+import { ChordDiagram } from '@sw/ui';
 
 const ALTERATION_TEXT: Record<string, string> = {
   b5: '♭5',
@@ -141,22 +143,37 @@ export function ChordPanel() {
   const editing = useStore((s) => s.editingShape);
   const pref = useStore((s) => s.accidentalPref);
   const tuning = useStore((s) => s.tuning);
-  const fretCount = useStore((s) => s.fretCount);
   const capo = useStore((s) => s.capo);
   const songId = useStore((s) => s.songId);
+  const progressionEventId = useStore((s) => s.progressionEventId);
   const progressionChord = useStore((s) => s.progressionChord);
-  const { setChordSpec, setVoicingRules, setChordDisplay, setChordPlay, setEditingShape } =
+  const bassMode = useStore((s) => s.bassMode);
+  const { setChordSpec, setVoicingRules, setChordDisplay, setChordPlay, setEditingShape, setBassMode } =
     useStore.getState();
   const [message, setMessage] = useState<string | null>(null);
 
-  const soundingTuning = useMemo(() => capoedTuning(tuning.strings, capo), [tuning.strings, capo]);
-  const soundingFretCount = capoedFretCount(fretCount, capo);
-
-  const info = useMemo(() => describeChord(spec, pref), [spec, pref]);
-  const voicings = useMemo(
-    () => findVoicings(soundingTuning, soundingFretCount, targetFromChord(info), rules),
-    [soundingTuning, soundingFretCount, info, rules],
+  // The focused event straight from the song store (not the `progressionChord` mirror above,
+  // which drops attachments) — reactive, so a commit/clear/re-fit here or a chord edit in the
+  // progression module updates the badge/mini diagram without needing a re-focus.
+  const song = useSong((s) => (songId ? s.library[songId] : undefined));
+  const focusedEvent = useMemo(() => {
+    const found = song && progressionEventId ? findEvent(song, progressionEventId) : null;
+    return found ? found.section.events[found.index]! : null;
+  }, [song, progressionEventId]);
+  const committed = focusedEvent?.attachments?.guitar ?? null;
+  const staleness: VoicingStatus = useMemo(
+    () => (song && focusedEvent ? voicingStatus(focusedEvent, song) : 'none'),
+    [song, focusedEvent],
   );
+
+  const soundingTuning = useMemo(() => capoedTuning(tuning.strings, capo), [tuning.strings, capo]);
+
+  // Always the same list `chordActions` searches (root taps, Prev/Next, "Best voicing"), so a
+  // voicing list index here means the same shape there — including the bass/inversion control's
+  // filter in song context (Phase 4 item 3). `findVoicings` memoises by its own arguments, so
+  // there's no need to also memoise this call: every render already subscribes (via `useStore`
+  // above) to everything `chordContext` itself reads.
+  const { info, voicings } = chordContext();
   const current = index !== null ? voicings[index] : undefined;
 
   // What the shape on the neck actually is, which changes as it is edited.
@@ -192,6 +209,23 @@ export function ChordPanel() {
           From the progression: <strong>{chordName(progressionChord)}</strong> ({progressionChord.numeral}){' '}
           {capo > 0 && <span className="capo-badge">{`Capo ${capo}`}</span>}
         </p>
+      )}
+      {songId && progressionChord && (
+        <fieldset className="chip-group bass-control" data-testid="bass-control">
+          <legend>Bass</legend>
+          <Chip label="Root" pressed={bassMode === 'root'} reason={null} onChoose={() => setBassMode('root')} onBlocked={() => {}} />
+          {inversionOptions(progressionChord).map((n) => (
+            <Chip
+              key={n}
+              label={n === 1 ? '1st' : n === 2 ? '2nd' : '3rd'}
+              pressed={bassMode === n}
+              reason={null}
+              onChoose={() => setBassMode(n)}
+              onBlocked={() => {}}
+            />
+          ))}
+          <Chip label="Any bass" pressed={bassMode === 'any'} reason={null} onChoose={() => setBassMode('any')} onBlocked={() => {}} />
+        </fieldset>
       )}
       {!songId && (
       <>
@@ -399,6 +433,7 @@ export function ChordPanel() {
                 {shapeText(shape)}
               </span>
             )}
+            {committed && <span className="committed-badge" data-testid="committed-badge">Committed</span>}
           </div>
           <button
             type="button"
@@ -409,6 +444,20 @@ export function ChordPanel() {
             Next ▶
           </button>
         </div>
+
+        {songId && staleness !== 'none' && staleness !== 'ok' && (
+          <p className="stale-voicing" role="status" data-testid="stale-voicing">
+            <span className="stale-badge" aria-hidden="true">
+              ⚠
+            </span>{' '}
+            {staleness === 'tuning-changed'
+              ? "This voicing no longer matches the song's tuning/capo."
+              : "This voicing no longer matches the chord."}{' '}
+            <button type="button" className="button" onClick={() => refitCurrentVoicing()}>
+              Re-fit
+            </button>
+          </p>
+        )}
 
         {shape && reading && (
           <p className="shape-reading" data-testid="shape-reading">
@@ -489,6 +538,16 @@ export function ChordPanel() {
           >
             Best voicing
           </button>
+          {songId && (
+            <button type="button" className="button" onClick={() => commitCurrentVoicing()} disabled={!shape}>
+              Use this voicing
+            </button>
+          )}
+          {songId && committed && (
+            <button type="button" className="button" onClick={() => clearCurrentVoicing()}>
+              Remove voicing
+            </button>
+          )}
         </div>
         <p className="muted hint">
           Tap a lit root note for the best voicing there. Tap another lit note to move that string’s

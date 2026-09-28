@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
-import { chordName, flattenDetailed, type FlatEvent } from '@sw/core';
+import { chordName, chroma, flattenDetailed, voicingStatus, type ChordEvent, type FlatEvent, type Song } from '@sw/core';
+import { capoedTuning } from '@sw/core/fret/capo';
 import { useSong } from '@sw/song-store/react';
+import { ChordDiagram } from '@sw/ui';
 import { selectBestVoicing } from '../state/chordActions';
 import { selectProgressionEvent } from '../state/progressionChordActions';
 import { useStore } from '../state/store';
@@ -28,6 +30,46 @@ interface Group {
   sectionId: string;
   name: string;
   items: FlatEvent[];
+}
+
+/** One chord block. A committed voicing (§3.2) shows its mini diagram, flagged if it's gone stale
+ *  (Phase 4 item 4–5) — exactly the badge `ChordPanel` shows when that chord is focused. */
+function StripChord({ event, song, selected }: { event: ChordEvent; song: Song; selected: boolean }) {
+  const voicing = event.attachments?.guitar;
+  const stale = voicing ? voicingStatus(event, song) !== 'ok' : false;
+  return (
+    <button
+      type="button"
+      className={`strip-chord${stale ? ' stale' : ''}`}
+      aria-pressed={selected}
+      aria-label={`Chord: ${chordName(event.chord)}, ${event.chord.numeral}, ${event.chord.origin}${
+        voicing ? (stale ? ', voicing needs a re-fit' : ', voicing committed') : ''
+      }`}
+      style={{
+        backgroundColor: ORIGIN_TINT[event.chord.origin],
+        borderColor: ORIGIN_COLOR[event.chord.origin],
+      }}
+      onClick={() => selectAndPlay(event.id)}
+    >
+      <span className="strip-chord-name">{chordName(event.chord)}</span>
+      <span className="strip-chord-numeral">{event.chord.numeral}</span>
+      {voicing && (
+        <span className="strip-chord-diagram">
+          <ChordDiagram
+            frets={voicing.frets}
+            tuning={capoedTuning(voicing.tuning, voicing.capo)}
+            rootPc={chroma(event.chord.root)}
+            size="mini"
+          />
+          {stale && (
+            <span className="strip-chord-stale-badge" aria-hidden="true">
+              ⚠
+            </span>
+          )}
+        </span>
+      )}
+    </button>
+  );
 }
 
 function groupByArrangementSlot(flat: FlatEvent[], nameOf: (sectionId: string) => string): Group[] {
@@ -76,20 +118,7 @@ export function ProgressionStrip() {
             <ol className="strip-chords">
               {g.items.map(({ event }) => (
                 <li key={`${g.arrangementIndex}:${event.id}`}>
-                  <button
-                    type="button"
-                    className="strip-chord"
-                    aria-pressed={event.id === progressionEventId}
-                    aria-label={`Chord: ${chordName(event.chord)}, ${event.chord.numeral}, ${event.chord.origin}`}
-                    style={{
-                      backgroundColor: ORIGIN_TINT[event.chord.origin],
-                      borderColor: ORIGIN_COLOR[event.chord.origin],
-                    }}
-                    onClick={() => selectAndPlay(event.id)}
-                  >
-                    <span className="strip-chord-name">{chordName(event.chord)}</span>
-                    <span className="strip-chord-numeral">{event.chord.numeral}</span>
-                  </button>
+                  <StripChord event={event} song={song} selected={event.id === progressionEventId} />
                 </li>
               ))}
             </ol>

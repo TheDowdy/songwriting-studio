@@ -8,7 +8,9 @@ import {
   fingering,
   indexOfShape,
   MAX_LISTED_VOICINGS,
+  nearestVoicing,
   searchVoicings,
+  shapeDistance,
   shapeNotes,
   shapeText,
   targetFromChord,
@@ -34,6 +36,20 @@ const E = 4;
 const C = 0;
 const A = 9;
 const G = 7;
+
+/** A minimal, otherwise-irrelevant `Voicing` for tests that only care about `frets`/`score`. */
+const FAKE_VOICING = {
+  frets: [] as (number | null)[],
+  score: 0,
+  position: 0,
+  stretch: 0,
+  fingers: 0,
+  barre: null,
+  sounding: 6,
+  bassPc: 0,
+  rootInBass: true,
+  complete: true,
+};
 
 describe('acceptance: standard tuning', () => {
   it('E major: the default (best) voicing is the open shape 0-2-2-1-0-0', () => {
@@ -317,5 +333,57 @@ describe('performance', () => {
       searchVoicings(tuning, 24, chord({ rootPc: G, seventh: 'maj7', extension: '9' }));
       expect(performance.now() - t0).toBeLessThan(50);
     }
+  });
+});
+
+describe('shapeDistance', () => {
+  it('is 0 for identical shapes', () => {
+    expect(shapeDistance([0, 2, 2, 1, 0, 0], [0, 2, 2, 1, 0, 0])).toBe(0);
+  });
+
+  it('sums per-string fret distance', () => {
+    expect(shapeDistance([0, 2, 2, 1, 0, 0], [0, 4, 4, 1, 0, 0])).toBe(4);
+  });
+
+  it('charges a fixed toggle cost when one side mutes a string the other sounds', () => {
+    expect(shapeDistance([null, 2, 2, 1, 0, 0], [0, 2, 2, 1, 0, 0])).toBe(4);
+  });
+
+  it('ignores a string both sides mute', () => {
+    expect(shapeDistance([null, 2, 2, 1, 0, null], [null, 2, 2, 1, 0, null])).toBe(0);
+  });
+});
+
+describe('nearestVoicing (Phase 4 item 5: re-fit a stale voicing)', () => {
+  it('picks the closest valid shape to the old position, not just the best-scoring one', () => {
+    // An E major voicing up the neck (a barre at fret 7): the open E shape at the neck's nut
+    // scores better overall, but re-fitting should stay near where the player already had their
+    // hand, not jump all the way down to it.
+    const upTheNeck: (number | null)[] = [7, 9, 9, 8, 7, 7];
+    const voicings = search(chord({ rootPc: E }));
+    expect(best(voicings)).toBe('0-2-2-1-0-0'); // sanity: the open shape really is the best score
+    const refit = nearestVoicing(upTheNeck, voicings);
+    expect(refit).not.toBeNull();
+    expect(shapeText(refit!.frets)).not.toBe('0-2-2-1-0-0');
+    expect(refit!.position).toBeGreaterThanOrEqual(5);
+  });
+
+  it('returns the identical shape when it is still valid', () => {
+    const voicings = search(chord({ rootPc: E }));
+    const openE = voicings.find((v) => shapeText(v.frets) === '0-2-2-1-0-0')!;
+    expect(nearestVoicing(openE.frets, voicings)!.frets).toEqual(openE.frets);
+  });
+
+  it('breaks a distance tie by score', () => {
+    const fake = (frets: (number | null)[], score: number) => ({ ...FAKE_VOICING, frets, score });
+    const worse = fake([1, 1, 1, 1, 1, 1], 5);
+    const better = fake([3, 3, 3, 3, 3, 3], 1);
+    // Equidistant (2 frets away) from both; the lower score should win.
+    expect(nearestVoicing([2, 2, 2, 2, 2, 2], [worse, better])).toBe(better);
+    expect(nearestVoicing([2, 2, 2, 2, 2, 2], [better, worse])).toBe(better); // order-independent
+  });
+
+  it('is null for an empty voicing list', () => {
+    expect(nearestVoicing([0, 0, 0, 0, 0, 0], [])).toBeNull();
   });
 });

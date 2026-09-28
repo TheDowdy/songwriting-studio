@@ -11,7 +11,9 @@ import {
   shapeNotes,
   targetFromChord,
   type Voicing,
+  type VoicingTarget,
 } from '@sw/core/fret/voicings';
+import { bassPcForMode } from './bassMode';
 import { emitPluck } from './pluckEvents';
 import { playFret } from './playing';
 import { useStore } from './store';
@@ -27,14 +29,23 @@ export interface ChordContext {
  * The chord in the store, described and searched for voicings on the current tuning. With a capo
  * (§7 Phase 3 item 4) the search runs on `tuning + capo` over `fretCount − capo` frets, so every
  * returned shape's frets are relative to the capo (0 = capo/open), matching the diagrams.
+ *
+ * In song context, the bass/inversion control (Phase 4 item 3) narrows this further: its chosen
+ * pitch class (or no restriction at all, for "Any bass") replaces whatever slash bass the chord
+ * itself might already have, so root taps, Prev/Next and the voicing list all only ever show
+ * shapes the control currently allows.
  */
 export function chordContext(): ChordContext {
-  const { chordSpec, accidentalPref, tuning, fretCount, voicingRules, capo } = useStore.getState();
+  const { chordSpec, accidentalPref, tuning, fretCount, voicingRules, capo, songId, progressionChord, bassMode } =
+    useStore.getState();
   const info = describeChord(chordSpec, accidentalPref);
+  const target: VoicingTarget = targetFromChord(info);
+  const effectiveTarget: VoicingTarget =
+    songId && progressionChord ? { ...target, bassPc: bassPcForMode(progressionChord, bassMode) } : target;
   const voicings = findVoicings(
     capoedTuning(tuning.strings, capo),
     capoedFretCount(fretCount, capo),
-    targetFromChord(info),
+    effectiveTarget,
     voicingRules,
   );
   return { info, voicings, best: bestVoicingIndex(voicings) };

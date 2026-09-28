@@ -794,6 +794,56 @@
   }
 }
 
+/* Recommended voicing, overrides, inversions, commit (Songwriting Studio Phase 4) */
+.mod-guitar .bass-control {
+  margin-top: 0.35rem;
+}
+.mod-guitar .committed-badge,
+.mod-guitar .stale-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.mod-guitar .committed-badge {
+  padding: 0.05rem 0.5rem;
+  color: var(--accent-fg);
+  background: var(--accent);
+  border-radius: 999px;
+}
+.mod-guitar .stale-voicing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0;
+  padding: 0.35rem 0.6rem;
+  color: var(--fg);
+  background: color-mix(in srgb, #e06c5a 18%, var(--bg));
+  border: 1px solid color-mix(in srgb, #e06c5a 55%, var(--line));
+  border-radius: 8px;
+}
+.mod-guitar .stale-badge {
+  color: #e06c5a;
+}
+/* The strip's committed blocks show a mini diagram alongside the name/numeral, and flag a stale
+ *  one exactly as the panel does (`.dialog-warning`'s colour). */
+.mod-guitar .strip-chord-diagram {
+  color: inherit;
+}
+.mod-guitar .strip-chord.stale {
+  box-shadow: inset 0 0 0 2px #e06c5a;
+}
+.mod-guitar .strip-chord-stale-badge {
+  font-size: 0.65rem;
+  line-height: 1;
+  color: #e06c5a;
+}
+.mod-guitar .chord-diagram--mini {
+  display: block;
+}
+.mod-guitar .diagram-capo {
+  fill: var(--muted);
+}
+
 /* Phase 10: accessibility, large neck */
 .mod-guitar .sr-only {
   position: absolute;

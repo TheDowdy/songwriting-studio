@@ -14,7 +14,7 @@
     "build": "npm run build --workspace=apps/web",
     "preview": "npm run preview --workspace=apps/web",
     "test": "npm run test --workspace=packages/core && npm run test --workspace=packages/song-store && npm run test --workspace=modules/progression && npm run test --workspace=modules/guitar && npm run test --workspace=apps/web",
-    "typecheck": "npm run typecheck --workspace=packages/core && npm run typecheck --workspace=packages/song-store && npm run typecheck --workspace=packages/audio && npm run typecheck --workspace=modules/progression && npm run typecheck --workspace=modules/guitar && npm run typecheck --workspace=apps/web",
+    "typecheck": "npm run typecheck --workspace=packages/core && npm run typecheck --workspace=packages/song-store && npm run typecheck --workspace=packages/audio && npm run typecheck --workspace=packages/ui && npm run typecheck --workspace=modules/progression && npm run typecheck --workspace=modules/guitar && npm run typecheck --workspace=apps/web",
     "lint": "npm run lint --workspace=modules/guitar",
     "check:audio": "npm run check:audio --workspace=apps/web",
     "check:app": "npm run check:app --workspace=apps/web",
@@ -33,6 +33,7 @@
     "check:shell": "npm run check:shell --workspace=apps/web",
     "check:song-guitar": "npm run check:song-guitar --workspace=apps/web",
     "check:song-files": "npm run check:song-files --workspace=apps/web",
+    "check:voicing-commit": "npm run check:voicing-commit --workspace=apps/web",
     "check:chord-header": "npm run check:chord-header --workspace=apps/web"
   },
   "devDependencies": {
