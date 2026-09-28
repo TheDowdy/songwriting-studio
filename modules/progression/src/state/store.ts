@@ -7,7 +7,7 @@
  */
 import { create } from 'zustand';
 import * as core from '@sw/core';
-import type { ChordRef, InstrumentId, Key, PatternId, Song, TimeSig } from '@sw/core';
+import type { ChordRef, InstrumentId, Key, PatternId, Song, TimeSig, VariantGeneratorId, VariantOptions } from '@sw/core';
 import { songStore } from '@sw/song-store';
 
 export type KeyChangeMode = core.KeyChangeMode;
@@ -59,6 +59,7 @@ interface AppState {
   addSection: (name?: string) => void;
   renameSection: (id: string, name: string) => void;
   duplicateSection: (id: string) => void;
+  makeVariantWithGenerator: (id: string, generator: VariantGeneratorId, options?: VariantOptions) => void;
   removeSection: (id: string) => void;
   setSectionRepeat: (id: string, repeat: number) => void;
   reorderSections: (fromIndex: number, toIndex: number) => void;
@@ -194,6 +195,10 @@ export const useStore = create<AppState>((set, get) => {
     renameSection: (id, name) => songStore.getState().renameSection(id, name),
     duplicateSection: (id) => {
       const sectionId = songStore.getState().duplicateSection(id);
+      if (sectionId) set({ activeSectionId: sectionId });
+    },
+    makeVariantWithGenerator: (id, generator, options) => {
+      const sectionId = songStore.getState().makeVariantWithGenerator(id, generator, options);
       if (sectionId) set({ activeSectionId: sectionId });
     },
     removeSection: (id) => {

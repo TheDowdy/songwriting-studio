@@ -19,11 +19,11 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { chordName, chroma, voicingStatus } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
-import { ChordDiagram } from '@sw/ui';
+import { ChordDiagram, VariantDialog } from '@sw/ui';
 import type { Navigate } from '../App';
 import { previewChordInSong } from '../state/playback';
 import { BEATS_MAX, useStore } from '../state/store';
-import type { ChordEvent, Section } from '@sw/core';
+import type { ChordEvent, Section, VariantGeneratorId, VariantOptions } from '@sw/core';
 import ChordDetail from './ChordDetail';
 import FlavorPicker from './FlavorPicker';
 
@@ -293,7 +293,9 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
   const setSectionRepeat = useStore((s) => s.setSectionRepeat);
   const clearSection = useStore((s) => s.clearSection);
   const setActiveSection = useStore((s) => s.setActiveSection);
+  const makeVariantWithGenerator = useStore((s) => s.makeVariantWithGenerator);
   const [flavorId, setFlavorId] = useState<string | null>(null);
+  const [variantOpen, setVariantOpen] = useState(false);
   const detailOpen = useStore((s) => s.chordDetailOpen);
   const setDetailOpen = useStore((s) => s.setChordDetailOpen);
 
@@ -308,13 +310,35 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
   const toolbarEvent = section.events.find((e) => e.id === selectedId);
   const flavorEvent = section.events.find((e) => e.id === flavorId && e.id === selectedId);
   const detailEvent = detailOpen ? toolbarEvent : undefined;
+  const sourceSection = section.variantOf ? song.sections.find((s) => s.id === section.variantOf) : undefined;
+  const jumpToSource = () => {
+    setActiveSection(section.variantOf as string);
+    document.getElementById(`section-${section.variantOf}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
 
   return (
     <section
+      id={`section-${section.id}`}
       aria-label={`Section: ${section.name}`}
       onClick={() => setActiveSection(section.id)}
       className={`rounded-xl border p-3 ${section.id === activeSectionId ? 'border-accent bg-surface' : 'border-line bg-surface'}`}
     >
+      {sourceSection && (
+        <p className="mb-2 text-xs text-muted" data-testid="variant-of">
+          Variant of{' '}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              jumpToSource();
+            }}
+            className="underline hover:text-fg"
+          >
+            {sourceSection.name}
+          </button>
+          {section.variantLabel && ` · ${section.variantLabel}`}
+        </p>
+      )}
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <input
@@ -345,6 +369,17 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
           <button onClick={() => duplicateSection(section.id)} className="rounded-lg px-2 py-1 hover:bg-surface-2">
             Duplicate section
           </button>
+          {section.events.length > 0 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setVariantOpen(true);
+              }}
+              className="rounded-lg px-2 py-1 hover:bg-surface-2"
+            >
+              Make variant
+            </button>
+          )}
           {section.events.length > 0 && (
             <button onClick={() => clearSection(section.id)} className="rounded-lg px-2 py-1 hover:bg-surface-2">
               Clear
@@ -414,6 +449,21 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
             guitar={song.guitar}
             onClose={() => setDetailOpen(false)}
             onExplore={() => navigate({ module: 'guitar', eventId: detailEvent.id })}
+          />
+        </div>
+      )}
+      {variantOpen && (
+        <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+          <VariantDialog
+            sectionName={section.name}
+            chords={section.events.map((e) => e.chord)}
+            tuning={song.guitar.tuning}
+            capo={song.guitar.capo}
+            onClose={() => setVariantOpen(false)}
+            onCreate={(generator: VariantGeneratorId, options: VariantOptions) => {
+              makeVariantWithGenerator(section.id, generator, options);
+              setVariantOpen(false);
+            }}
           />
         </div>
       )}

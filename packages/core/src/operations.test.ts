@@ -12,6 +12,7 @@ import {
   duplicateEvent,
   duplicateSection,
   makeVariant,
+  makeVariantWithGenerator,
   moveEvent,
   reorderArrangement,
   reorderEvents,
@@ -141,6 +142,41 @@ describe('sections', () => {
     expect(variant.variantLabel).toBe('Up the neck');
     song = setEventChord(song, song.sections[0]!.events[0]!.id, V);
     expect(chordName(song.sections.find((s) => s.id === variantId)!.events[0]!.chord)).toBe('C');
+  });
+
+  it('makeVariantWithGenerator voices the copy, and gives it the generator’s label (Phase 8)', () => {
+    let song = newSong(c);
+    const verseId = song.sections[0]!.id;
+    ({ song } = addChord(song, verseId, null, I));
+    ({ song } = addChord(song, verseId, null, V));
+    let variantId: string;
+    ({ song, sectionId: variantId } = makeVariantWithGenerator(song, verseId, 'up-the-neck', { fromFret: 7 }));
+    const variant = song.sections.find((s) => s.id === variantId)!;
+    expect(variant.name).toBe('Verse (Up the neck (7+))');
+    expect(variant.variantOf).toBe(verseId);
+    expect(variant.variantLabel).toBe('Up the neck (7+)');
+    for (const event of variant.events) {
+      expect(event.attachments?.guitar).toBeTruthy();
+      expect(event.attachments!.guitar!.frets.some((f) => f !== null && f > 0)).toBe(true);
+    }
+    // The source section's own voicings (it has none yet) are untouched.
+    expect(song.sections.find((s) => s.id === verseId)!.events[0]!.attachments?.guitar).toBeUndefined();
+  });
+
+  it('makeVariantWithGenerator leaves the source section’s existing voicings alone', () => {
+    let song = newSong(c);
+    const verseId = song.sections[0]!.id;
+    let eventId: string;
+    ({ song, eventId } = addChord(song, verseId, null, I));
+    const voicing: GuitarVoicing = { frets: [null, 3, 2, 0, 1, 0], tuning: [40, 45, 50, 55, 59, 64], capo: 0, source: 'recommended' };
+    song = commitVoicing(song, eventId, voicing);
+    let variantId: string;
+    ({ song, sectionId: variantId } = makeVariantWithGenerator(song, verseId, 'open-position'));
+    const variantVoicing = song.sections.find((s) => s.id === variantId)!.events[0]!.attachments!.guitar!;
+    const sourceVoicing = song.sections.find((s) => s.id === verseId)!.events[0]!.attachments!.guitar!;
+    expect(sourceVoicing).toEqual(voicing); // the source is untouched
+    // The variant's own shape is generated independently (may coincide, but isn't required to).
+    expect(variantVoicing.source).toBe('recommended');
   });
 });
 

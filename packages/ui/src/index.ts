@@ -7,3 +7,4 @@ export {
   type ChordBuilderChipsProps,
   type ChordBuilderGroup,
 } from './ChordBuilder';
+export { VariantDialog, type VariantDialogProps } from './VariantDialog';

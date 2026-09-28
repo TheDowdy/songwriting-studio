@@ -10,6 +10,7 @@ import { isValidStrings } from './fret/tunings';
 import { relabel, transposeChord } from './theory/chords';
 import type { ChordRef, Key } from './theory/types';
 import { findEvent, newEvent, newId, newSection, withSection } from './song';
+import { generateVariantShapes, variantLabelFor, type VariantGeneratorId, type VariantOptions } from './variants';
 import type { ChordAttachments, ChordEvent, GuitarSetup, GuitarVoicing, InstrumentId, PatternId, Section, Song, TimeSig } from './schema';
 
 export const BPM_MIN = 30;
@@ -167,6 +168,43 @@ export function makeVariant(song: Song, id: string, label = 'Variant'): { song: 
   const copy = withCopy.sections.find((s) => s.id === sectionId) as Section;
   const tagged: Section = { ...copy, name: `${(song.sections.find((s) => s.id === id) as Section).name} (${label})`, variantOf: id, variantLabel: label };
   return { song: withSection(withCopy, sectionId, tagged), sectionId };
+}
+
+/** Overwrites a section's guitar voicings with a generator's shapes for its own chords (Phase 8
+ *  item 2): every event gets a fresh `attachments.guitar` (or none, if no shape was playable). */
+function voiceSection(song: Song, sectionId: string, generator: VariantGeneratorId, options: VariantOptions): Song {
+  const section = song.sections.find((s) => s.id === sectionId);
+  if (!section) return song;
+  const shapes = generateVariantShapes(section.events.map((e) => e.chord), song.guitar.tuning, song.guitar.capo, generator, options);
+  const events = section.events.map((e, i) => {
+    const shape = shapes[i];
+    if (!shape) {
+      if (!e.attachments?.guitar) return e;
+      const { guitar, ...rest } = e.attachments;
+      void guitar;
+      return { ...e, attachments: Object.keys(rest).length > 0 ? rest : undefined };
+    }
+    const guitar: GuitarVoicing = { frets: shape.frets.slice(), tuning: [...song.guitar.tuning], capo: song.guitar.capo, source: 'recommended' };
+    return { ...e, attachments: { ...e.attachments, guitar } };
+  });
+  return withSection(song, sectionId, { ...section, events });
+}
+
+/**
+ * "Make variant" (Phase 8 item 1): a plain copy of a section (`makeVariant`), then voiced by one
+ * of the generators in `variants.ts` — every chord's diagram in the copy reflects the generator's
+ * choice, independent of whatever the source section's chords were voiced with.
+ */
+export function makeVariantWithGenerator(
+  song: Song,
+  id: string,
+  generator: VariantGeneratorId,
+  options: VariantOptions = {},
+): { song: Song; sectionId: string } {
+  const label = variantLabelFor(generator, options);
+  const { song: withCopy, sectionId } = makeVariant(song, id, label);
+  if (!sectionId) return { song, sectionId: '' };
+  return { song: voiceSection(withCopy, sectionId, generator, options), sectionId };
 }
 
 export function removeSection(song: Song, id: string): Song {

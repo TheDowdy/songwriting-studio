@@ -11,6 +11,8 @@ import {
   withChordSpec,
   withInversion,
   type ChordRef,
+  type VariantGeneratorId,
+  type VariantOptions,
 } from '@sw/core';
 import type { ChordSpec } from '@sw/core/fret/chords';
 import { songStore } from '@sw/song-store';
@@ -129,4 +131,11 @@ export function renameSection(sectionId: string, name: string): void {
 export function duplicateSection(sectionId: string): void {
   recordUndo('Duplicate section');
   songStore.getState().duplicateSection(sectionId);
+}
+
+/** "Make variant" (Phase 8 item 1): a copy of the section voiced by one of the generators in
+ *  `@sw/core`'s `variants.ts`, inserted right after the source in the arrangement. */
+export function makeSectionVariant(sectionId: string, generator: VariantGeneratorId, options?: VariantOptions): void {
+  recordUndo('Make variant');
+  songStore.getState().makeVariantWithGenerator(sectionId, generator, options);
 }

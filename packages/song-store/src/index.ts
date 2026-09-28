@@ -10,7 +10,7 @@
  */
 import { createStore } from 'zustand/vanilla';
 import * as ops from '@sw/core';
-import { migrateSong, type ChordAttachments, type GuitarVoicing, type Song } from '@sw/core';
+import { migrateSong, type ChordAttachments, type GuitarVoicing, type Song, type VariantGeneratorId, type VariantOptions } from '@sw/core';
 import type { ChordRef, Key } from '@sw/core';
 
 const SONGS_KEY = 'sw:songs';
@@ -129,6 +129,8 @@ export interface SongStoreState {
   renameSection: (id: string, name: string) => void;
   duplicateSection: (id: string) => string;
   makeVariant: (id: string, label?: string) => string;
+  /** Phase 8: a section copy voiced by one of the guitar generators, labelled from it. */
+  makeVariantWithGenerator: (id: string, generator: VariantGeneratorId, options?: VariantOptions) => string;
   removeSection: (id: string) => void;
   setSectionRepeat: (id: string, repeat: number) => void;
   reorderSections: (fromIndex: number, toIndex: number) => void;
@@ -241,6 +243,8 @@ export const songStore = createStore<SongStoreState>((set, get) => ({
     withCurrent(set, get, (song) => ops.duplicateSection(song, id), (r) => r.sectionId as string),
   makeVariant: (id, label) =>
     withCurrent(set, get, (song) => ops.makeVariant(song, id, label), (r) => r.sectionId as string),
+  makeVariantWithGenerator: (id, generator, options) =>
+    withCurrent(set, get, (song) => ops.makeVariantWithGenerator(song, id, generator, options), (r) => r.sectionId as string),
   removeSection: (id) => withCurrent(set, get, (song) => ops.removeSection(song, id)),
   setSectionRepeat: (id, repeat) => withCurrent(set, get, (song) => ops.setSectionRepeat(song, id, repeat)),
   reorderSections: (fromIndex, toIndex) => withCurrent(set, get, (song) => ops.reorderSections(song, fromIndex, toIndex)),

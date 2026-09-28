@@ -1112,3 +1112,83 @@
   font-weight: 600;
   color: var(--muted);
 }
+
+/* Variants (Songwriting Studio Phase 8): shared @sw/ui VariantDialog, plus the strip's own
+   "Make variant" action and "Variant of X" link. */
+.mod-guitar .variant-dialog {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.mod-guitar .variant-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.mod-guitar .variant-dialog-head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.mod-guitar .variant-dialog-close {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 1.1rem;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.mod-guitar .variant-dialog-close:hover {
+  background: var(--surface-2);
+}
+.mod-guitar .variant-dialog-option input {
+  width: 100%;
+}
+.mod-guitar .variant-dialog-label {
+  margin: 0;
+}
+.mod-guitar .variant-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mod-guitar .variant-preview-chord {
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  padding: 0.3rem;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.mod-guitar .variant-preview-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.mod-guitar .strip-variant-of {
+  margin: 0 0 0.2rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.mod-guitar .strip-variant-link {
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.mod-guitar .strip-variant-link:hover {
+  color: var(--fg);
+}

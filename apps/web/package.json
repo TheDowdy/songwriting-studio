@@ -30,6 +30,7 @@
     "check:song-voicings": "node scripts/song-voicings-check.mjs",
     "check:guitar-build": "node scripts/guitar-build-check.mjs",
     "check:revoice": "node scripts/revoice-check.mjs",
+    "check:variant": "node scripts/variant-check.mjs",
     "check:chord-header": "node scripts/chord-header-check.mjs"
   },
   "dependencies": {

@@ -11,11 +11,11 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { chordName, chroma, voicingStatus, type ChordEvent, type Section, type Song } from '@sw/core';
+import { chordName, chroma, voicingStatus, type ChordEvent, type Section, type Song, type VariantGeneratorId, type VariantOptions } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { useSong } from '@sw/song-store/react';
-import { ChordDiagram } from '@sw/ui';
-import { addSection, duplicateSection, focusAndPlay, renameSection, reorderChord } from '../state/progressionEdits';
+import { ChordDiagram, VariantDialog } from '@sw/ui';
+import { addSection, duplicateSection, focusAndPlay, makeSectionVariant, renameSection, reorderChord } from '../state/progressionEdits';
 import { playProgression, stopProgression } from '../state/progressionPlayback';
 import { undoLastGuitarChange } from '../state/undo';
 import { useStore } from '../state/store';
@@ -140,6 +140,21 @@ function SectionName({ section }: { section: Section }) {
   );
 }
 
+/** "Variant of X" (Phase 8 item 3): a link back to the source section. Jumping to it scrolls the
+ *  strip to that section's block, the same way the progression module's own link does. */
+function VariantOf({ section, sourceName }: { section: Section; sourceName: string }) {
+  const jump = () => document.getElementById(`strip-section-${section.variantOf}`)?.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+  return (
+    <p className="strip-variant-of" data-testid="strip-variant-of">
+      Variant of{' '}
+      <button type="button" onClick={jump} className="strip-variant-link">
+        {sourceName}
+      </button>
+      {section.variantLabel && ` · ${section.variantLabel}`}
+    </p>
+  );
+}
+
 /** Play the song or a section through the guitar synth (Phase 6 item 2), at the song's tempo; plus
  *  the re-voice panel's button when voicings no longer fit, and Undo (Phase 7 items 2–3). */
 function Transport({ song, hasChords }: { song: Song; hasChords: boolean }) {
@@ -215,6 +230,7 @@ export function ProgressionStrip() {
   const song = useSong((s) => s.currentSong());
   const progressionEventId = useStore((s) => s.progressionEventId);
   const addSectionId = useStore((s) => s.stripAddSectionId);
+  const [variantSectionId, setVariantSectionId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(MouseSensor, MOUSE_DRAG),
     useSensor(TouchSensor, TOUCH_DRAG),
@@ -246,8 +262,10 @@ export function ProgressionStrip() {
       {!hasChords && <p className="muted">This song has no chords yet — pick one below to start.</p>}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <ol className="strip-scroll">
-          {slots.map(({ slot, section }) => (
-            <li key={slot} className="strip-group">
+          {slots.map(({ slot, section }) => {
+            const sourceSection = section.variantOf ? song.sections.find((s) => s.id === section.variantOf) : undefined;
+            return (
+            <li key={slot} className="strip-group" id={`strip-section-${section.id}`}>
               <span className="strip-group-head">
                 <SectionName section={section} />
                 <button
@@ -259,7 +277,19 @@ export function ProgressionStrip() {
                 >
                   ⧉
                 </button>
+                {section.events.length > 0 && (
+                  <button
+                    type="button"
+                    className="strip-section-action"
+                    aria-label={`Make a variant of ${section.name}`}
+                    title="Make a variant of this section"
+                    onClick={() => setVariantSectionId(section.id)}
+                  >
+                    ⎘
+                  </button>
+                )}
               </span>
+              {sourceSection && <VariantOf section={section} sourceName={sourceSection.name} />}
               <SortableContext
                 items={section.events.map((e) => blockId(slot, e.id))}
                 strategy={horizontalListSortingStrategy}
@@ -289,7 +319,8 @@ export function ProgressionStrip() {
                 </ol>
               </SortableContext>
             </li>
-          ))}
+            );
+          })}
           <li className="strip-group strip-group-new">
             <button type="button" className="strip-add-section" onClick={() => addSection()}>
               + Section
@@ -297,6 +328,19 @@ export function ProgressionStrip() {
           </li>
         </ol>
       </DndContext>
+      {variantSectionId && (
+        <VariantDialog
+          sectionName={slots.find((x) => x.section.id === variantSectionId)?.section.name ?? ''}
+          chords={(slots.find((x) => x.section.id === variantSectionId)?.section.events ?? []).map((e) => e.chord)}
+          tuning={song.guitar.tuning}
+          capo={song.guitar.capo}
+          onClose={() => setVariantSectionId(null)}
+          onCreate={(generator: VariantGeneratorId, options: VariantOptions) => {
+            makeSectionVariant(variantSectionId, generator, options);
+            setVariantSectionId(null);
+          }}
+        />
+      )}
     </section>
   );
 }
