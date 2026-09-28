@@ -32,6 +32,7 @@
     "check:clock": "npm run check:clock --workspace=apps/web",
     "check:shell": "npm run check:shell --workspace=apps/web",
     "check:song-guitar": "npm run check:song-guitar --workspace=apps/web",
+    "check:song-files": "npm run check:song-files --workspace=apps/web",
     "check:chord-header": "npm run check:chord-header --workspace=apps/web"
   },
   "devDependencies": {

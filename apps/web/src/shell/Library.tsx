@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
+import { newId } from '@sw/core';
 import { useSong } from '@sw/song-store/react';
 import { APP_NAME } from './appInfo';
 import { DEFAULT_SONG_MODULE_ID, TOOL_MODULES } from './modules';
@@ -48,7 +49,9 @@ export default function Library() {
     setError(null);
     try {
       const raw: unknown = JSON.parse(await file.text());
-      const id = importSong(raw);
+      // A fresh id, as the progression's own import does: re-importing a backup of a song that's
+      // still in the library adds a copy instead of silently overwriting the one there.
+      const id = raw && typeof raw === 'object' ? importSong({ ...raw, id: newId() }) : null;
       if (!id) {
         setError("That file doesn't look like a song export.");
         return;

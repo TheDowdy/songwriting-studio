@@ -12,9 +12,11 @@ import { startChords, suggestNext } from '@sw/core';
 import type { ChordRef } from '@sw/core';
 
 /** The shell's `navigate` (§4 ModuleProps), narrowed to what this module actually calls: jumping
- *  to the guitar module with a chord selected (§7 Phase 3 item 1). Declared locally rather than
+ *  to the guitar module with a chord selected (§7 Phase 3 item 1), and pointing the URL at a
+ *  different song after switching which one is open (SongPanel's own File menu) so the shell's
+ *  `SongView` doesn't load the old song straight back over it. Declared locally rather than
  *  imported from the shell — a module never imports the shell. */
-export type Navigate = (to: { module: string; eventId?: string }) => void;
+export type Navigate = (to: { module: string; songId?: string; eventId?: string }) => void;
 
 interface Props {
   navigate: Navigate;
@@ -47,7 +49,7 @@ export default function ProgressionModule({ navigate }: Props) {
   return (
     <div className="mod-progression min-h-dvh pb-44 lg:pb-10">
       <div className="mx-auto max-w-3xl space-y-4 px-4 pt-5">
-        <SongPanel onOpenSheet={() => setSheetOpen(true)} />
+        <SongPanel onOpenSheet={() => setSheetOpen(true)} navigate={navigate} />
         <KeyPicker />
         <TransportBar />
         <NodeMap

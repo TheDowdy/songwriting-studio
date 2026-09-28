@@ -25,6 +25,7 @@
     "check:clock": "node scripts/clock-check.mjs",
     "check:shell": "node scripts/shell-check.mjs",
     "check:song-guitar": "node scripts/song-guitar-check.mjs",
+    "check:song-files": "node scripts/song-files-check.mjs",
     "check:chord-header": "node scripts/chord-header-check.mjs"
   },
   "dependencies": {

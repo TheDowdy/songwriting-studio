@@ -27,6 +27,12 @@ export default function SongView({ params }: Props) {
   // Make this song the store's current one, so every module (which reads the store's current
   // song, not a copy) shows it. Nothing renders below until that's actually true, so a
   // navigation between two songs never flashes the previous one.
+  //
+  // A module switching songs itself (the progression's Songs panel opening, importing or
+  // starting one) must move the URL to match *before* or in the same tick as switching the
+  // store's current song (see each module's own `navigate({ songId })` calls) — otherwise this
+  // effect would see the URL still pointing at the old song and immediately load that back,
+  // undoing the switch.
   useEffect(() => {
     if (song && currentSongId !== songId) loadSong(songId);
   }, [song, songId, currentSongId, loadSong]);

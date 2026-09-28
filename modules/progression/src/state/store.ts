@@ -85,7 +85,9 @@ interface AppState {
   /** Replace the whole song (open a saved song, import JSON, or start a new one) and reset the
    *  editor selection, which otherwise could point at an event id from the old song. */
   loadSong: (song: Song) => void;
-  newSong: () => void;
+  /** Returns the new song's id, so a caller that also owns the URL (SongPanel) can point it at
+   *  the new song — see `Navigate` in `../App`. */
+  newSong: () => string;
 }
 
 const clampVolume = (n: number) => Math.max(0, Math.min(1, n));
@@ -233,6 +235,7 @@ export const useStore = create<AppState>((set, get) => {
       songStore.getState().newSong();
       const song = songStore.getState().currentSong()!;
       set({ ...resetSelection, activeSectionId: song.sections[0]!.id });
+      return song.id;
     },
   };
 });

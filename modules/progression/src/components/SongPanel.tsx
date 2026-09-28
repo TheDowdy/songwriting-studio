@@ -9,13 +9,24 @@ import {
   type SongMeta,
 } from '../state/persistence';
 import { flattenSong, newId } from '@sw/core';
+import type { Navigate } from '../App';
 import { useStore } from '../state/store';
 
 function formatDate(ms: number): string {
   return new Date(ms).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 }
 
-function SavedRow({ meta, currentId, onChanged }: { meta: SongMeta; currentId: string; onChanged: () => void }) {
+function SavedRow({
+  meta,
+  currentId,
+  onChanged,
+  navigate,
+}: {
+  meta: SongMeta;
+  currentId: string;
+  onChanged: () => void;
+  navigate: Navigate;
+}) {
   const loadSong = useStore((s) => s.loadSong);
   const setTitle = useStore((s) => s.setTitle);
   const newSongAction = useStore((s) => s.newSong);
@@ -25,7 +36,11 @@ function SavedRow({ meta, currentId, onChanged }: { meta: SongMeta; currentId: s
 
   const open = () => {
     const song = getSongFromStorage(meta.id);
-    if (song) loadSong(song);
+    if (!song) return;
+    loadSong(song);
+    // The store's current song just changed under the shell's feet — move the URL to match so it
+    // doesn't load the old song straight back over this one (see `SongView`'s own comment).
+    navigate({ module: 'progression', songId: meta.id });
   };
 
   const commitRename = () => {
@@ -49,7 +64,11 @@ function SavedRow({ meta, currentId, onChanged }: { meta: SongMeta; currentId: s
   const remove = () => {
     if (!confirm(`Delete "${meta.title}"? This can't be undone.`)) return;
     deleteSongFromStorage(meta.id);
-    if (isCurrent) newSongAction(); // otherwise autosave would just write it straight back
+    if (isCurrent) {
+      // Otherwise autosave would just write it straight back.
+      const id = newSongAction();
+      navigate({ module: 'progression', songId: id });
+    }
     onChanged();
   };
 
@@ -96,7 +115,7 @@ function SavedRow({ meta, currentId, onChanged }: { meta: SongMeta; currentId: s
 
 /** Section 10: save/load (autosave already runs in the background via useAutosave), JSON
  *  import/export as a backup, and MIDI export. */
-export default function SongPanel({ onOpenSheet }: { onOpenSheet: () => void }) {
+export default function SongPanel({ onOpenSheet, navigate }: { onOpenSheet: () => void; navigate: Navigate }) {
   const [expanded, setExpanded] = useState(false);
   const [, setVersion] = useState(0);
   const [importError, setImportError] = useState<string | null>(null);
@@ -131,7 +150,8 @@ export default function SongPanel({ onOpenSheet }: { onOpenSheet: () => void }) 
   // opens with its title selected, so typing names it and Enter/Tab finishes.
   const startNewSong = () => {
     saveSongToStorage(song);
-    newSongAction();
+    const id = newSongAction();
+    navigate({ module: 'progression', songId: id });
     setTimeout(() => titleInput.current?.select(), 0);
   };
 
@@ -145,6 +165,7 @@ export default function SongPanel({ onOpenSheet }: { onOpenSheet: () => void }) 
     }
     loadSong(imported);
     saveSongToStorage(imported);
+    navigate({ module: 'progression', songId: imported.id });
     refresh();
   };
 
@@ -215,7 +236,7 @@ export default function SongPanel({ onOpenSheet }: { onOpenSheet: () => void }) 
           {songs.length > 0 ? (
             <ul className="space-y-1.5">
               {songs.map((meta) => (
-                <SavedRow key={meta.id} meta={meta} currentId={song.id} onChanged={refresh} />
+                <SavedRow key={meta.id} meta={meta} currentId={song.id} onChanged={refresh} navigate={navigate} />
               ))}
             </ul>
           ) : (
