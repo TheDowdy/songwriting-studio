@@ -9,6 +9,7 @@ import GuitarModule from './App';
 import { audioEngine } from './audio/engine';
 import { applyCapo } from './state/capoActions';
 import { stopChordPlayback } from './state/chordActions';
+import { progressionStrikes, stopProgression } from './state/progressionPlayback';
 import { stopScale } from './state/scalePlayback';
 import { useStore } from './state/store';
 import { applyTuning } from './state/tuningActions';
@@ -31,6 +32,7 @@ export const guitarModule = {
   onDeactivate: () => {
     stopScale();
     stopChordPlayback();
+    stopProgression();
   },
 };
 
@@ -52,5 +54,7 @@ if (
     store: useStore,
     applyTuning,
     applyCapo,
+    // What "Play song/section" would strum for a song (Phase 6 check: plays exactly these notes).
+    progressionStrikes,
   };
 }

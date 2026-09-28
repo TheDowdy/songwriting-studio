@@ -92,6 +92,8 @@ export interface AppState {
   /** The song or a section is playing through the guitar synth (Phase 6 item 2); the sounding
    *  chord is `progressionEventId`. Not persisted. */
   progressionPlaying: boolean;
+  /** Loop the song or section while playing it here. Not persisted. */
+  progressionLoop: boolean;
   accidentalPref: AccidentalPref;
   leftHanded: boolean;
   fretSpacing: FretSpacing;
@@ -174,6 +176,7 @@ export interface AppState {
   setBassMode: (mode: BassMode) => void;
   setStripAddSectionId: (sectionId: string | null) => void;
   setProgressionPlaying: (playing: boolean) => void;
+  setProgressionLoop: (loop: boolean) => void;
   setAccidentalPref: (pref: AccidentalPref) => void;
   setLeftHanded: (leftHanded: boolean) => void;
   setFretSpacing: (spacing: FretSpacing) => void;
@@ -262,6 +265,7 @@ export const useStore = create<AppState>()(
       bassMode: 'root',
       stripAddSectionId: null,
       progressionPlaying: false,
+      progressionLoop: true,
       accidentalPref: 'sharp',
       leftHanded: false,
       fretSpacing: 'auto',
@@ -313,6 +317,7 @@ export const useStore = create<AppState>()(
       setBassMode: (bassMode) => set({ bassMode }),
       setStripAddSectionId: (stripAddSectionId) => set({ stripAddSectionId }),
       setProgressionPlaying: (progressionPlaying) => set({ progressionPlaying }),
+      setProgressionLoop: (progressionLoop) => set({ progressionLoop }),
       setAccidentalPref: (accidentalPref) => set({ accidentalPref }),
       setLeftHanded: (leftHanded) => set({ leftHanded }),
       setFretSpacing: (fretSpacing) => set({ fretSpacing }),

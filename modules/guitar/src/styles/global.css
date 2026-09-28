@@ -1034,3 +1034,15 @@
 .mod-guitar .strip-chord {
   touch-action: manipulation;
 }
+
+/* Playing the progression in the guitar module (Songwriting Studio Phase 6) */
+.mod-guitar .strip-transport {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+.mod-guitar .strip-tempo {
+  font-variant-numeric: tabular-nums;
+}

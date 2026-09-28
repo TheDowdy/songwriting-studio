@@ -16,6 +16,7 @@ import { capoedTuning } from '@sw/core/fret/capo';
 import { useSong } from '@sw/song-store/react';
 import { ChordDiagram } from '@sw/ui';
 import { addSection, duplicateSection, focusAndPlay, renameSection, reorderChord } from '../state/progressionEdits';
+import { playProgression, stopProgression } from '../state/progressionPlayback';
 import { useStore } from '../state/store';
 
 const ORIGIN_TINT = {
@@ -138,6 +139,45 @@ function SectionName({ section }: { section: Section }) {
   );
 }
 
+/** Play the song or a section through the guitar synth (Phase 6 item 2), at the song's tempo. */
+function Transport({ bpm, hasChords }: { bpm: number; hasChords: boolean }) {
+  const playing = useStore((s) => s.progressionPlaying);
+  const loop = useStore((s) => s.progressionLoop);
+  return (
+    <div className="strip-transport" role="group" aria-label="Play the progression">
+      {playing ? (
+        <button type="button" className="button primary" onClick={() => stopProgression()}>
+          ■ Stop
+        </button>
+      ) : (
+        <>
+          <button type="button" className="button primary" disabled={!hasChords} onClick={() => playProgression('song')}>
+            ▶ Play song
+          </button>
+          <button
+            type="button"
+            className="button"
+            disabled={!hasChords}
+            title="Play the section of the selected chord"
+            onClick={() => playProgression('section')}
+          >
+            ▶ Play section
+          </button>
+        </>
+      )}
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={loop}
+          onChange={(e) => useStore.getState().setProgressionLoop(e.target.checked)}
+        />
+        <span>Loop</span>
+      </label>
+      <span className="muted strip-tempo">{bpm} BPM</span>
+    </div>
+  );
+}
+
 /**
  * The progression strip (§7 Phase 3 item 2, editable since Phase 6): each arrangement slot's
  * section in order, its chords shown once (a repeat count on the name), with rename/duplicate on
@@ -176,6 +216,7 @@ export function ProgressionStrip() {
 
   return (
     <section className="progression-strip" aria-label="Progression">
+      <Transport bpm={song.bpm} hasChords={hasChords} />
       {!hasChords && <p className="muted">This song has no chords yet — pick one below to start.</p>}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <ol className="strip-scroll">

@@ -84,6 +84,27 @@ export function sectionLoopBounds(song: Song, sectionId: string): { start: numbe
   return { start: first.offsetBeats, end: last.offsetBeats + last.event.beats };
 }
 
+/**
+ * What to play, and when (Phase 6 item 2 — shared by both modules): the song's chords from
+ * `flattenDetailed`, or with `sectionId` just that section's first pass through the arrangement
+ * (the same span `sectionLoopBounds` loops), each with its start relative to the range's start.
+ * `lengthBeats` is where a loop wraps.
+ */
+export function playbackRange(
+  song: Song,
+  sectionId: string | null = null,
+): { events: (FlatEvent & { startBeats: number })[]; lengthBeats: number } {
+  const flat = flattenDetailed(song);
+  const bounds = sectionId ? sectionLoopBounds(song, sectionId) : null;
+  if (sectionId && !bounds) return { events: [], lengthBeats: 0 };
+  const start = bounds ? bounds.start : 0;
+  const end = bounds ? bounds.end : flat.reduce((t, f) => Math.max(t, f.offsetBeats + f.event.beats), 0);
+  const events = flat
+    .filter((f) => f.offsetBeats >= start && f.offsetBeats < end)
+    .map((f) => ({ ...f, startBeats: f.offsetBeats - start }));
+  return { events, lengthBeats: end - start };
+}
+
 /** The section that contains event `id`, and its index within that section's events. */
 export function findEvent(song: Song, id: string): { section: Section; index: number } | null {
   for (const section of song.sections) {

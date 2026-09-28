@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { diatonicChords } from './theory/chords';
-import { flattenSong, newSong, sectionLoopBounds } from './song';
+import { flattenSong, newSong, playbackRange, sectionLoopBounds } from './song';
 
 const c = { tonic: 'C', mode: 'major' } as const;
 
@@ -39,5 +39,42 @@ describe('song helpers', () => {
     expect(song.guitar.tuning).toHaveLength(6);
     expect(song.sections).toHaveLength(1);
     expect(song.arrangement).toEqual([song.sections[0]!.id]);
+  });
+});
+
+describe('playbackRange (Phase 6 item 2: shared by both modules)', () => {
+  const [a] = diatonicChords(c);
+  const song = newSong();
+  const verse = {
+    ...song.sections[0]!,
+    repeat: 2,
+    events: [
+      { id: 'e1', chord: a as never, beats: 4 },
+      { id: 'e2', chord: a as never, beats: 2 },
+    ],
+  };
+  const chorus = { id: 'chorus', name: 'Chorus', repeat: 1, events: [{ id: 'e3', chord: a as never, beats: 4 }] };
+  const full = { ...song, sections: [verse, chorus], arrangement: [verse.id, chorus.id] };
+
+  it('the whole song: every chord, starting from 0, 16 beats long', () => {
+    const r = playbackRange(full);
+    expect(r.events.map((e) => [e.event.id, e.startBeats])).toEqual([
+      ['e1', 0],
+      ['e2', 4],
+      ['e1', 6],
+      ['e2', 10],
+      ['e3', 12],
+    ]);
+    expect(r.lengthBeats).toBe(16);
+  });
+
+  it('one section: its first pass, re-timed from its own start', () => {
+    const r = playbackRange(full, 'chorus');
+    expect(r.events.map((e) => [e.event.id, e.startBeats])).toEqual([['e3', 0]]);
+    expect(r.lengthBeats).toBe(4);
+  });
+
+  it('a section not in the arrangement plays nothing', () => {
+    expect(playbackRange(full, 'missing')).toEqual({ events: [], lengthBeats: 0 });
   });
 });

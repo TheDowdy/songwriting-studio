@@ -35,6 +35,7 @@
     "check:song-files": "npm run check:song-files --workspace=apps/web",
     "check:voicing-commit": "npm run check:voicing-commit --workspace=apps/web",
     "check:song-voicings": "npm run check:song-voicings --workspace=apps/web",
+    "check:guitar-build": "npm run check:guitar-build --workspace=apps/web",
     "check:chord-header": "npm run check:chord-header --workspace=apps/web"
   },
   "devDependencies": {
