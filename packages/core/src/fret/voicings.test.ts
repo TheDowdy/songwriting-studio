@@ -422,9 +422,10 @@ describe('hand-shape features (the B♭ report)', () => {
     expect(crossReach(frets('x-4-6-6-2-0'))).toBe(4); // B2 under D6 and G6: two frets too far each
   });
 
-  it('blockedPositions: a barre stopping short of an open top string', () => {
-    expect(blocked('1-3-2-2-1-0')).toBe(1);
-    expect(blocked('1-3-2-2-1-1')).toBe(0);
+  it('blockedPositions: a barre stopping short of an open top string, a finger tucked under a flat one', () => {
+    expect(blocked('1-3-2-2-1-0')).toBe(2); // barre stops short of the open e, and A3 is tucked under D2+G2
+    expect(blocked('1-3-2-2-1-1')).toBe(1); // D2+G2 held flat with A3 tucked in below
+    expect(blocked('1-3-3-2-1-1')).toBe(0); // the F barre's flat A3+D3 sits above the barre
     expect(blocked('x-1-3-3-3-1')).toBe(0);
   });
 });

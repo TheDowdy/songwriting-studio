@@ -5,6 +5,10 @@
  * the scorer's best voicing is one of them. Edit this list, not the test, when the owner corrects
  * a shape.
  *
+ * Owner-confirmed 2026-09-28: every entry is the one shape the owner approved as the default
+ * (they corrected Esus4, Asus4 and Fmaj7 to the fuller or non-barre shapes). A list with more than
+ * one shape means either is acceptable; add alternatives only when the owner says so.
+ *
  * Frets are written low E → high E, 'x' for a muted string.
  */
 import { DEFAULT_CHORD, type ChordSpec } from './chords';
@@ -50,16 +54,16 @@ export const REFERENCE_VOICINGS: readonly ReferenceVoicing[] = [
   entry('C', spec('C'), ['x-3-2-0-1-0']),
   entry('D', spec('D'), ['x-x-0-2-3-2']),
   entry('E', spec('E'), ['0-2-2-1-0-0']),
-  entry('G', spec('G'), ['3-2-0-0-0-3', '3-2-0-0-3-3', '3-x-0-0-0-3']),
+  entry('G', spec('G'), ['3-2-0-0-3-3']),
   entry('A', spec('A'), ['x-0-2-2-2-0']),
   // ---- major, barre (E shape on the 6th string, A shape on the 5th)
-  entry('F', spec('F'), ['1-3-3-2-1-1', 'x-x-3-2-1-1']),
+  entry('F', spec('F'), ['1-3-3-2-1-1']),
   entry('F♯', spec('F#'), ['2-4-4-3-2-2']),
   entry('A♭', spec('Ab'), ['4-6-6-5-4-4']),
   entry('B♭', spec('Bb'), ['x-1-3-3-3-1']),
   entry('B', spec('B'), ['x-2-4-4-4-2']),
   entry('C♯', spec('C#'), ['x-4-6-6-6-4']),
-  entry('E♭', spec('Eb'), ['x-6-8-8-8-6', 'x-x-1-3-4-3']),
+  entry('E♭', spec('Eb'), ['x-6-8-8-8-6']),
   // ---- minor
   entry('Am', spec('A', min), ['x-0-2-2-1-0']),
   entry('Dm', spec('D', min), ['x-x-0-2-3-1']),
@@ -77,31 +81,31 @@ export const REFERENCE_VOICINGS: readonly ReferenceVoicing[] = [
   entry('B7', spec('B', dom7), ['x-2-1-2-0-2']),
   entry('C7', spec('C', dom7), ['x-3-2-3-1-0']),
   entry('D7', spec('D', dom7), ['x-x-0-2-1-2']),
-  entry('E7', spec('E', dom7), ['0-2-0-1-0-0', '0-2-2-1-3-0', '0-2-0-1-3-0']),
+  entry('E7', spec('E', dom7), ['0-2-0-1-0-0']),
   entry('F7', spec('F', dom7), ['1-3-1-2-1-1']),
   entry('G7', spec('G', dom7), ['3-2-0-0-0-1']),
   // ---- minor 7th
   entry('Am7', spec('A', min7), ['x-0-2-0-1-0']),
   entry('Dm7', spec('D', min7), ['x-x-0-2-1-1']),
-  entry('Em7', spec('E', min7), ['0-2-0-0-0-0', '0-2-2-0-3-0']),
-  entry('Bm7', spec('B', min7), ['x-2-0-2-0-2', 'x-2-4-2-3-2']),
+  entry('Em7', spec('E', min7), ['0-2-0-0-0-0']),
+  entry('Bm7', spec('B', min7), ['x-2-0-2-0-2']),
   // ---- major 7th
   entry('Cmaj7', spec('C', maj7), ['x-3-2-0-0-0']),
   entry('Dmaj7', spec('D', maj7), ['x-x-0-2-2-2']),
-  entry('Fmaj7', spec('F', maj7), ['x-x-3-2-1-0', '1-3-2-2-1-1']),
+  entry('Fmaj7', spec('F', maj7), ['x-x-3-2-1-0']),
   entry('Amaj7', spec('A', maj7), ['x-0-2-1-2-0']),
   // ---- sus
   entry('Asus2', spec('A', { quality: 'sus2' }), ['x-0-2-2-0-0']),
   entry('Dsus2', spec('D', { quality: 'sus2' }), ['x-x-0-2-3-0']),
   entry('Dsus4', spec('D', { quality: 'sus4' }), ['x-x-0-2-3-3']),
-  entry('Esus4', spec('E', { quality: 'sus4' }), ['0-2-2-2-0-0', '0-0-2-2-0-0']),
-  entry('Asus4', spec('A', { quality: 'sus4' }), ['x-0-2-2-3-0', 'x-0-0-2-3-0']),
+  entry('Esus4', spec('E', { quality: 'sus4' }), ['0-2-2-2-0-0']),
+  entry('Asus4', spec('A', { quality: 'sus4' }), ['x-0-2-2-3-0']),
   // ---- slash chords
-  entry('C/E', spec('C', { bassPc: PC.E }), ['0-3-2-0-1-0', 'x-x-2-0-1-0']),
-  entry('G/B', spec('G', { bassPc: PC.B }), ['x-2-0-0-0-3', 'x-2-0-0-3-3']),
-  entry('D/F♯', spec('D', { bassPc: PC['F#'] }), ['2-x-0-2-3-2', '2-0-0-2-3-2', 'x-x-4-2-3-2', '2-0-0-2-3-x']),
+  entry('C/E', spec('C', { bassPc: PC.E }), ['x-x-2-0-1-0']),
+  entry('G/B', spec('G', { bassPc: PC.B }), ['x-2-0-0-3-3']),
+  entry('D/F♯', spec('D', { bassPc: PC['F#'] }), ['2-0-0-2-3-x']),
   // ---- other tunings
   entry('G (Open G)', spec('G'), ['0-0-0-0-0-0'], OPEN_G_TUNING_MIDI),
-  entry('D (Drop D)', spec('D'), ['0-x-0-2-3-2', '0-0-0-2-3-2'], DROP_D_TUNING_MIDI),
+  entry('D (Drop D)', spec('D'), ['0-0-0-2-3-2'], DROP_D_TUNING_MIDI),
   entry('Dsus4 (DADGAD)', spec('D', { quality: 'sus4' }), ['0-0-0-0-0-0'], DADGAD_TUNING_MIDI),
 ];

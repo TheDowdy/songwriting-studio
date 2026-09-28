@@ -31,6 +31,9 @@ export const DEFAULT_VOICING_RULES: VoicingRules = {
 /** Weights for `score`: lower total = better voicing. */
 export interface ScoreWeights {
   stretch: number;
+  /** Per fret of stretch beyond three, on top of `stretch`: a four- or five-fret reach is a real
+   *  stretch for most hands (the owner's Fmaj7 call ruled out 1-0-2-5-5-0). */
+  wideStretch: number;
   finger: number;
   /** Per muted string below the lowest sounding one: cheap, you just don't strum it. */
   bassMute: number;
@@ -45,9 +48,14 @@ export interface ScoreWeights {
   /** Per fret beyond two that a lower-fretted note on a higher string reaches back across a
    *  higher-fretted one (the hand fanning out; C's x-3-2-0-1-0 reaches two frets and is fine). */
   crossReach: number;
+  /** A sus chord's 2nd/4th sounding right above the bass (the owner's call after Phase 4: Esus4
+   *  0-2-2-2-0-0 over 0-0-2-2-0-0, Asus4 x-0-2-2-3-0 over x-0-0-2-3-0) — the fuller, clearer shape,
+   *  root then 5th at the bottom, reads as the chord; the sus note that low muddies it. */
+  lowSus: number;
   /** Per hand position the fingers physically block: a finger held flat across three or more
-   *  strings with a higher-fretted note beyond it on a higher string, or an index barre that stops
-   *  short of the top string with that string ringing open right above it. */
+   *  strings with a higher-fretted note beyond it on a higher string, a finger held flat with the
+   *  string just below it fretted higher, or an index barre that stops short of the top string
+   *  with that string ringing open right above it. */
   blocked: number;
   innerMute: number;
   /** Per fret of the lowest fretted note: lower on the neck is slightly preferred. */
@@ -73,13 +81,15 @@ export interface ScoreWeights {
 
 export const DEFAULT_WEIGHTS: ScoreWeights = {
   stretch: 1,
+  wideStretch: 2,
   finger: 1,
   bassMute: 0.3,
   trebleMute: 1.5,
-  splitFret: 3,
+  splitFret: 4,
   looseMute: 3,
   crossReach: 1,
   blocked: 2,
+  lowSus: 3,
   innerMute: 3,
   position: 0.5,
   open: -0.6,
@@ -119,7 +129,7 @@ export interface Voicing {
 /** What to search for: the chord tones by pitch class. */
 export interface VoicingTarget {
   rootPc: number;
-  tones: readonly { pc: number; required: boolean; third: boolean }[];
+  tones: readonly { pc: number; required: boolean; third: boolean; sus?: boolean }[];
   /** Slash bass: the lowest sounding note must be this. */
   bassPc: number | null;
 }
@@ -132,6 +142,7 @@ export function targetFromChord(info: ChordInfo): VoicingTarget {
       pc: t.pc,
       required: t.required,
       third: t.kind === 'third',
+      sus: t.kind === 'sus',
     })),
     bassPc: info.spec.bassPc,
   };
@@ -290,11 +301,15 @@ export function searchVoicings(
       if (frets[s] !== null && (thirdMask & (1 << (toneAt[s] as number))) !== 0) thirds++;
     }
     const stretch = minF === Infinity ? 0 : maxF - minF;
+    let second = lowest + 1;
+    while (second < strings && frets[second] === null) second++;
+    const lowSus = second < strings && target.tones[toneAt[second] as number]?.sus === true;
     const bassMutes = lowest;
     const trebleMutes = strings - 1 - highest;
     const complete = (mask & allMask) === allMask;
     const score =
       weights.stretch * stretch +
+      weights.wideStretch * Math.max(0, stretch - 3) +
       weights.finger * fingers +
       (barre !== null && barreSpan >= 3 ? weights.barre : 0) +
       (opens === strings && fingers === 0 ? weights.allOpen : 0) +
@@ -304,6 +319,7 @@ export function searchVoicings(
       weights.looseMute * looseMutes(frets) +
       weights.crossReach * crossReach(frets) +
       weights.blocked * blockedPositions(frets, barre) +
+      (lowSus ? weights.lowSus : 0) +
       weights.innerMute * inner +
       weights.position * (minF === Infinity ? 0 : minF) +
       (minF !== Infinity && minF > HIGH_POSITION ? weights.openHigh : weights.open) * opens +
@@ -510,6 +526,10 @@ export function blockedPositions(frets: readonly (number | null)[], barre: numbe
     let end = s;
     while (f !== null && f !== undefined && f > 0 && frets[end + 1] === f) end++;
     if (f !== null && f !== undefined && f > 0 && f !== barre && end - s + 1 >= 3 && higherFretAbove(end, f)) count++;
+    // A finger flattened across two or more strings with the string just below it fretted higher:
+    // that finger has to tuck in behind the flat one (the barre Fmaj7 1-3-2-2-1-1, owner's call).
+    const below = frets[s - 1];
+    if (f !== null && f !== undefined && f > 0 && f !== barre && end > s && below !== null && below !== undefined && below > f) count++;
     s = end + 1;
   }
   if (barre !== null) {
