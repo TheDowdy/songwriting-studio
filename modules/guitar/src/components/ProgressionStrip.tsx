@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   DndContext,
   KeyboardSensor,
@@ -17,6 +17,7 @@ import { useSong } from '@sw/song-store/react';
 import { ChordDiagram, VariantDialog } from '@sw/ui';
 import { addSection, duplicateSection, focusAndPlay, makeSectionVariant, renameSection, reorderChord } from '../state/progressionEdits';
 import { playProgression, stopProgression } from '../state/progressionPlayback';
+import { centreWithin } from '../state/scrollWithin';
 import { undoLastGuitarChange } from '../state/undo';
 import { useStore } from '../state/store';
 
@@ -51,6 +52,11 @@ function StripChord({ slot, event, song, selected }: { slot: number; event: Chor
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: blockId(slot, event.id),
   });
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  // Follow playback: keep the sounding chord centred in the strip (the strip only — the page stays put).
+  useEffect(() => {
+    if (playing) centreWithin(buttonRef.current?.closest('.strip-scroll') ?? null, buttonRef.current);
+  }, [playing]);
   const voicing = event.attachments?.guitar;
   const stale = voicing ? voicingStatus(event, song) !== 'ok' : false;
   return (
@@ -61,6 +67,7 @@ function StripChord({ slot, event, song, selected }: { slot: number; event: Chor
       <button
         {...attributes}
         {...listeners}
+        ref={buttonRef}
         type="button"
         className={`strip-chord${stale ? ' stale' : ''}${voicing ? '' : ' uncommitted'}${playing ? ' sounding' : ''}`}
         aria-pressed={selected}

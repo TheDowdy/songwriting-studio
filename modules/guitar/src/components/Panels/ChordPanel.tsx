@@ -20,6 +20,7 @@ import { chromaticName, formatNoteName } from '@sw/core/fret/notes';
 import { shapeNotes, shapeText } from '@sw/core/fret/voicings';
 import { useSong } from '@sw/song-store/react';
 import { Chip, ChordBuilderChips, ChordDiagram } from '@sw/ui';
+import { centreWithin } from '../../state/scrollWithin';
 
 /** Horizontal drag needed on the voicing card to step to the next/previous voicing. */
 const SWIPE_PX = 50;
@@ -55,9 +56,10 @@ const VoicingThumb = memo(function VoicingThumb({
     return () => observer.disconnect();
   }, [near]);
 
-  // Keep the chosen voicing in view when it changes (Prev/Next, root click, best voicing).
+  // Keep the chosen voicing in view when it changes (Prev/Next, root click, best voicing) — by
+  // scrolling the list only, never the page (scrollIntoView would move both).
   useEffect(() => {
-    if (selected) ref.current?.scrollIntoView({ block: 'nearest', inline: 'center' });
+    if (selected) centreWithin(ref.current?.closest('.voicing-list') ?? null, ref.current);
   }, [selected]);
 
   return (
