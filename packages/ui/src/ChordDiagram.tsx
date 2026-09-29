@@ -27,6 +27,8 @@ export interface ChordDiagramProps {
  *  down — its dot/text sizes are chosen so it stays legible at roughly 44 px wide, not merely small. */
 interface Geometry {
   left: number;
+  /** Gap between the fret-number label's right edge and the leftmost string. */
+  fretLabelGap: number;
   top: number;
   stringGap: number;
   fretGap: number;
@@ -48,6 +50,7 @@ interface Geometry {
 
 const DEFAULT_GEOMETRY: Geometry = {
   left: 18,
+  fretLabelGap: 6,
   top: 17,
   stringGap: 9,
   fretGap: 11,
@@ -68,7 +71,9 @@ const DEFAULT_GEOMETRY: Geometry = {
 };
 
 const MINI_GEOMETRY: Geometry = {
-  left: 6,
+  // Wide enough for a "12fr" label at fretFontSize, so a shape up the neck isn't clipped at x = 0.
+  left: 13,
+  fretLabelGap: 2,
   top: 6,
   stringGap: 5,
   fretGap: 5.6,
@@ -134,7 +139,7 @@ export function ChordDiagram({ frets, tuning, rootPc, size = 'default', capo }: 
       ))}
       {start > 1 && (
         <text
-          x={g.left - 6}
+          x={g.left - g.fretLabelGap}
           y={g.top + g.fretGap * 0.72}
           fontSize={g.fretFontSize}
           textAnchor="end"
