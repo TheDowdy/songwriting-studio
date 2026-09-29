@@ -186,6 +186,8 @@ async function setTheme(page, label) {
 }
 {
   const { context, page } = await open({ colorScheme: 'dark' });
+  check('the default theme is light, even on a dark operating system', (await bg(page)) === LIGHT, await bg(page));
+  await setTheme(page, 'Match system');
   check(
     'theme "system" follows a dark operating system',
     (await bg(page)) === DARK,

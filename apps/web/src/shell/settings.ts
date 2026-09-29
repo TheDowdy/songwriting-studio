@@ -64,7 +64,8 @@ type Persisted = Pick<ShellSettingsState, 'theme' | 'volume' | 'muted'>;
 export const useShellSettings = create<ShellSettingsState>()(
   persist(
     (set) => ({
-      theme: 'system',
+      // First-time visitors get the light theme; "Match system" is still one tap away in Settings.
+      theme: 'light',
       volume: 0.8,
       muted: false,
       setTheme: (theme) => set({ theme }),
@@ -81,7 +82,7 @@ export const useShellSettings = create<ShellSettingsState>()(
         const p = (persisted ?? {}) as Partial<Persisted>;
         return {
           ...current,
-          theme: p.theme === 'light' || p.theme === 'dark' ? p.theme : 'system',
+          theme: p.theme === 'light' || p.theme === 'dark' || p.theme === 'system' ? p.theme : 'light',
           volume:
             typeof p.volume === 'number' && p.volume >= 0 && p.volume <= 1
               ? p.volume

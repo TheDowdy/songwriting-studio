@@ -123,6 +123,40 @@ const follow = await page.evaluate(() => {
 check('the timeline scrolls to a newly added chord', follow.inView && follow.scrollLeft > 0, JSON.stringify(follow));
 check('adding a chord does not scroll the page', follow.pageY === pageYBefore, `${pageYBefore} → ${follow.pageY}`);
 
+// ---------------------------------------------------------------- first visit: light theme
+// A brand-new browser on a dark-mode OS still starts light; an explicit "Match system" is kept.
+const themeOf = async (ctx, seed) => {
+  const p = await ctx.newPage();
+  if (seed) await p.addInitScript(seed);
+  await p.goto(url);
+  await p.getByRole('button', { name: 'New song' }).waitFor();
+  const r = await p.evaluate(() => ({
+    attr: document.documentElement.dataset.theme ?? null,
+    bg: getComputedStyle(document.body).backgroundColor,
+    stored: JSON.parse(localStorage.getItem('sw:shell-settings') ?? 'null')?.state?.theme ?? null,
+  }));
+  await p.close();
+  return r;
+};
+const luminance = (rgb) => {
+  const [r, g, b] = rgb.match(/\d+/g).map(Number);
+  return (r + g + b) / 3;
+};
+const darkOs = await browser.newContext({ colorScheme: 'dark' });
+const first = await themeOf(darkOs);
+check('a first visit on a dark-mode OS starts in the light theme', first.attr === 'light' && luminance(first.bg) > 128, JSON.stringify(first));
+const savedSystem = await themeOf(
+  darkOs,
+  () => localStorage.setItem('sw:shell-settings', JSON.stringify({ state: { theme: 'system', volume: 0.8, muted: false }, version: 1 })),
+);
+check('a saved "Match system" still follows a dark-mode OS', savedSystem.attr === null && luminance(savedSystem.bg) < 128, JSON.stringify(savedSystem));
+const savedDark = await themeOf(
+  darkOs,
+  () => localStorage.setItem('sw:shell-settings', JSON.stringify({ state: { theme: 'dark', volume: 0.8, muted: false }, version: 1 })),
+);
+check('a saved dark theme is kept', savedDark.attr === 'dark' && luminance(savedDark.bg) < 128, JSON.stringify(savedDark));
+await darkOs.close();
+
 check('no console or page errors', errors.length === 0, errors.join(' | '));
 await browser.close();
 const failed = results.filter((r) => !r).length;
