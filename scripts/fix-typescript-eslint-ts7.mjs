@@ -102,4 +102,14 @@ function main() {
   }
 }
 
-main();
+// It only exists so `npm run lint` works locally, so it must never break an install: skip it on
+// Vercel (which builds, never lints), and treat any failure as a warning.
+if (process.env.VERCEL) {
+  console.log('[fix-typescript-eslint-ts7] Vercel build: lint workaround not needed, skipping.');
+} else {
+  try {
+    main();
+  } catch (err) {
+    console.warn(`[fix-typescript-eslint-ts7] skipped (${err instanceof Error ? err.message : err}); \`npm run lint\` may not work.`);
+  }
+}
