@@ -1,5 +1,5 @@
 /**
- * Shared design tokens (§6): PB's sage-paper-and-ink palette, light-first, with a dark theme.
+ * Shared design tokens (§6): the Manuscript palette (paper, blue ink, red pencil), light-first, with a dark theme.
  * One theme switch for the whole app: `data-theme` on `<html>` ('light' | 'dark'), set by the
  * shell (setting: system/light/dark) and applied before first paint by `theme-init.js`
  * (apps/web/public/theme-init.js) so there's no flash. Every module reads these same names —
@@ -9,47 +9,47 @@
 
 :root {
   color-scheme: light;
-  --bg: #eceeea;
-  --surface: #fafbf8;
-  --surface-2: #e1e6de;
-  --fg: #14201a;
-  --muted: #5a6960;
-  --line: #c9d1c6;
-  --accent: #14201a;
-  --accent-fg: #f4f7f2;
-  --play: #2fbf7f;
-  --play-fg: #06170e;
-  --c-diatonic: #2e6f57;
-  --c-borrowed: #b77508;
-  --c-secondary: #bd3d5d;
-  --t-diatonic: #d3e6da;
-  --t-borrowed: #f6e1b0;
-  --t-secondary: #f5cdd6;
-  --danger: #b91c1c;
+  --bg: #f8f8f5;
+  --surface: #ffffff;
+  --surface-2: #efefe9;
+  --fg: #1c2540;
+  --muted: #6b7080;
+  --line: #d9d9d0;
+  --accent: #2a4fa8;
+  --accent-fg: #ffffff;
+  --play: #b83a2c;
+  --play-fg: #ffffff;
+  --c-diatonic: #2a4fa8;
+  --c-borrowed: #8a5a12;
+  --c-secondary: #a3364f;
+  --t-diatonic: #e4eaf7;
+  --t-borrowed: #f1e6cc;
+  --t-secondary: #f2dbe0;
+  --danger: #b3261e;
   --shadow: 0 1px 0 rgb(20 32 26 / 0.04), 0 10px 28px -16px rgb(20 32 26 / 0.28);
-  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-sans: 'Newsreader Variable', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #0e1512;
-  --surface: #151e19;
-  --surface-2: #1e2a23;
-  --fg: #e8efe9;
-  --muted: #8fa096;
-  --line: #2a3830;
-  --accent: #e8efe9;
-  --accent-fg: #0e1512;
-  --play: #3ddc97;
-  --play-fg: #06170e;
-  --c-diatonic: #6fc29a;
-  --c-borrowed: #f0b04a;
-  --c-secondary: #f07a9f;
-  --t-diatonic: #1b3a2d;
-  --t-borrowed: #3d3117;
-  --t-secondary: #40202b;
-  --danger: #e06c5a;
+  --bg: #141a26;
+  --surface: #1a2231;
+  --surface-2: #212b3d;
+  --fg: #e9e7df;
+  --muted: #97a0b3;
+  --line: #2e3a50;
+  --accent: #8fb0ff;
+  --accent-fg: #0d1424;
+  --play: #ff8f7e;
+  --play-fg: #2a0d08;
+  --c-diatonic: #8fb0ff;
+  --c-borrowed: #e6b866;
+  --c-secondary: #f29ab0;
+  --t-diatonic: #223252;
+  --t-borrowed: #3a3020;
+  --t-secondary: #3d2430;
+  --danger: #ff9a8c;
   --shadow: 0 10px 28px -16px rgb(0 0 0 / 0.6);
 }
 
@@ -57,23 +57,23 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --bg: #0e1512;
-    --surface: #151e19;
-    --surface-2: #1e2a23;
-    --fg: #e8efe9;
-    --muted: #8fa096;
-    --line: #2a3830;
-    --accent: #e8efe9;
-    --accent-fg: #0e1512;
-    --play: #3ddc97;
-    --play-fg: #06170e;
-    --c-diatonic: #6fc29a;
-    --c-borrowed: #f0b04a;
-    --c-secondary: #f07a9f;
-    --t-diatonic: #1b3a2d;
-    --t-borrowed: #3d3117;
-    --t-secondary: #40202b;
-    --danger: #e06c5a;
+    --bg: #141a26;
+    --surface: #1a2231;
+    --surface-2: #212b3d;
+    --fg: #e9e7df;
+    --muted: #97a0b3;
+    --line: #2e3a50;
+    --accent: #8fb0ff;
+    --accent-fg: #0d1424;
+    --play: #ff8f7e;
+    --play-fg: #2a0d08;
+    --c-diatonic: #8fb0ff;
+    --c-borrowed: #e6b866;
+    --c-secondary: #f29ab0;
+    --t-diatonic: #223252;
+    --t-borrowed: #3a3020;
+    --t-secondary: #3d2430;
+    --danger: #ff9a8c;
     --shadow: 0 10px 28px -16px rgb(0 0 0 / 0.6);
   }
 }
