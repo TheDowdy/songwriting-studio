@@ -35,8 +35,6 @@
     "check:chord-header": "node scripts/chord-header-check.mjs"
   },
   "dependencies": {
-    "@fontsource-variable/geist": "^5.3.0",
-    "@fontsource-variable/geist-mono": "^5.3.0",
     "@fontsource-variable/newsreader": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@sw/audio": "*",

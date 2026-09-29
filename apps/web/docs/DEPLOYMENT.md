@@ -91,7 +91,7 @@ that means the app works offline after the very first visit, and browsers offer 
 `scripts/deploy-check.mjs`) sends a strict Content-Security-Policy: everything same-origin, no
 inline scripts. If you add external resources (fonts, analytics), loosen it deliberately.
 
-The shell's Geist fonts (`@fontsource-variable/geist`/`-mono`) are bundled as `data:` URIs, so the
+The shell's fonts (`@fontsource-variable/newsreader`, `@fontsource/ibm-plex-mono`) are bundled as `data:` URIs, so the
 policy allows `font-src 'self' data:`.
 
 ## Verifying a build
