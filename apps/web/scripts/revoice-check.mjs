@@ -81,10 +81,17 @@ await sleep(150);
 check('…and Cancel leaves the capo alone', (await song()).guitar.capo === 0);
 
 // ---------------------------------------------------------------- Phase 7 "Done when": DADGAD, flagged, Re-voice all
+// The page's scroll position must survive the change (it used to jump down to the voicing list).
+await page.setViewportSize({ width: 1280, height: 600 });
+const pageY = () => page.evaluate(() => document.scrollingElement.scrollTop);
+await page.evaluate(() => (document.scrollingElement.scrollTop = 150));
+const yBefore = await pageY();
 await tuningSelect().selectOption('dadgad');
 await sleep(200);
 await page.getByRole('button', { name: 'Change tuning' }).click();
 await sleep(400);
+check('confirming a tuning change leaves the page scroll where it was', yBefore > 0 && (await pageY()) === yBefore, `${yBefore} → ${await pageY()}`);
+await page.setViewportSize({ width: 1280, height: 1000 });
 check('confirming switches the song to DADGAD', JSON.stringify((await song()).guitar.tuning) === JSON.stringify(DADGAD));
 check('every chord is flagged', JSON.stringify(await statuses()) === '["tuning-changed","tuning-changed","tuning-changed","tuning-changed"]', JSON.stringify(await statuses()));
 check('the voicings were kept, not deleted', (await song()).sections[0].events.every((e) => !!e.attachments?.guitar));
