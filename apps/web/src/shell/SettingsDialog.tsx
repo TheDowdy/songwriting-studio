@@ -4,6 +4,8 @@ import { useShellSettings, type ThemeSetting } from './settings';
 interface Props {
   open: boolean;
   onClose: () => void;
+  /** Closes this dialog and opens the user guide. */
+  onOpenGuide: () => void;
 }
 
 const THEMES: { id: ThemeSetting; label: string }[] = [
@@ -14,7 +16,7 @@ const THEMES: { id: ThemeSetting; label: string }[] = [
 
 /** App-wide settings: theme and master volume/mute (PLAN.md §4/§5). Each module has its own
  *  settings for everything else (instrument sound, tunings…), reached from within that module. */
-export function SettingsDialog({ open, onClose }: Props) {
+export function SettingsDialog({ open, onClose, onOpenGuide }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const theme = useShellSettings((s) => s.theme);
   const volume = useShellSettings((s) => s.volume);
@@ -80,6 +82,17 @@ export function SettingsDialog({ open, onClose }: Props) {
           <p className="mt-1 text-xs text-muted">
             Applies on top of each module&apos;s own sound settings.
           </p>
+        </div>
+
+        <div className="mt-4">
+          <h3 className="mb-1 text-sm font-semibold">Help</h3>
+          <button
+            type="button"
+            onClick={onOpenGuide}
+            className="h-10 rounded-lg border border-line px-3 text-sm hover:bg-surface-2"
+          >
+            Open the user guide
+          </button>
         </div>
 
         <div className="mt-5 flex justify-end">

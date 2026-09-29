@@ -8,3 +8,5 @@ export {
   type ChordBuilderGroup,
 } from './ChordBuilder';
 export { VariantDialog, type VariantDialogProps } from './VariantDialog';
+export { type HelpEntry } from './help';
+export { UI_HELP } from './uiHelp';

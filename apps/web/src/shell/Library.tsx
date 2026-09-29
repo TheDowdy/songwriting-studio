@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { newId } from '@sw/core';
 import { useSong } from '@sw/song-store/react';
 import { APP_NAME } from './appInfo';
+import { HeaderActions } from './HeaderActions';
 import { DEFAULT_SONG_MODULE_ID, TOOL_MODULES } from './modules';
 
 function formatDate(ms: number): string {
@@ -66,7 +67,12 @@ export default function Library() {
 
   return (
     <main className="mx-auto max-w-2xl space-y-6 px-4 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight">{APP_NAME}</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight">{APP_NAME}</h1>
+        <div className="flex">
+          <HeaderActions />
+        </div>
+      </div>
 
       <section>
         <div className="flex flex-wrap items-center justify-between gap-2">

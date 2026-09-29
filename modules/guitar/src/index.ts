@@ -6,6 +6,7 @@
  */
 import { createElement } from 'react';
 import GuitarModule from './App';
+import { GUITAR_HELP } from './help';
 import { audioEngine } from './audio/engine';
 import { applyCapo } from './state/capoActions';
 import { stopChordPlayback } from './state/chordActions';
@@ -27,6 +28,7 @@ export const guitarModule = {
   icon,
   scope: 'song-or-tool' as const,
   Component: GuitarModule,
+  help: GUITAR_HELP,
   /** Stops any scale playback or strummed chord loop when the user switches to another module
    *  (§5) — plucked/strummed strings themselves decay naturally, like releasing them by hand. */
   onDeactivate: () => {

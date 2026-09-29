@@ -4,6 +4,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { prefetchSamples } from '@sw/module-progression';
 import App from './shell/App';
+import { HELP_ENTRIES } from './shell/help/registry';
+import { resolveHelp } from './shell/help/resolve';
 import { initShellSettings, useShellSettings } from './shell/settings';
 import './global.css';
 
@@ -12,7 +14,11 @@ initShellSettings();
 // Test hook, exactly like each module's own (@sw/module-progression, @sw/module-guitar): lets
 // browser checks drive the shell-wide theme (PLAN.md §7 Phase 9: check:a11y across both themes).
 if (import.meta.env.DEV || new URLSearchParams(location.search).has('debug')) {
-  (window as unknown as { __shell: unknown }).__shell = { store: useShellSettings };
+  (window as unknown as { __shell: unknown }).__shell = {
+    store: useShellSettings,
+    // The help text for an element (or null), so check:help can audit every control for coverage.
+    helpFor: (el: Element) => resolveHelp(el, HELP_ENTRIES)?.text ?? null,
+  };
 }
 
 createRoot(document.getElementById('root')!).render(

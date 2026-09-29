@@ -137,6 +137,26 @@ The guitar module keeps its own plain CSS rather than Tailwind, scoped entirely 
 so its rules can't leak onto the shell or the progression module (and vice versa); it reads the
 same shared tokens rather than defining its own palette.
 
+## In-app help and the user guide (`apps/web/src/shell/help`, `guide`)
+
+Help is mounted once, above the router (`HelpLayer`), and works on every screen:
+
+- **Hover** (mouse only) shows a tooltip after a short pause; keyboard focus shows the same one.
+- **Help mode** (the "?" button in the header) shades the screen and puts a full-screen overlay over
+  it, so a tap describes whatever is underneath (`document.elementsFromPoint`) instead of activating
+  it. This is the touch equivalent of hover.
+
+Help text is **not** annotated onto components. It is a list of `HelpEntry` (`@sw/ui`) matched by a
+control's accessible name (its `aria-label`, `<label>` text or visible text), or by a selector, and
+scoped to a module's root class. Each module supplies its own list as `ModuleDefinition.help`
+(`modules/<name>/src/help.ts`), `@sw/ui` supplies `UI_HELP` for the shared components, and the shell
+has `SHELL_HELP`. `resolveHelp` walks up from the element under the pointer and returns the first
+match, then falls back to a `title`. **When you add a control, add its entry** — `npm run check:help`
+visits every screen and dialog and fails on any visible control that has no help text.
+
+The user guide (`guide/content.ts`) is data, rendered by `GuideDialog` and opened from Settings. It
+follows the Google developer documentation style guide; edit the data, not the component.
+
 ## Accessibility and performance
 
 `apps/web/scripts/a11y-check.mjs` runs axe-core (WCAG 2/2.1 A/AA + best-practice) over the

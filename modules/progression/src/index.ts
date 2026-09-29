@@ -5,6 +5,7 @@
  */
 import { createElement } from 'react';
 import ProgressionModule from './App';
+import { PROGRESSION_HELP } from './help';
 import { prefetchSamples } from './audio/engine';
 import { stop as stopPlayback, toNoteStrikes } from './state/playback';
 import { useStore } from './state/store';
@@ -29,6 +30,7 @@ export const progressionModule = {
   icon,
   scope: 'song' as const,
   Component: ProgressionModule,
+  help: PROGRESSION_HELP,
   /** Stop the transport (and any preview) when the user switches to another module (§5). */
   onDeactivate: stopPlayback,
 };

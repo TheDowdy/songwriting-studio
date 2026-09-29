@@ -50,3 +50,76 @@ input:focus-visible,
 input[type='range'] {
   accent-color: var(--accent);
 }
+
+/* In-app help (shell/help): hover tooltip, and help mode's shade, spotlight and card. */
+.help-tip {
+  position: fixed;
+  z-index: 90;
+  width: max-content;
+  max-width: 18rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  pointer-events: none;
+}
+.help-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  cursor: help;
+}
+.help-overlay-shaded {
+  background: rgb(0 0 0 / 0.4);
+}
+/* The picked element stays bright: a ring, with a huge shadow shading everything around it. */
+.help-spot {
+  position: fixed;
+  z-index: 81;
+  border-radius: 10px;
+  outline: 3px solid var(--accent);
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.4);
+  pointer-events: none;
+}
+.help-card {
+  position: fixed;
+  z-index: 90;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.help-card-top {
+  top: 0.75rem;
+  bottom: auto;
+}
+.help-card-body {
+  flex: 1;
+  font-size: 0.875rem;
+}
+.help-card-body p {
+  margin: 0.15rem 0 0;
+}
+.help-card-done {
+  height: 2.5rem;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent-fg);
+  background: var(--accent);
+  border-radius: 8px;
+}

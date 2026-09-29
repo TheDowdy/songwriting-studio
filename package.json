@@ -18,6 +18,7 @@
     "lint": "npm run lint --workspace=modules/guitar",
     "check:audio": "npm run check:audio --workspace=apps/web",
     "check:app": "npm run check:app --workspace=apps/web",
+    "check:help": "npm run check:help --workspace=apps/web",
     "check:pegs": "npm run check:pegs --workspace=apps/web",
     "check:strum": "npm run check:strum --workspace=apps/web",
     "check:scales": "npm run check:scales --workspace=apps/web",

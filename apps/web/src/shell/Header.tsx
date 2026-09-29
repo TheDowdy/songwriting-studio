@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
 import type { ModuleDefinition } from './modules';
-import { SettingsDialog } from './SettingsDialog';
+import { HeaderActions } from './HeaderActions';
 
 interface Props {
   /** Omitted for a stand-alone tool (no song open). */
@@ -20,7 +20,6 @@ interface Props {
  * on a phone in landscape.
  */
 export function Header({ title, onRenameTitle, modules, activeModuleId, hrefFor, backHref }: Props) {
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
 
   return (
@@ -79,23 +78,13 @@ export function Header({ title, onRenameTitle, modules, activeModuleId, hrefFor,
             className="flex h-10 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-fg aria-selected:bg-accent aria-selected:text-accent-fg"
           >
             {m.icon}
-            {m.title}
+            {/* Icon-only on a phone, so the header (back, title, tabs, help, preferences) stays on one row. */}
+            <span className="max-[430px]:sr-only">{m.title}</span>
           </Link>
         ))}
       </nav>
 
-      <button
-        type="button"
-        aria-label="Preferences"
-        onClick={() => setSettingsOpen(true)}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-fg hover:bg-surface-2"
-      >
-        <svg viewBox="0 0 24 24" width={20} height={20} fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden>
-          <circle cx="12" cy="12" r="3" />
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
-        </svg>
-      </button>
-      <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <HeaderActions />
     </header>
   );
 }

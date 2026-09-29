@@ -23,6 +23,7 @@ server) — each is also an `npm run check:<name>` at the root:
 |---|---|
 | `check:app`, `check:pegs`, `check:strum`, `check:scales`, `check:chords`, `check:identify`, `check:guitars`, `check:fallback`, `check:settings`, `check:clock` | the guitar module's own features, stand-alone |
 | `check:shell`, `check:song-guitar`, `check:song-files`, `check:voicing-commit`, `check:song-voicings`, `check:guitar-build`, `check:revoice`, `check:variant`, `check:chord-header` | cross-module behaviour in song context (committing voicings, re-voicing, variants, save/load) |
+| `check:help` | hover tooltip, help mode (nothing activated, taps describe), Settings → user guide, and that **every visible control on every screen has help text** |
 | `check:a11y` | axe-core WCAG 2/2.1 A/AA + best-practice, both themes, keyboard nav |
 | `check:perf` | frame times under CPU throttling (peg drag, chord change, scale playback, stand-alone and in song context) |
 | `check:deploy` | production build served under a sub-path, offline (service worker), CSP headers |
@@ -66,6 +67,10 @@ devtools:
   while still reporting `state: 'running'` — this has been confirmed to reproduce identically on a
   clean stash of unrelated commits, so a failure isolated to an audio-output assertion on this
   machine should be re-run once before treating it as a real regression.
+- **A new control needs a help entry.** Add it to the module's `src/help.ts` (or `UI_HELP` /
+  `SHELL_HELP`), matched by the control's name; `check:help` fails otherwise. If the change alters
+  what the app does, update `apps/web/src/shell/guide/content.ts` (Google developer style: second
+  person, present tense, sentence-case headings, **bold** control names).
 - Formatting-only changes (Prettier) go in their own commit, separate from behaviour changes.
 - Commit messages end with `Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>` (see the
   session's own attribution footer for the exact lines in use).

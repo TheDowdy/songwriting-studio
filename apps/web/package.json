@@ -11,6 +11,7 @@
     "test": "vitest run",
     "check:audio": "node scripts/audio-check.mjs",
     "check:app": "node scripts/app-check.mjs",
+    "check:help": "node scripts/help-check.mjs",
     "check:pegs": "node scripts/pegs-check.mjs",
     "check:strum": "node scripts/strum-check.mjs",
     "check:scales": "node scripts/scales-check.mjs",

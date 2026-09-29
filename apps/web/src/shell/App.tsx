@@ -1,5 +1,6 @@
 import { Route, Router, Switch } from 'wouter';
 import { useHashLocation } from 'wouter/use-hash-location';
+import { HelpLayer } from './help/HelpLayer';
 import Library from './Library';
 import SongView from './SongView';
 import ToolView from './ToolView';
@@ -11,6 +12,7 @@ import ToolView from './ToolView';
  */
 export default function App() {
   return (
+    <>
     <Router hook={useHashLocation}>
       <Switch>
         <Route path="/" component={Library} />
@@ -23,5 +25,7 @@ export default function App() {
         </Route>
       </Switch>
     </Router>
+    <HelpLayer />
+    </>
   );
 }

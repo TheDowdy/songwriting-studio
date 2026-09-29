@@ -5,6 +5,7 @@
  * module's internals, and a module never imports another module or the shell.
  */
 import type { ComponentType, ReactNode } from 'react';
+import type { HelpEntry } from '@sw/ui';
 import guitarModule from '@sw/module-guitar';
 import progressionModule from '@sw/module-progression';
 
@@ -30,6 +31,9 @@ export interface ModuleDefinition {
   /** Called when the user leaves this module (switches tabs, or navigates away): stop audio,
    *  cancel gestures, so nothing keeps playing from a module that's no longer on screen. */
   onDeactivate?: () => void;
+  /** What each control in this module does, for hover tips and help mode (see `HelpEntry`).
+   *  Scope each entry to the module's root class so its names can't collide with another module's. */
+  help?: HelpEntry[];
 }
 
 /** Every module in the app, in tab order. */

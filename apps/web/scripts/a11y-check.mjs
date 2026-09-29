@@ -55,6 +55,26 @@ for (const theme of ['light', 'dark']) {
   await axe(`${theme} theme, Library`);
 }
 
+// ---------------------------------------------------------------- in-app help: the user guide and help mode
+for (const theme of ['light', 'dark']) {
+  await setShellTheme(theme);
+  await page.getByRole('button', { name: 'Preferences' }).click();
+  await page.getByRole('button', { name: 'Open the user guide' }).click();
+  await page.getByRole('heading', { name: 'User guide' }).waitFor();
+  await axe(`${theme} theme, user guide`);
+  await page.getByRole('button', { name: 'Close' }).click();
+  await page.getByRole('button', { name: 'Help' }).click();
+  await axe(`${theme} theme, help mode (prompt)`);
+  await page.getByRole('button', { name: 'New song', exact: true }).click({ force: true });
+  await axe(`${theme} theme, help mode (a control described)`);
+  await page.getByRole('button', { name: 'Done' }).click();
+  await page.getByRole('button', { name: 'Help' }).focus();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Shift+Tab');
+  await sleep(50);
+  await axe(`${theme} theme, keyboard-focus tooltip`);
+}
+
 // ---------------------------------------------------------------- both modules inside a song, both themes
 await page.getByRole('button', { name: 'New song' }).click();
 await page.waitForFunction(() => location.hash.startsWith('#/song/'));
