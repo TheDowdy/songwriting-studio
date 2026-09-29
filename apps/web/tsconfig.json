@@ -13,5 +13,9 @@
     "isolatedModules": true,
     "types": ["vite/client"]
   },
-  "include": ["src", "tests", "vite.config.ts"]
+  "include": ["src", "tests", "vite.config.ts"],
+  // This test reads deployment files with node:fs. Vitest runs it fine (it doesn't typecheck), but
+  // it needs Node's ambient types, which `tsc -b` couldn't resolve on Vercel's build machine
+  // (`types` above is limited to vite/client), and the production build must not depend on them.
+  "exclude": ["tests/deployConfig.test.ts"]
 }

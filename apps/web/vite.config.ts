@@ -8,6 +8,12 @@ export default defineConfig({
   // static hosting (§2).
   base: './',
   plugins: [react(), tailwindcss()],
+  server: {
+    // Lets the dev server (run with --host) answer to this machine's Tailscale hostname, so it's
+    // reachable from other devices on the tailnet — Vite otherwise refuses any Host header but
+    // localhost/its LAN IPs.
+    allowedHosts: ['dowdymac.tailc4f71e.ts.net'],
+  },
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts', 'src/**/*.test.{ts,tsx}'],
