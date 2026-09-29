@@ -27,12 +27,6 @@ import type { ChordEvent, Section, VariantGeneratorId, VariantOptions } from '@s
 import ChordDetail from './ChordDetail';
 import FlavorPicker from './FlavorPicker';
 
-const ORIGIN_TINT = {
-  diatonic: 'var(--t-diatonic)',
-  borrowed: 'var(--t-borrowed)',
-  secondary: 'var(--t-secondary)',
-};
-
 const ORIGIN_COLOR = {
   diatonic: 'var(--c-diatonic)',
   borrowed: 'var(--c-borrowed)',
@@ -144,15 +138,14 @@ function ChordSlot({
       className={`snap-start shrink-0 ${isBarStart ? 'border-l-2 border-line pl-1.5' : ''}`}
     >
       <div
-        className={`relative h-24 shrink-0 overflow-hidden rounded-xl border-2 text-center transition-colors ${
-          playing ? 'text-[var(--play-fg)]' : ''
-        } ${active ? 'shadow-[inset_0_0_0_3px_var(--accent)]' : ''} ${replacing ? 'ring-2 ring-offset-1 ring-[var(--accent)]' : ''}`}
+        className={`relative h-24 shrink-0 overflow-hidden rounded-none border-b-2 border-l border-l-fg text-center transition-colors ${
+          active ? 'shadow-[inset_0_0_0_1.5px_var(--accent)]' : ''} ${replacing ? 'ring-2 ring-offset-1 ring-[var(--accent)]' : ''}`}
         style={{
           width: shownBeats * BEAT_PX,
-          borderColor: ORIGIN_COLOR[event.chord.origin],
-          backgroundColor: playing ? 'var(--play)' : ORIGIN_TINT[event.chord.origin],
+          borderBottomColor: ORIGIN_COLOR[event.chord.origin],
+          backgroundColor: playing ? 'var(--t-diatonic)' : 'transparent',
           // faint tick at every beat boundary, so the block reads as a length
-          backgroundImage: `repeating-linear-gradient(to right, transparent 0, transparent ${BEAT_PX - 1}px, color-mix(in srgb, var(--fg) 14%, transparent) ${BEAT_PX - 1}px, color-mix(in srgb, var(--fg) 14%, transparent) ${BEAT_PX}px)`,
+          backgroundImage: `repeating-linear-gradient(to right, transparent 0, transparent ${BEAT_PX - 1}px, var(--line) ${BEAT_PX - 1}px, var(--line) ${BEAT_PX}px)`,
         }}
       >
         <button
@@ -168,7 +161,7 @@ function ChordSlot({
           }`}
           className="absolute inset-0 flex flex-col items-center justify-center pr-3"
         >
-          <span className="text-base font-bold leading-tight">{chordName(event.chord)}</span>
+          <span className="text-2xl font-medium leading-tight" style={{ color: ORIGIN_COLOR[event.chord.origin] }}>{chordName(event.chord)}</span>
           <span className={`font-mono text-xs ${playing ? '' : 'text-muted'}`}>{event.chord.numeral}</span>
           {voicing ? (
             <span className="mt-0.5 flex items-center gap-1.5">
@@ -207,7 +200,7 @@ function ChordSlot({
           aria-valuemax={BEATS_MAX}
           onPointerDown={onResizeDown}
           onKeyDown={onResizeKey}
-          className="absolute right-0 top-0 flex h-full w-5 cursor-ew-resize touch-none items-center justify-center bg-black/10 hover:bg-black/25"
+          className="absolute right-0 top-0 flex h-full w-5 cursor-ew-resize touch-none items-center justify-center hover:bg-surface-2"
         >
           <span className="h-6 w-0.5 rounded bg-current opacity-60" />
         </div>
@@ -240,10 +233,10 @@ function ChordToolbar({
   const setEventBeats = useStore((s) => s.setEventBeats);
   const startReplace = useStore((s) => s.startReplace);
   const cancelReplace = useStore((s) => s.cancelReplace);
-  const btn = 'rounded-lg border border-line bg-surface px-3 py-1.5 text-sm font-medium hover:bg-surface-2 aria-pressed:border-accent';
+  const btn = 'rounded-full border border-fg px-3.5 py-1.5 text-base italic hover:bg-surface-2 aria-pressed:border-accent aria-pressed:text-accent';
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2" aria-label={`Actions for ${chordName(event.chord)}`}>
-      <span className="text-sm font-semibold">{chordName(event.chord)}</span>
+      <span className="text-lg font-medium">{chordName(event.chord)}</span>
       <label className="flex items-center gap-1 text-sm text-muted">
         Beats
         <input
@@ -253,7 +246,7 @@ function ChordToolbar({
           value={event.beats}
           onChange={(e) => setEventBeats(event.id, Number(e.target.value))}
           aria-label="Beats for selected chord"
-          className="w-16 rounded-lg border border-line bg-surface px-2 py-1.5 text-sm text-fg"
+          className="w-16 rounded-none border-0 border-b border-fg bg-transparent px-2 py-1.5 text-base text-fg"
         />
       </label>
       <button onClick={onFlavor} aria-pressed={flavorOpen} className={btn}>Flavor</button>
@@ -273,7 +266,7 @@ function EmptyDropZone({ sectionId }: { sectionId: string }) {
   return (
     <p
       ref={setNodeRef}
-      className={`rounded-xl border border-dashed px-3 py-6 text-center text-sm text-muted ${isOver ? 'border-accent bg-surface-2' : 'border-line'}`}
+      className={`rounded-none border border-dashed px-3 py-6 text-center text-base italic text-muted ${isOver ? 'border-accent bg-surface-2' : 'border-muted'}`}
     >
       Add chords from the map above, or drag one here.
     </p>
@@ -321,7 +314,7 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
       id={`section-${section.id}`}
       aria-label={`Section: ${section.name}`}
       onClick={() => setActiveSection(section.id)}
-      className={`rounded-xl border p-3 ${section.id === activeSectionId ? 'border-accent bg-surface' : 'border-line bg-surface'}`}
+      className={`rounded-none border-t px-0 py-4 ${section.id === activeSectionId ? 'border-accent' : 'border-line'}`}
     >
       {sourceSection && (
         <p className="mb-2 text-xs text-muted" data-testid="variant-of">
@@ -345,7 +338,7 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
             value={section.name}
             onChange={(e) => renameSection(section.id, e.target.value)}
             aria-label="Section name"
-            className="w-28 rounded-lg border border-transparent bg-transparent px-1 font-semibold hover:border-line focus:border-line"
+            className="w-44 rounded-none border-0 border-b border-transparent bg-transparent px-1 text-2xl font-medium italic hover:border-line focus:border-fg"
           />
           <div className="flex items-center gap-1 text-sm text-muted">
             <button
@@ -495,8 +488,8 @@ function ArrangementRow() {
   const nameFor = (id: string) => sections.find((s) => s.id === id)?.name ?? '?';
 
   return (
-    <section aria-label="Arrangement" className="rounded-xl border border-line bg-surface p-3">
-      <h2 className="mb-2 text-xs font-medium text-muted">Arrangement</h2>
+    <section aria-label="Arrangement" className="rounded-none border-t border-fg pt-3">
+      <h2 className="mb-2 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Arrangement</h2>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <SortableContext items={ids} strategy={horizontalListSortingStrategy}>
           <ol className="flex flex-wrap items-center gap-1.5">
@@ -514,8 +507,8 @@ function ArrangementRow() {
               addArrangementSlot(s.id);
               setActiveSection(s.id);
             }}
-            className={`rounded-lg border px-2.5 py-1 text-xs font-medium ${
-              s.id === activeSectionId ? 'border-accent text-accent' : 'border-line text-muted hover:bg-surface-2'
+            className={`rounded-full border px-3 py-1 text-sm italic ${
+              s.id === activeSectionId ? 'border-accent text-accent' : 'border-fg text-muted hover:bg-surface-2'
             }`}
           >
             + {s.name}
@@ -538,7 +531,7 @@ function ArrangementChip({ id, name, onRemove }: { id: string; name: string; onR
       // keyboard drag handle); this li also contains the real "Remove" button below, and a button
       // nested inside another interactive role is inaccessible — `listitem` is accurate anyway.
       role="listitem"
-      className="flex items-center gap-1 rounded-lg border border-line bg-surface-2 py-1 pl-3 pr-1 text-sm"
+      className="flex items-center gap-1 rounded-none border-b border-fg py-0.5 pl-1 pr-1 text-base italic"
     >
       {name}
       <button
@@ -597,11 +590,11 @@ export default function Timeline({ navigate }: { navigate: Navigate }) {
 
       <div className="flex flex-wrap gap-1.5">
         {QUICK_ADD.map((name) => (
-          <button key={name} onClick={() => addSection(name)} className="rounded-lg border border-line bg-surface px-3 py-1.5 text-sm font-medium hover:bg-surface-2">
+          <button key={name} onClick={() => addSection(name)} className="rounded-full border border-fg px-4 py-1.5 text-base italic hover:bg-surface-2">
             + {name}
           </button>
         ))}
-        <button onClick={() => addSection('Custom')} className="rounded-lg border border-line bg-surface px-3 py-1.5 text-sm font-medium hover:bg-surface-2">
+        <button onClick={() => addSection('Custom')} className="rounded-full border border-fg px-4 py-1.5 text-base italic hover:bg-surface-2">
           + Custom section
         </button>
       </div>

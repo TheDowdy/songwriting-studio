@@ -47,7 +47,7 @@ function TapTempo() {
     <button
       onClick={tap}
       aria-label="Tap tempo"
-      className="h-10 rounded-lg border border-line bg-surface px-3 text-sm font-medium hover:bg-surface-2"
+      className="h-10 rounded-full border border-fg px-4 text-base italic hover:bg-surface-2"
     >
       Tap
     </button>
@@ -79,7 +79,7 @@ export default function TransportBar() {
     <div
       role="toolbar"
       aria-label="Playback"
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:static lg:rounded-xl lg:border lg:pb-3"
+      className="fixed inset-x-0 bottom-0 z-20 border-t border-fg bg-bg/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:static lg:border-y lg:bg-transparent lg:pb-3"
     >
       <div className="mx-auto max-w-3xl space-y-3 lg:max-w-none">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -87,18 +87,18 @@ export default function TransportBar() {
             onClick={togglePlay}
             disabled={!hasChords}
             aria-label={isPlaying ? 'Stop' : 'Play'}
-            className="h-12 min-w-24 rounded-xl bg-accent px-5 text-base font-semibold text-accent-fg disabled:opacity-40"
+            className="h-12 min-w-24 rounded-full bg-[var(--play)] px-6 text-lg font-medium italic text-[var(--play-fg)] disabled:opacity-40"
           >
             {isPlaying ? '■ Stop' : '▶ Play'}
           </button>
 
-          <div role="group" aria-label="Loop" className="flex h-12 items-center gap-1 rounded-xl border border-line bg-surface p-1 text-sm">
+          <div role="group" aria-label="Loop" className="flex h-12 items-center gap-1 rounded-none text-base">
             <button
               role="switch"
               aria-checked={loop}
               aria-label="Loop"
               onClick={() => setLoop(!loop)}
-              className="flex h-full items-center gap-2 rounded-lg px-3 font-medium hover:bg-surface-2"
+              className="flex h-full items-center gap-2 px-3 italic hover:bg-surface-2"
             >
               Loop
               <span
@@ -117,7 +117,7 @@ export default function TransportBar() {
                   aria-checked={loopScope === scope}
                   disabled={!loop}
                   onClick={() => setLoopScope(scope)}
-                  className={`h-full rounded-lg px-3 font-medium ${loopScope === scope ? 'bg-accent text-accent-fg' : 'text-muted hover:text-fg'}`}
+                  className={`h-full px-3 italic ${loopScope === scope ? 'text-fg shadow-[inset_0_-1.5px_0_var(--fg)]' : 'text-muted hover:text-fg'}`}
                 >
                   {label}
                 </button>
@@ -126,7 +126,7 @@ export default function TransportBar() {
           </div>
 
           <div className="flex min-w-[12rem] flex-1 items-center gap-2">
-            <label htmlFor="bpm" className="text-sm text-muted">
+            <label htmlFor="bpm" className="text-base italic text-muted">
               Tempo
             </label>
             <input
@@ -147,9 +147,9 @@ export default function TransportBar() {
               max={BPM_MAX}
               value={bpm}
               onChange={(e) => setBpm(Number(e.target.value))}
-              className="h-10 w-16 rounded-lg border border-line bg-surface px-2 text-center"
+              className="h-10 w-16 rounded-none border-0 border-b border-fg bg-transparent px-2 text-center"
             />
-            <span className="text-sm text-muted">BPM</span>
+            <span className="text-base italic text-muted">BPM</span>
           </div>
           <TapTempo />
 
@@ -157,7 +157,7 @@ export default function TransportBar() {
             onClick={() => setExpanded((v) => !v)}
             aria-pressed={expanded}
             aria-label="More playback settings"
-            className={`h-10 rounded-lg border px-3 text-sm font-medium ${expanded ? 'border-accent text-accent' : 'border-line text-muted hover:bg-surface-2'}`}
+            className={`h-10 rounded-lg rounded-full border px-4 text-base italic ${expanded ? 'border-accent text-accent' : 'border-fg text-muted hover:bg-surface-2'}`}
           >
             {expanded ? 'Less ▴' : 'More ▾'}
           </button>
@@ -166,7 +166,7 @@ export default function TransportBar() {
         {expanded && (
           <div className="flex flex-wrap items-end gap-x-5 gap-y-3 border-t border-line pt-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-muted">Time signature</label>
+              <label className="mb-1 block font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Time signature</label>
               <div className="flex items-center gap-1">
                 <input
                   type="number"
@@ -175,14 +175,14 @@ export default function TransportBar() {
                   value={timeSig.beats}
                   onChange={(e) => setTimeSig({ ...timeSig, beats: Math.max(1, Math.min(32, Math.round(Number(e.target.value)) || timeSig.beats)) })}
                   aria-label="Beats per bar"
-                  className="h-10 w-14 rounded-lg border border-line bg-surface px-2 text-center"
+                  className="h-10 w-14 rounded-none border-0 border-b border-fg bg-transparent px-2 text-center"
                 />
                 <span className="text-muted">/</span>
                 <select
                   value={timeSig.unit}
                   onChange={(e) => setTimeSig({ ...timeSig, unit: Number(e.target.value) as (typeof DENOMINATORS)[number] })}
                   aria-label="Beat unit"
-                  className="h-10 rounded-lg border border-line bg-surface px-2"
+                  className="h-10 rounded-none border-0 border-b border-fg bg-transparent px-2"
                 >
                   {DENOMINATORS.map((d) => (
                     <option key={d} value={d}>
@@ -194,14 +194,14 @@ export default function TransportBar() {
             </div>
 
             <div>
-              <label htmlFor="instrument" className="mb-1 block text-xs font-medium text-muted">
+              <label htmlFor="instrument" className="mb-1 block font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted">
                 Instrument
               </label>
               <select
                 id="instrument"
                 value={instrument}
                 onChange={(e) => setInstrument(e.target.value as InstrumentId)}
-                className="h-10 rounded-lg border border-line bg-surface px-2"
+                className="h-10 rounded-none border-0 border-b border-fg bg-transparent px-2"
               >
                 {INSTRUMENTS.map((i) => (
                   <option key={i.id} value={i.id}>
@@ -212,14 +212,14 @@ export default function TransportBar() {
             </div>
 
             <div>
-              <label htmlFor="pattern" className="mb-1 block text-xs font-medium text-muted">
+              <label htmlFor="pattern" className="mb-1 block font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted">
                 Pattern
               </label>
               <select
                 id="pattern"
                 value={pattern}
                 onChange={(e) => setPattern(e.target.value as PatternId)}
-                className="h-10 rounded-lg border border-line bg-surface px-2"
+                className="h-10 rounded-none border-0 border-b border-fg bg-transparent px-2"
               >
                 {PATTERNS.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -232,13 +232,13 @@ export default function TransportBar() {
             <button
               onClick={() => setMetronome(!metronome)}
               aria-pressed={metronome}
-              className={`h-10 rounded-lg border px-3 text-sm font-medium ${metronome ? 'border-accent bg-surface font-semibold text-fg' : 'border-line text-muted'}`}
+              className={`h-10 rounded-full border px-4 text-base italic ${metronome ? 'border-accent text-fg' : 'border-fg text-muted'}`}
             >
               ⏱ Metronome {metronome ? 'on' : 'off'}
             </button>
 
             <div className="flex min-w-[10rem] items-center gap-2">
-              <label htmlFor="volume" className="text-sm text-muted">
+              <label htmlFor="volume" className="text-base italic text-muted">
                 Volume
               </label>
               <input

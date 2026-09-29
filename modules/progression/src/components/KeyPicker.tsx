@@ -33,7 +33,7 @@ export default function KeyPicker() {
     <section aria-label="Key" className="space-y-3">
       <div>
         <div className="mb-1.5 flex items-center justify-between gap-2">
-          <h2 className="text-xs font-medium text-muted">Root note</h2>
+          <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Root note</h2>
           {spellings.length > 1 && (
             <div className="flex items-center gap-1.5" role="group" aria-label="Spelling">
               <span className="text-xs text-muted">Spell as</span>
@@ -42,8 +42,8 @@ export default function KeyPicker() {
                   key={n}
                   onClick={() => request({ ...key, tonic: n })}
                   aria-pressed={n === key.tonic}
-                  className={`min-w-9 rounded-lg border px-2 py-0.5 text-sm ${
-                    n === key.tonic ? 'border-accent bg-accent text-accent-fg' : 'border-line bg-surface'
+                  className={`min-w-9 px-2 py-0.5 text-base italic ${
+                    n === key.tonic ? 'text-fg shadow-[inset_0_-1.5px_0_var(--accent)]' : 'text-muted'
                   }`}
                 >
                   {fmt(n)}
@@ -52,7 +52,7 @@ export default function KeyPicker() {
             </div>
           )}
         </div>
-        <div className="grid grid-cols-6 gap-1.5 sm:grid-cols-12">
+        <div className="grid grid-cols-6 border-b border-fg sm:grid-cols-12">
           {TONIC_OPTIONS.map((options) => {
             const selected = options.some((n) => chroma(n) === chroma(key.tonic));
             const label = selected ? key.tonic : (DEFAULT_SPELLING[chroma(options[0])] ?? options[0]);
@@ -61,8 +61,8 @@ export default function KeyPicker() {
                 key={options[0]}
                 onClick={() => request({ ...key, tonic: selected ? key.tonic : label })}
                 aria-pressed={selected}
-                className={`h-10 rounded-lg border text-sm font-medium ${
-                  selected ? 'border-accent bg-accent text-accent-fg' : 'border-line bg-surface hover:bg-surface-2'
+                className={`h-10 rounded-[50%] text-xl ${
+                  selected ? 'text-accent shadow-[inset_0_0_0_1.5px_var(--accent)]' : 'hover:bg-surface-2'
                 }`}
               >
                 {fmt(label)}
@@ -73,14 +73,14 @@ export default function KeyPicker() {
       </div>
 
       <div>
-        <label htmlFor="mode" className="mb-1.5 block text-xs font-medium text-muted">
+        <label htmlFor="mode" className="mb-1.5 block font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted">
           Scale / mode
         </label>
         <select
           id="mode"
           value={key.mode}
           onChange={(e) => request({ ...key, mode: e.target.value as Mode })}
-          className="h-10 w-full rounded-lg border border-line bg-surface px-3 sm:w-72"
+          className="h-10 w-full rounded-none border-0 border-b border-fg bg-transparent px-0 italic sm:w-72"
         >
           {MODES.map((m) => (
             <option key={m} value={m}>
@@ -88,24 +88,24 @@ export default function KeyPicker() {
             </option>
           ))}
         </select>
-        <p className="mt-1.5 text-sm text-muted">{MODE_INFO[key.mode].mood}</p>
+        <p className="mt-1.5 text-base italic text-muted">{MODE_INFO[key.mode].mood}</p>
         {note && <p className="mt-1 text-sm text-[var(--c-borrowed)]">{note}</p>}
       </div>
 
       {pending && (
-        <div role="alertdialog" aria-label="Change key" className="rounded-xl border border-accent bg-surface p-3">
+        <div role="alertdialog" aria-label="Change key" className="rounded-none border-y border-accent bg-surface p-3">
           <p className="text-sm">
             Change key to <strong>{fmt(pending.tonic)} {MODE_INFO[pending.mode].label}</strong>? What should happen to the
             chords you've already added?
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <button onClick={() => confirm('transpose')} className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-fg">
+            <button onClick={() => confirm('transpose')} className="rounded-full bg-accent px-4 py-2 text-base italic text-accent-fg">
               Transpose them
             </button>
-            <button onClick={() => confirm('relabel')} className="rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm font-medium">
+            <button onClick={() => confirm('relabel')} className="rounded-full border border-fg px-4 py-2 text-base italic">
               Keep chords, relabel numerals
             </button>
-            <button onClick={() => setPending(null)} className="rounded-lg px-3 py-2 text-sm text-muted">
+            <button onClick={() => setPending(null)} className="px-3 py-2 text-base italic text-muted">
               Cancel
             </button>
           </div>

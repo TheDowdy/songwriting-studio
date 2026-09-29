@@ -57,9 +57,9 @@
 
 /* A chunky, always-visible scrollbar for the timeline rows (the default is a hairline on phones). */
 .timeline-scroll { scrollbar-width: auto; scrollbar-color: var(--muted) var(--surface-2); }
-.timeline-scroll::-webkit-scrollbar { height: 12px; }
-.timeline-scroll::-webkit-scrollbar-track { background: var(--surface-2); border-radius: 6px; }
-.timeline-scroll::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 6px; }
+.timeline-scroll::-webkit-scrollbar { height: 8px; }
+.timeline-scroll::-webkit-scrollbar-track { background: transparent; border-radius: 0; }
+.timeline-scroll::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 0; }
 
 /* Sheet music: always black on white, whatever the app theme, so it prints as shown. */
 .sheet-paper {

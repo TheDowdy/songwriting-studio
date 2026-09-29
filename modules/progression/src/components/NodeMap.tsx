@@ -10,12 +10,6 @@ const RING = 140;
 const R_CENTER = 46;
 const R_NODE = 33;
 
-const ORIGIN_TINT: Record<Origin, string> = {
-  diatonic: 'var(--t-diatonic)',
-  borrowed: 'var(--t-borrowed)',
-  secondary: 'var(--t-secondary)',
-};
-
 const ORIGIN_COLOR: Record<Origin, string> = {
   diatonic: 'var(--c-diatonic)',
   borrowed: 'var(--c-borrowed)',
@@ -63,10 +57,10 @@ interface Props {
 
 function NodeLabel({ chord, r }: { chord: ChordRef; r: number }) {
   const name = chordName(chord);
-  const size = name.length > 5 ? 11 : name.length > 3 ? 14 : 17;
+  const size = name.length > 5 ? 13 : name.length > 3 ? 17 : 21;
   return (
     <>
-      <text y={-3} textAnchor="middle" fontSize={size} fontWeight={700} fill="var(--fg)">
+      <text y={-2} textAnchor="middle" fontSize={size} fontWeight={500} fill={ORIGIN_COLOR[chord.origin]}>
         {name}
       </text>
       <text y={r * 0.42} textAnchor="middle" fontSize={r > 40 ? 13 : 11} fill="var(--muted)" className="font-mono">
@@ -116,9 +110,9 @@ export default function NodeMap({ musicKey, center, suggestions, startRing, onPr
   };
 
   return (
-    <section aria-label="Chord map" className="w-full rounded-xl border border-line bg-surface px-3 pb-3 pt-2 shadow-[var(--shadow)]">
+    <section aria-label="Chord map" className="w-full px-1 pb-3 pt-2">
       {replacing && (
-        <p role="status" className="mb-2 rounded-lg bg-accent px-3 py-2 text-center text-sm font-medium text-accent-fg">
+        <p role="status" className="mb-2 bg-accent px-3 py-2 text-center text-base italic text-accent-fg">
           Replacing this chord — tap one below, then press Replace.
         </p>
       )}
@@ -165,15 +159,15 @@ export default function NodeMap({ musicKey, center, suggestions, startRing, onPr
             onClick={() => center && onPreview(center)}
             onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && center && onPreview(center)}
           >
-            <circle className="node-body" r={R_CENTER} fill="var(--surface)" stroke="var(--accent)" strokeWidth={3.5} />
+            <circle className="node-body" r={R_CENTER} fill="var(--bg)" stroke="var(--fg)" strokeWidth={1.5} />
             {center ? (
               <NodeLabel chord={center} r={R_CENTER} />
             ) : (
               <>
-                <text y={-2} textAnchor="middle" fontSize={15} fontWeight={700} fill="var(--fg)">
+                <text y={-2} textAnchor="middle" fontSize={17} fontStyle="italic" fontWeight={500} fill="var(--fg)">
                   {keyLabel(musicKey)}
                 </text>
-                <text y={16} textAnchor="middle" fontSize={11} fill="var(--muted)">
+                <text y={16} textAnchor="middle" fontSize={11} fontStyle="italic" fill="var(--muted)">
                   pick a chord
                 </text>
               </>
@@ -230,7 +224,7 @@ export default function NodeMap({ musicKey, center, suggestions, startRing, onPr
                   }
                 }}
               >
-                <circle className="node-body" r={R_NODE} fill={ORIGIN_TINT[n.chord.origin]} stroke={color} strokeWidth={isFocused ? 4.5 : 2} />
+                <circle className="node-body" r={R_NODE} fill="var(--surface)" stroke={isFocused ? 'var(--accent)' : color} strokeWidth={isFocused ? 3 : 1} />
                 <NodeLabel chord={n.chord} r={R_NODE} />
                 {n.startHere && (
                   <g transform={`translate(0 ${-R_NODE - 14})`}>
@@ -275,13 +269,13 @@ export default function NodeMap({ musicKey, center, suggestions, startRing, onPr
       <div className="mx-auto min-h-[4.5rem] max-w-[520px] space-y-2 px-1" aria-live="polite">
         {focused ? (
           <>
-            <div className="flex items-center gap-3 rounded-xl border border-line bg-surface p-3">
+            <div className="flex items-center gap-3 border-y border-fg py-3">
               <div className="min-w-0 flex-1">
-                <p className="font-semibold">
+                <p className="text-xl font-medium">
                   {chordName(pendingChord ?? focused.chord)}{' '}
                   <span className="font-normal text-muted">({(pendingChord ?? focused.chord).numeral})</span>
                 </p>
-                <p className="text-sm text-muted">{focused.reason}</p>
+                <p className="text-base italic text-muted">{focused.reason}</p>
               </div>
               <button
                 onClick={() => {
@@ -307,7 +301,7 @@ export default function NodeMap({ musicKey, center, suggestions, startRing, onPr
               </button>
               <button
                 onClick={() => onAdd(pendingChord ?? focused.chord)}
-                className="shrink-0 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-accent-fg"
+                className="shrink-0 rounded-full bg-accent px-5 py-2.5 text-base font-medium italic text-accent-fg"
               >
                 {replacing ? 'Replace' : '+ Add'}
               </button>
@@ -330,7 +324,7 @@ export default function NodeMap({ musicKey, center, suggestions, startRing, onPr
             )}
           </>
         ) : (
-          <p className="pt-2 text-center text-sm text-muted">
+          <p className="pt-2 text-center text-base italic text-muted">
             {center
               ? 'Tap a chord to hear it and see why it works. Press + to add it.'
               : 'Tap a chord to hear it, then press + to start your progression.'}
@@ -338,7 +332,7 @@ export default function NodeMap({ musicKey, center, suggestions, startRing, onPr
         )}
       </div>
 
-      <ul className="mt-1 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-muted" aria-label="Legend">
+      <ul className="mt-1 flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm italic text-muted" aria-label="Legend">
         {origins.map((o) => (
           <li key={o} className="flex items-center gap-1.5" title={ORIGIN_LABEL[o].hint}>
             <span className="inline-block size-2.5 rounded-full" style={{ background: ORIGIN_COLOR[o] }} />
