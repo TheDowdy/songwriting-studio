@@ -21,7 +21,7 @@ export function AudioBanner() {
     <button
       type="button"
       onClick={() => void unlockAudio()}
-      className="block w-full border-b border-line bg-accent px-4 py-2 text-center text-sm font-medium text-accent-fg"
+      className="block w-full border-b border-line bg-surface-2 px-4 py-1.5 text-center text-sm italic text-muted"
     >
       Tap to enable sound
     </button>

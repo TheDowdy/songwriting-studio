@@ -16,9 +16,18 @@
   --color-accent-fg: var(--accent-fg);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
+  /* Manuscript: square corners. Only primary actions are pills (rounded-full). */
+  --radius-lg: 2px;
+  --radius-xl: 2px;
 }
 
-/* Shape system: containers 12px (rounded-xl), controls 8px (rounded-lg). Nothing else. */
+/* Newsreader has a smaller x-height than Geist, so the root size is nudged up to keep body text as
+   easy to read. Everything in rem follows. */
+html {
+  font-size: 106.25%;
+}
+
+/* Shape system: everything square (2px), primary actions pill-shaped. */
 
 /* Buttons physically press in — shell-wide, so every module's buttons feel the same. */
 button:not(:disabled) {
@@ -33,10 +42,13 @@ button:not(:disabled):active {
   }
 }
 
-button,
-select,
-input {
-  font: inherit;
+/* In the base layer so Tailwind's text-*, italic and font-* utilities on a button still win. */
+@layer base {
+  button,
+  select,
+  input {
+    font: inherit;
+  }
 }
 
 button:focus-visible,

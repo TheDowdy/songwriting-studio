@@ -24,8 +24,8 @@ async function open(options = {}) {
 }
 const bg = (page) => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 // The shared tokens now (Phase 2: `@sw/ui/tokens.css`), not FF's own former --bg values.
-const DARK = 'rgb(14, 21, 18)';
-const LIGHT = 'rgb(236, 238, 234)';
+const DARK = 'rgb(20, 26, 38)';
+const LIGHT = 'rgb(248, 248, 245)';
 
 /** Theme is a shell setting now (Phase 2 §6), not the guitar module's own: drive it through the
  *  header's "Preferences" dialog instead of the module's Settings dialog / store. */

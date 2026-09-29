@@ -66,29 +66,32 @@ export default function Library() {
   };
 
   return (
-    <main className="mx-auto max-w-2xl space-y-6 px-4 py-8">
-      <div className="flex items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">{APP_NAME}</h1>
-        <div className="flex">
-          <HeaderActions />
+    <main className="mx-auto max-w-2xl space-y-8 px-4 py-8">
+      {/* A masthead over a double rule, like the title page of a songbook. */}
+      <div className="border-b border-fg pb-3 shadow-[0_3px_0_-2px_var(--bg),0_4px_0_-2px_var(--fg)]">
+        <div className="flex items-start justify-between gap-2">
+          <h1 className="text-5xl font-medium italic leading-none tracking-tight max-[430px]:text-4xl">{APP_NAME}</h1>
+          <div className="flex">
+            <HeaderActions />
+          </div>
         </div>
       </div>
 
       <section>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold">Your songs</h2>
+          <h2 className="text-2xl font-medium italic">Your songs</h2>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={createSong}
-              className="h-10 rounded-lg bg-accent px-4 text-sm font-semibold text-accent-fg"
+              className="h-10 rounded-full bg-accent px-5 text-base font-medium italic text-accent-fg"
             >
               New song
             </button>
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="h-10 rounded-lg border border-line px-4 text-sm font-medium hover:bg-surface-2"
+              className="h-10 rounded-full border border-fg px-5 text-base italic hover:bg-surface-2"
             >
               Import JSON…
             </button>
@@ -109,26 +112,30 @@ export default function Library() {
         )}
 
         {songs.length === 0 ? (
-          <p className="mt-3 text-sm text-muted">No songs yet — start one with "New song".</p>
+          <p className="mt-3 text-base italic text-muted">No songs yet — start one with "New song".</p>
         ) : (
-          <ul className="mt-3 space-y-1.5">
+          <ul className="mt-2">
             {songs.map((meta) => (
-              <li
-                key={meta.id}
-                className="flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-sm"
-              >
+              <li key={meta.id} className="flex flex-wrap items-baseline gap-x-2 border-b border-line py-3">
                 <button
                   type="button"
                   onClick={() => openSong(meta.id)}
-                  className="min-w-0 flex-1 text-left"
+                  className="max-w-full truncate text-left text-2xl font-medium leading-tight hover:text-accent"
                 >
-                  <p className="truncate font-medium">{meta.title || 'Untitled song'}</p>
-                  <p className="text-xs text-muted">{formatDate(meta.updatedAt)}</p>
+                  {meta.title || 'Untitled song'}
                 </button>
+                {/* The dot leader that runs from the title to the date, as in a table of contents. */}
+                <span
+                  aria-hidden
+                  className="min-w-4 flex-1 -translate-y-1 border-b-2 border-dotted border-muted/50 max-[430px]:hidden"
+                />
+                <span className="font-mono text-xs text-muted max-[430px]:order-3 max-[430px]:w-full">
+                  {formatDate(meta.updatedAt)}
+                </span>
                 <button
                   type="button"
                   onClick={() => remove(meta.id, meta.title)}
-                  className="shrink-0 rounded-lg px-2 py-1 text-xs text-[var(--danger)] hover:bg-surface-2"
+                  className="ml-2 shrink-0 px-1 text-sm italic text-[var(--danger)] hover:underline"
                 >
                   Delete
                 </button>
@@ -140,15 +147,15 @@ export default function Library() {
 
       {TOOL_MODULES.length > 0 && (
         <section>
-          <h2 className="text-lg font-semibold">Tools</h2>
-          <p className="mt-1 text-sm text-muted">Explore without opening a song.</p>
+          <h2 className="text-2xl font-medium italic">Tools</h2>
+          <p className="mt-1 text-base italic text-muted">Explore without opening a song.</p>
           <ul className="mt-3 flex flex-wrap gap-2">
             {TOOL_MODULES.map((m) => (
               <li key={m.id}>
                 <button
                   type="button"
                   onClick={() => navigate(`/tools/${m.id}`)}
-                  className="flex h-11 items-center gap-2 rounded-lg border border-line px-4 text-sm font-medium hover:bg-surface-2"
+                  className="flex h-11 items-center gap-2 rounded-full border border-fg px-5 text-base italic hover:bg-surface-2"
                 >
                   {m.icon}
                   {m.title}

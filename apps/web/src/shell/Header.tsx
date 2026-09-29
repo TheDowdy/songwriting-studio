@@ -23,12 +23,12 @@ export function Header({ title, onRenameTitle, modules, activeModuleId, hrefFor,
   const [editingTitle, setEditingTitle] = useState(false);
 
   return (
-    <header className="flex min-h-14 flex-wrap items-center gap-2 border-b border-line bg-surface px-3 py-2">
+    <header className="flex min-h-14 flex-wrap items-center gap-2 border-b border-fg bg-bg px-3 py-2">
       {backHref && (
         <Link
           href={backHref}
           aria-label="Back to library"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-fg hover:bg-surface-2"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted hover:text-fg"
         >
           <svg viewBox="0 0 24 24" width={20} height={20} fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
             <path d="M15 5 8 12l7 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -59,7 +59,7 @@ export function Header({ title, onRenameTitle, modules, activeModuleId, hrefFor,
             <button
               type="button"
               onClick={() => setEditingTitle(true)}
-              className="h-10 min-w-0 flex-1 truncate rounded-lg px-2 text-left text-base font-semibold hover:bg-surface-2"
+              className="h-10 min-w-0 flex-1 truncate rounded-lg px-2 text-left text-lg font-medium italic hover:bg-surface-2"
               title="Rename song"
             >
               {title}
@@ -75,7 +75,7 @@ export function Header({ title, onRenameTitle, modules, activeModuleId, hrefFor,
             href={hrefFor(m.id)}
             role="tab"
             aria-selected={m.id === activeModuleId}
-            className="flex h-10 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-fg aria-selected:bg-accent aria-selected:text-accent-fg"
+            className="flex h-10 items-center gap-1.5 px-2 text-base italic text-muted hover:text-fg aria-selected:text-fg aria-selected:shadow-[inset_0_-1.5px_0_var(--accent)]"
           >
             {m.icon}
             {/* Icon-only on a phone, so the header (back, title, tabs, help, preferences) stays on one row. */}
