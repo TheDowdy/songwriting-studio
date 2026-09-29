@@ -64,7 +64,7 @@ function StripChord({ slot, event, song, selected }: { slot: number; event: Chor
         type="button"
         className={`strip-chord${stale ? ' stale' : ''}${voicing ? '' : ' uncommitted'}${playing ? ' sounding' : ''}`}
         aria-pressed={selected}
-        aria-label={`Chord: ${chordName(event.chord)}, ${event.chord.numeral}, ${event.chord.origin}${
+        aria-label={`Chord: ${chordName(event.chord)}, ${event.chord.numeral}, ${event.chord.origin}, ${event.beats} ${event.beats === 1 ? 'beat' : 'beats'}${
           voicing ? (stale ? ', voicing needs a re-fit' : ', voicing committed') : ', no voicing committed (plays the suggested shape)'
         }`}
         style={{
@@ -93,6 +93,9 @@ function StripChord({ slot, event, song, selected }: { slot: number; event: Chor
             )}
           </span>
         )}
+        <span className="strip-chord-beats" aria-hidden="true" title={`${event.beats} ${event.beats === 1 ? 'beat' : 'beats'}`}>
+          {event.beats}
+        </span>
       </button>
     </li>
   );

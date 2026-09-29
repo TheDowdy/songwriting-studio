@@ -785,6 +785,15 @@
   font-size: 0.7rem;
   opacity: 0.75;
 }
+/* The chord's length in beats, a small number at the bottom of the box (never widening it). */
+.mod-guitar .strip-chord-beats {
+  margin-top: 0.1rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  opacity: 0.75;
+}
 .mod-guitar .strip-chord[aria-pressed='true'] {
   box-shadow: inset 0 0 0 2px var(--accent);
   border-color: var(--accent);
@@ -916,6 +925,11 @@
 .mod-guitar .beats-control .button {
   min-width: 40px;
   padding: 0;
+}
+.mod-guitar .beats-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
 }
 .mod-guitar .beats-value {
   min-width: 2ch;

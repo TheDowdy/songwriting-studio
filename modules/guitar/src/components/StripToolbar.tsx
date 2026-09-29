@@ -175,6 +175,9 @@ export function StripToolbar() {
           Replace
         </button>
         <span className="beats-control" role="group" aria-label="Beats">
+          <span className="beats-label" aria-hidden="true">
+            Beats
+          </span>
           <button
             type="button"
             className="button"
