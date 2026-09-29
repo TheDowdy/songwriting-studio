@@ -72,7 +72,7 @@ const DEFAULT_GEOMETRY: Geometry = {
 
 const MINI_GEOMETRY: Geometry = {
   // Wide enough for a "12fr" label at fretFontSize, so a shape up the neck isn't clipped at x = 0.
-  left: 13,
+  left: 17,
   fretLabelGap: 2,
   top: 6,
   stringGap: 5,
@@ -87,7 +87,7 @@ const MINI_GEOMETRY: Geometry = {
   openCy: 4.5,
   muteY: 6,
   muteFontSize: 5,
-  fretFontSize: 4,
+  fretFontSize: 5.5,
   barreInset: 2,
   barreYPad: 1,
   barreHeightPad: 2,

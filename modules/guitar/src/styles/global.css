@@ -787,6 +787,9 @@
 }
 /* The chord's length in beats, a small number at the bottom of the box (never widening it). */
 .mod-guitar .strip-chord-beats {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
   margin-top: 0.1rem;
   font-family: ui-monospace, monospace;
   font-size: 0.65rem;
