@@ -38,13 +38,13 @@ export function SettingsDialog({ open, onClose, onOpenGuide }: Props) {
     <dialog
       ref={dialogRef}
       onClose={onClose}
-      className="w-[min(24rem,calc(100vw-2rem))] rounded-xl border border-line bg-surface p-0 text-fg backdrop:bg-black/50"
+      className="w-[min(24rem,calc(100vw-2rem))] rounded-xl border border-fg bg-surface p-0 text-fg backdrop:bg-black/50"
     >
       <div className="p-5">
-        <h2 className="m-0 mb-3 text-lg font-semibold">Settings</h2>
+        <h2 className="m-0 mb-3 text-2xl font-medium italic">Settings</h2>
 
         <fieldset className="m-0 border-0 p-0">
-          <legend className="mb-1 text-sm font-semibold">Theme</legend>
+          <legend className="mb-1 text-base font-medium italic">Theme</legend>
           <div className="flex flex-wrap gap-2">
             {THEMES.map((t) => (
               <button
@@ -52,7 +52,7 @@ export function SettingsDialog({ open, onClose, onOpenGuide }: Props) {
                 type="button"
                 aria-pressed={theme === t.id}
                 onClick={() => setTheme(t.id)}
-                className="h-10 rounded-lg border border-line px-3 text-sm aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-accent-fg"
+                className="h-10 rounded-full border border-fg px-4 text-base italic aria-pressed:border-accent aria-pressed:text-accent"
               >
                 {t.label}
               </button>
@@ -61,7 +61,7 @@ export function SettingsDialog({ open, onClose, onOpenGuide }: Props) {
         </fieldset>
 
         <div className="mt-4">
-          <label className="flex items-center gap-2 text-sm font-semibold" htmlFor="shell-volume">
+          <label className="flex items-center gap-2 text-base font-medium italic" htmlFor="shell-volume">
             Master volume
           </label>
           <div className="mt-1 flex items-center gap-2">
@@ -85,11 +85,11 @@ export function SettingsDialog({ open, onClose, onOpenGuide }: Props) {
         </div>
 
         <div className="mt-4">
-          <h3 className="mb-1 text-sm font-semibold">Help</h3>
+          <h3 className="mb-1 text-base font-medium italic">Help</h3>
           <button
             type="button"
             onClick={onOpenGuide}
-            className="h-10 rounded-lg border border-line px-3 text-sm hover:bg-surface-2"
+            className="h-10 rounded-full border border-fg px-4 text-base italic hover:bg-surface-2"
           >
             Open the user guide
           </button>
@@ -99,7 +99,7 @@ export function SettingsDialog({ open, onClose, onOpenGuide }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg bg-accent px-4 text-sm font-semibold text-accent-fg"
+            className="h-10 rounded-full bg-accent px-5 text-base font-medium italic text-accent-fg"
           >
             Done
           </button>

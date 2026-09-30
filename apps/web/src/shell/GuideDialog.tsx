@@ -14,18 +14,18 @@ function inline(text: string): ReactNode {
 }
 
 function Block({ block }: { block: GuideBlock }) {
-  if ('p' in block) return <p className="my-2 text-sm leading-relaxed">{inline(block.p)}</p>;
-  if ('h3' in block) return <h4 className="mb-1 mt-4 text-sm font-semibold">{block.h3}</h4>;
+  if ('p' in block) return <p className="my-2 text-base leading-relaxed">{inline(block.p)}</p>;
+  if ('h3' in block) return <h4 className="mb-1 mt-4 text-base font-medium italic">{block.h3}</h4>;
   if ('note' in block)
     return (
-      <p className="my-2 rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm leading-relaxed">
+      <p className="my-2 border-l-2 border-accent bg-surface-2 px-3 py-2 text-base leading-relaxed">
         <strong>Note:</strong> {inline(block.note)}
       </p>
     );
   const List = 'ol' in block ? 'ol' : 'ul';
   const items = 'ol' in block ? block.ol : block.ul;
   return (
-    <List className={`my-2 space-y-1 pl-5 text-sm leading-relaxed ${List === 'ol' ? 'list-decimal' : 'list-disc'}`}>
+    <List className={`my-2 space-y-1 pl-5 text-base leading-relaxed ${List === 'ol' ? 'list-decimal' : 'list-disc'}`}>
       {items.map((item, i) => (
         <li key={i}>{inline(item)}</li>
       ))}
@@ -53,17 +53,17 @@ export function GuideDialog({ open, onClose }: Props) {
       ref={dialogRef}
       onClose={onClose}
       aria-labelledby="guide-title"
-      className="m-auto h-[min(44rem,calc(100dvh-2rem))] w-[min(40rem,calc(100vw-2rem))] rounded-xl border border-line bg-surface p-0 text-fg backdrop:bg-black/50"
+      className="m-auto h-[min(44rem,calc(100dvh-2rem))] w-[min(40rem,calc(100vw-2rem))] rounded-xl border border-fg bg-surface p-0 text-fg backdrop:bg-black/50"
     >
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between gap-2 border-b border-line px-5 py-3">
-          <h2 id="guide-title" className="m-0 text-lg font-semibold">
+          <h2 id="guide-title" className="m-0 text-2xl font-medium italic">
             User guide
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-lg bg-accent px-4 text-sm font-semibold text-accent-fg"
+            className="h-10 rounded-full bg-accent px-5 text-base font-medium italic text-accent-fg"
           >
             Close
           </button>
@@ -76,7 +76,7 @@ export function GuideDialog({ open, onClose }: Props) {
                   <button
                     type="button"
                     onClick={() => jump(s.id)}
-                    className="rounded-lg border border-line px-2.5 py-1 text-xs hover:bg-surface-2"
+                    className="rounded-full border border-fg px-3 py-1 text-sm italic hover:bg-surface-2"
                   >
                     {s.title}
                   </button>
@@ -86,7 +86,7 @@ export function GuideDialog({ open, onClose }: Props) {
           </nav>
           {GUIDE.map((s) => (
             <section key={s.id} id={`guide-${s.id}`} aria-labelledby={`guide-h-${s.id}`} className="mt-6">
-              <h3 id={`guide-h-${s.id}`} className="m-0 text-base font-semibold">
+              <h3 id={`guide-h-${s.id}`} className="m-0 text-xl font-medium italic">
                 {s.title}
               </h3>
               {s.blocks.map((b, i) => (

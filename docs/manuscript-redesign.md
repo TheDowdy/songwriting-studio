@@ -40,9 +40,9 @@ Design mockups (Claude artifacts, private to the owner):
 
 ## Still to do / open questions
 
-- **Guitar neck** is still the wooden skin. Proposal: add an "Engraving" guitar model (ink on paper)
-  in `modules/guitar/src/components/Fretboard/guitarSkins.ts`, possibly as the default. The five
-  existing models and the customiser are a user feature, so they should stay.
+- **Guitar neck**: an "Engraving" model (ink on paper, fixed paper sheet in both themes) now exists in
+  `guitarSkins.ts` as a sixth option, not the default. Open: make it the default? A dark-theme variant?
+  The legend swatches under the neck still use the wood colours.
 - Guitar progression strip (`ProgressionStrip.tsx`, `StripToolbar.tsx`) still has dashed blocks and a
   filled "Play song" button.
 - Not restyled: Settings and Guide dialogs, print/sheet view (`modules/progression/src/sheet`),
@@ -53,6 +53,19 @@ Design mockups (Claude artifacts, private to the owner):
 - Before merging: run the full sweep from CLAUDE.md, re-run the audio-flaky checks once, run
   `check:perf`, and decide whether to keep the 106.25% root size after seeing it on a real monitor.
   Formatting-only changes should stay in their own commit.
+
+## Feature requests queued for after the design pass
+
+Raised by the owner on 2026-09-30; do not start until the design looks right.
+
+1. **Space bar toggles playback** of the progression on desktop (start and stop). Needs care around
+   focus: it must not fire while typing in an input, textarea or select, or when a button has focus
+   (space already activates it), and it should work in both the progression and guitar modules.
+2. **Add any built chord to the progression from the guitar module**, for example a chord built in
+   Identify mode. Afterwards the owner wants to switch back to the progression module and get
+   suggestions for what to add next from that chord. Chords built or identified in the guitar module
+   can be arbitrary (any root, quality, colour), so this needs a mapping to a `ChordRef`
+   (`origin` and `numeral` relative to the song's key) through `packages/core`, plus a test.
 
 ## Running it
 
