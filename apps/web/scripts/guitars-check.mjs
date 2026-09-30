@@ -34,7 +34,7 @@ const state = () =>
       touched: s.fretCountUserSet,
     };
   });
-const MODELS = ['steel-acoustic', 'classical', 'double-cut', 'single-cut', 'hollow-body'];
+const MODELS = ['steel-acoustic', 'classical', 'double-cut', 'single-cut', 'hollow-body', 'engraving'];
 const setModel = (id) => store((id) => window.__fluidfrets.store.getState().setGuitarModel(id), id);
 
 await store(() => window.__fluidfrets.store.getState().setStrumOnTuningChange(false));

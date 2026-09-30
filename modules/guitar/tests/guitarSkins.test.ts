@@ -69,13 +69,14 @@ const allShapes = (m: (typeof GUITAR_MODELS)[number]): Shape[] => [
 const PATH_COMMANDS = /^[MLCZmlczHhVvSsQqTtAa0-9,.\-\s]+$/;
 
 describe('the shipped guitar models', () => {
-  it('has the five models the plan lists, with unique ids', () => {
+  it('has the models the plan lists plus the engraving, with unique ids', () => {
     expect(GUITAR_MODELS.map((m) => m.id)).toEqual([
       'steel-acoustic',
       'classical',
       'double-cut',
       'single-cut',
       'hollow-body',
+      'engraving',
     ]);
     expect(new Set(GUITAR_MODELS.map((m) => m.id)).size).toBe(GUITAR_MODELS.length);
     expect(GUITAR_MODELS.map((m) => m.name)).toEqual([
@@ -84,6 +85,7 @@ describe('the shipped guitar models', () => {
       'Solid-body electric, double cutaway',
       'Solid-body electric, single cutaway',
       'Hollow-body electric',
+      'Engraving',
     ]);
   });
 
@@ -127,14 +129,14 @@ describe('the shipped guitar models', () => {
     expect(getGuitarModel('steel-acoustic').strings.windPattern).toBe(true);
   });
 
-  it('gives the five models visibly different looks', () => {
+  it('gives every model a visibly different look', () => {
     const signature = (m: (typeof GUITAR_MODELS)[number]) =>
       JSON.stringify([m.wood, m.inlay, m.finish, m.headstock.shapes[0], m.strings.plain]);
-    expect(new Set(GUITAR_MODELS.map(signature)).size).toBe(5);
+    expect(new Set(GUITAR_MODELS.map(signature)).size).toBe(GUITAR_MODELS.length);
     const headstocks = GUITAR_MODELS.map((m) => (m.headstock.shapes[0] as { d: string }).d);
-    expect(new Set(headstocks).size).toBe(5);
+    expect(new Set(headstocks).size).toBe(GUITAR_MODELS.length);
     const bodies = GUITAR_MODELS.map((m) => JSON.stringify(m.body.shapes[0]));
-    expect(new Set(bodies).size).toBe(5);
+    expect(new Set(bodies).size).toBe(GUITAR_MODELS.length);
   });
 
   it('draws only well-formed shapes inside the visible frame', () => {
@@ -204,7 +206,7 @@ describe('customising', () => {
   });
 
   it('offers wood, inlay and finish choices', () => {
-    expect(Object.keys(WOODS)).toEqual(['rosewood', 'maple', 'ebony']);
+    expect(Object.keys(WOODS)).toEqual(['rosewood', 'maple', 'ebony', 'paper']);
     expect(INLAY_STYLES.map((i) => i.id)).toEqual(['dots', 'blocks', 'none']);
     expect(FINISHES.length).toBeGreaterThanOrEqual(5);
     expect(FINISHES.every((f) => /^#[0-9a-f]{6}$/.test(f.hex))).toBe(true);
