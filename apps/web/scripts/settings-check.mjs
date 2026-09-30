@@ -458,7 +458,7 @@ async function setTheme(page, label) {
   });
   check(
     'confirming resets every setting and saved tuning to the defaults',
-    s.theme === 'system' && s.frets === 22 && s.model === 'steel-acoustic' && s.saved === 0,
+    s.theme === 'system' && s.frets === 22 && s.model === 'engraving' && s.saved === 0,
     JSON.stringify(s),
   );
   await page.close();

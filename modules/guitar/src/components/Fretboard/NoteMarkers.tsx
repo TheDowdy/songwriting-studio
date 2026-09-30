@@ -44,7 +44,7 @@ const SQUARE_HALF = 0.9;
 /** A diamond's half-diagonal, as a fraction of the circle's radius (room for the label). */
 const DIAMOND_HALF = 1.25;
 /** Opacity of a note outside the shown fingering, or outside a chord laid over a scale. */
-const DIM_OPACITY = 0.5;
+const DIM_OPACITY = 0.4;
 
 /**
  * All the note markers of one string. Each is placed from its pitch (fret = midi − string
@@ -102,6 +102,11 @@ const StringMarkers = memo(function StringMarkers({
           inShape || inOverlay,
         );
         if (!style.visible) return null;
+        // Selected = the notes left at full strength while the rest dim: a thick black outline makes
+        // them unmistakable.
+        const selected = inShape || (hasOverlay && inOverlay);
+        const outline = selected ? skin.selectedOutline : style.stroke;
+        const outlineWidth = selected ? skin.selectedOutlineWidth : style.strokeWidth;
         const label =
           display?.labels?.[pc] ?? formatNoteName(spelling[pc] as (typeof spelling)[number]);
         const r = markerRadius(interpolateClamped(spaces, fret)) * style.scale;
@@ -166,8 +171,8 @@ const StringMarkers = memo(function StringMarkers({
                   points={`${cx},${cy - r * DIAMOND_HALF} ${cx + r * DIAMOND_HALF},${cy} ${cx},${cy + r * DIAMOND_HALF} ${cx - r * DIAMOND_HALF},${cy}`}
                   strokeLinejoin="round"
                   fill={style.fill}
-                  stroke={sounding ? skin.playhead : style.stroke}
-                  strokeWidth={sounding ? 3.6 : style.strokeWidth}
+                  stroke={sounding ? skin.playhead : outline}
+                  strokeWidth={sounding ? 3.6 : outlineWidth}
                   style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
                 />
               ) : style.square ? (
@@ -179,8 +184,8 @@ const StringMarkers = memo(function StringMarkers({
                   height={half * 2}
                   rx={half * 0.3}
                   fill={style.fill}
-                  stroke={sounding ? skin.playhead : style.stroke}
-                  strokeWidth={sounding ? 3.6 : style.strokeWidth}
+                  stroke={sounding ? skin.playhead : outline}
+                  strokeWidth={sounding ? 3.6 : outlineWidth}
                   style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
                 />
               ) : (
@@ -190,8 +195,8 @@ const StringMarkers = memo(function StringMarkers({
                   cy={cy}
                   r={r}
                   fill={style.fill}
-                  stroke={sounding ? skin.playhead : style.stroke}
-                  strokeWidth={sounding ? 3.6 : style.strokeWidth}
+                  stroke={sounding ? skin.playhead : outline}
+                  strokeWidth={sounding ? 3.6 : outlineWidth}
                   style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
                 />
               )}

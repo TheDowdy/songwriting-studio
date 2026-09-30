@@ -71,21 +71,21 @@ const PATH_COMMANDS = /^[MLCZmlczHhVvSsQqTtAa0-9,.\-\s]+$/;
 describe('the shipped guitar models', () => {
   it('has the models the plan lists plus the engraving, with unique ids', () => {
     expect(GUITAR_MODELS.map((m) => m.id)).toEqual([
+      'engraving',
       'steel-acoustic',
       'classical',
       'double-cut',
       'single-cut',
       'hollow-body',
-      'engraving',
     ]);
     expect(new Set(GUITAR_MODELS.map((m) => m.id)).size).toBe(GUITAR_MODELS.length);
     expect(GUITAR_MODELS.map((m) => m.name)).toEqual([
+      'Engraving',
       'Steel-string acoustic',
       'Classical (nylon)',
       'Solid-body electric, double cutaway',
       'Solid-body electric, single cutaway',
       'Hollow-body electric',
-      'Engraving',
     ]);
   });
 
@@ -223,7 +223,7 @@ describe('customising', () => {
   });
 
   it('falls back to the first model for an unknown id', () => {
-    expect(getGuitarModel('nope').id).toBe('steel-acoustic');
+    expect(getGuitarModel('nope').id).toBe('engraving');
     expect(isGuitarModelId('classical')).toBe(true);
     expect(isGuitarModelId('nope')).toBe(false);
   });

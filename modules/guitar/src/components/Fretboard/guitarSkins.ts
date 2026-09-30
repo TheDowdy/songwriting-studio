@@ -159,6 +159,43 @@ const poles = (cx: number, fill: Paint): Shape[] =>
   }));
 
 export const GUITAR_MODELS: readonly GuitarModel[] = [
+  // The Manuscript look: a neck drawn as an engraving (ink hairlines on paper) rather than an object.
+  {
+    id: 'engraving',
+    name: 'Engraving',
+    finish: '#2a4fa8',
+    defaultFrets: 22,
+    defaultSound: 'acoustic',
+    wood: 'paper',
+    inlay: 'dots',
+    binding: false,
+    nut: '#1c2540',
+    fretWire: ['#1c2540', 'rgba(0, 0, 0, 0)'],
+    strings: {
+      plain: '#1c2540',
+      wound: '#1c2540',
+      widths: [2.2, 1.8, 1.5, 1.1, 0.9, 0.7],
+      isWound: [true, true, true, false, false, false],
+      windPattern: false,
+      plainOpacity: 1,
+    },
+    headstock: {
+      face: 'none',
+      shapes: [
+        // An open bracket where the strings begin, instead of a headstock.
+        { kind: 'path', d: 'M150 0 L56 0 L56 224 L150 224', stroke: '#1c2540', width: 1.2 },
+      ],
+    },
+    body: {
+      shapes: [
+        // The page carries on past the last fret, so the strings end on paper in either theme.
+        { kind: 'rect', x: 0, y: 0, w: 120, h: 224, fill: '#fbfaf6' },
+        // A double bar after the last fret, like the end of a line of music.
+        { kind: 'path', d: 'M14 0 L14 224', stroke: '#1c2540', width: 3 },
+        { kind: 'path', d: 'M22 0 L22 224', stroke: '#1c2540', width: 1 },
+      ],
+    },
+  },
   {
     id: 'steel-acoustic',
     name: 'Steel-string acoustic',
@@ -477,49 +514,15 @@ export const GUITAR_MODELS: readonly GuitarModel[] = [
       ],
     },
   },
-  // The Manuscript look: a neck drawn as an engraving (ink hairlines on paper) rather than an object.
-  {
-    id: 'engraving',
-    name: 'Engraving',
-    finish: '#2a4fa8',
-    defaultFrets: 22,
-    defaultSound: 'acoustic',
-    wood: 'paper',
-    inlay: 'dots',
-    binding: false,
-    nut: '#1c2540',
-    fretWire: ['#1c2540', 'rgba(0, 0, 0, 0)'],
-    strings: {
-      plain: '#1c2540',
-      wound: '#1c2540',
-      widths: [2.2, 1.8, 1.5, 1.1, 0.9, 0.7],
-      isWound: [true, true, true, false, false, false],
-      windPattern: false,
-      plainOpacity: 1,
-    },
-    headstock: {
-      face: 'none',
-      shapes: [
-        // An open bracket where the strings begin, instead of a headstock.
-        { kind: 'path', d: 'M150 0 L56 0 L56 224 L150 224', stroke: '#1c2540', width: 1.2 },
-      ],
-    },
-    body: {
-      shapes: [
-        // The page carries on past the last fret, so the strings end on paper in either theme.
-        { kind: 'rect', x: 0, y: 0, w: 120, h: 224, fill: '#fbfaf6' },
-        // A double bar after the last fret, like the end of a line of music.
-        { kind: 'path', d: 'M14 0 L14 224', stroke: '#1c2540', width: 3 },
-        { kind: 'path', d: 'M22 0 L22 224', stroke: '#1c2540', width: 1 },
-      ],
-    },
-  },
 ];
 
-export const DEFAULT_MODEL_ID: GuitarModelId = 'steel-acoustic';
+export const DEFAULT_MODEL_ID: GuitarModelId = 'engraving';
 
 export function getGuitarModel(id: string): GuitarModel {
-  return GUITAR_MODELS.find((m) => m.id === id) ?? (GUITAR_MODELS[0] as GuitarModel);
+  return (
+    GUITAR_MODELS.find((m) => m.id === id) ??
+    (GUITAR_MODELS.find((m) => m.id === DEFAULT_MODEL_ID) as GuitarModel)
+  );
 }
 
 export function isGuitarModelId(x: unknown): x is GuitarModelId {

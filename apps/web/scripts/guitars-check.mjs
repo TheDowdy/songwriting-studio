@@ -34,7 +34,7 @@ const state = () =>
       touched: s.fretCountUserSet,
     };
   });
-const MODELS = ['steel-acoustic', 'classical', 'double-cut', 'single-cut', 'hollow-body', 'engraving'];
+const MODELS = ['engraving', 'steel-acoustic', 'classical', 'double-cut', 'single-cut', 'hollow-body'];
 const setModel = (id) => store((id) => window.__fluidfrets.store.getState().setGuitarModel(id), id);
 
 await store(() => window.__fluidfrets.store.getState().setStrumOnTuningChange(false));
@@ -47,16 +47,16 @@ check(
   'the toolbar has a Guitar selector with the six models',
   JSON.stringify(options) ===
     JSON.stringify([
+      'Engraving',
       'Steel-string acoustic',
       'Classical (nylon)',
       'Solid-body electric, double cutaway',
       'Solid-body electric, single cutaway',
       'Hollow-body electric',
-      'Engraving',
     ]),
   options.join(' | '),
 );
-check('it starts on the steel-string acoustic', (await state()).model === 'steel-acoustic');
+check('it starts on the engraving', (await state()).model === 'engraving');
 
 // ---------------------------------------------------------------- markers stay put, and stay tappable
 const geometry = () =>
@@ -222,8 +222,8 @@ check(
     .size === 6,
 );
 check(
-  'inlays follow the model: dots, none (side dots), dots, blocks, blocks, dots',
-  MODELS.map((id) => looks[id].inlays).join() === 'dots,none,dots,blocks,blocks,dots',
+  'inlays follow the model: dots (engraving), dots, none (side dots), dots, blocks, blocks',
+  MODELS.map((id) => looks[id].inlays).join() === 'dots,dots,none,dots,blocks,blocks',
   MODELS.map((id) => looks[id].inlays).join(),
 );
 
@@ -456,7 +456,7 @@ await sleep(300);
 st = await state();
 check(
   'junk in storage falls back to the defaults',
-  st.model === 'steel-acoustic' &&
+  st.model === 'engraving' &&
     JSON.stringify(st.custom) === JSON.stringify({ wood: null, inlay: null, finish: null }) &&
     st.match === true,
   JSON.stringify(st),
