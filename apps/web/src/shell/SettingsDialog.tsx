@@ -38,7 +38,7 @@ export function SettingsDialog({ open, onClose, onOpenGuide }: Props) {
     <dialog
       ref={dialogRef}
       onClose={onClose}
-      className="w-[min(24rem,calc(100vw-2rem))] rounded-xl border border-fg bg-surface p-0 text-fg backdrop:bg-black/50"
+      className="m-auto w-[min(24rem,calc(100vw-2rem))] rounded-xl border border-fg bg-surface p-0 text-fg backdrop:bg-black/50"
     >
       <div className="p-5">
         <h2 className="m-0 mb-3 text-2xl font-medium italic">Settings</h2>

@@ -236,6 +236,8 @@
 
 /* Dialogs and text inputs (Phase 4) */
 .mod-guitar .dialog {
+  /* Tailwind's preflight zeroes a <dialog>'s auto margin, which is what centres it. */
+  margin: auto;
   width: min(32rem, calc(100vw - 2rem));
   max-height: calc(100dvh - 2rem);
   padding: 0;

@@ -56,7 +56,7 @@ export const GUITAR_HELP: HelpEntry[] = [
   g('Guitar', 'Choose the look of the guitar neck.'),
   g('Customise', 'Change the wood, inlay markers or finish of the guitar neck.'),
   g('Match sound to guitar', 'Play back with a sound that suits the guitar you chose.'),
-  g(/^(Rosewood|Maple|Ebony)$/, 'Change the wood of the neck.'),
+  g(/^(Rosewood|Maple|Ebony|Paper)$/, 'Change the wood of the neck, or choose paper for an engraved look.'),
   g(/^(Dots|Blocks|Side dots only)$/, 'Change the style of the inlay markers on the neck.'),
   g(/^Reset to /, 'Go back to the chosen guitar’s original wood, inlays and finish.'),
 

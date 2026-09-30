@@ -44,7 +44,7 @@ const options = await page
   .locator('label.field:has(span:text-is("Guitar")) select option')
   .allTextContents();
 check(
-  'the toolbar has a Guitar selector with the five plan models',
+  'the toolbar has a Guitar selector with the six models',
   JSON.stringify(options) ===
     JSON.stringify([
       'Steel-string acoustic',
@@ -52,6 +52,7 @@ check(
       'Solid-body electric, double cutaway',
       'Solid-body electric, single cutaway',
       'Hollow-body electric',
+      'Engraving',
     ]),
   options.join(' | '),
 );
@@ -209,20 +210,20 @@ check(
   'each model has a body edge and headstock drawn under the note markers',
   MODELS.every(
     (id) =>
-      looks[id].bodyParts > 3 &&
+      looks[id].bodyParts >= 3 &&
       looks[id].bodyBeforeMarkers &&
       looks[id].headBeforeMarkers &&
       looks[id].headD,
   ),
 );
 check(
-  'the five models look different (headstock outline, board wood, body colour)',
+  'the six models look different (headstock outline, board wood, body colour)',
   new Set(MODELS.map((id) => JSON.stringify([looks[id].headD, looks[id].stops, looks[id].body])))
-    .size === 5,
+    .size === 6,
 );
 check(
-  'inlays follow the model: dots, none (side dots), dots, blocks, blocks',
-  MODELS.map((id) => looks[id].inlays).join() === 'dots,none,dots,blocks,blocks',
+  'inlays follow the model: dots, none (side dots), dots, blocks, blocks, dots',
+  MODELS.map((id) => looks[id].inlays).join() === 'dots,none,dots,blocks,blocks,dots',
   MODELS.map((id) => looks[id].inlays).join(),
 );
 
