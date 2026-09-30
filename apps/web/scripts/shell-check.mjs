@@ -111,6 +111,9 @@ for (let i = 0; i < 8; i++) {
 await page.waitForTimeout(700);
 await page.evaluate(() => (document.querySelector('.timeline-scroll').scrollLeft = 0));
 await page.locator('.map-node').nth(1).click();
+// Bring the button into view first: Playwright would otherwise scroll to it inside click() and that
+// scroll would be counted as the app moving the page.
+await page.getByRole('button', { name: '+ Add' }).scrollIntoViewIfNeeded();
 const pageYBefore = await page.evaluate(() => scrollY);
 await page.getByRole('button', { name: '+ Add' }).click();
 await page.waitForTimeout(700);
