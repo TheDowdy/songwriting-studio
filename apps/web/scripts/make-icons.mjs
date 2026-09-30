@@ -15,9 +15,11 @@ async function render(file, size, { maskable = false } = {}) {
   const inner = maskable ? Math.round(size * 0.72) : size;
   const offset = Math.round((size - inner) / 2);
   await page.setContent(
-    `<style>html,body{margin:0;background:${maskable ? '#16181d' : 'transparent'}}
+    `<style>html,body{margin:0;background:${maskable ? '#1c2540' : 'transparent'}}
      svg{position:absolute;left:${offset}px;top:${offset}px;width:${inner}px;height:${inner}px}</style>${svg}`,
   );
+  // Let Chrome finish repainting after the resize, or the screenshot can catch a half-drawn tile.
+  await page.waitForTimeout(300);
   await page.screenshot({ path: `public/${file}`, omitBackground: !maskable });
   console.log('wrote public/' + file);
 }
