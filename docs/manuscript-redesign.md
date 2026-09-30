@@ -19,40 +19,45 @@ Design mockups (Claude artifacts, private to the owner):
 3. `global.css`: the `button, select, input { font: inherit }` reset moved into `@layer base`, so
    Tailwind `text-*`/`italic` utilities on buttons now apply. This changes button sizes app-wide.
 4. Progression: key row, transport, chord ring (serif, coloured by origin), timeline blocks as bars
-   with an origin-coloured baseline, ruled sections, thin square scrollbar.
-5. Guitar chrome only: toolbar, banner, tabs, chips, buttons, chord header. Error banner uses `--danger`.
-6. Housekeeping: Geist packages removed, Newsreader/Plex Mono added, `theme-color` meta, manifest
-   colours, `check:settings` colour constants and `DEPLOYMENT.md` updated.
+   with an origin-coloured baseline, ruled sections, thin square scrollbar, print sheet view.
+5. Guitar chrome: toolbar, banner, tabs, chips, buttons, chord header, dialogs, popover, and the
+   progression strip (bars; dashed still means "no committed voicing"; the playhead is a pale wash
+   with a red-pencil baseline; Play is red pencil).
+6. **Engraving guitar model** (`guitarSkins.ts`): ink on paper, open bracket instead of a headstock,
+   double bar after the last fret, plus a "Paper" board in the customiser. It is the sixth option,
+   not the default. The paper is a fixed sheet in both themes (bright in dark mode).
+7. App icon redrawn (engraved fretboard on ink); `make-icons.mjs` waits for repaint before capture.
+8. Settings dialog was stuck top-left (Tailwind preflight zeroes a dialog's auto margin): now `m-auto`;
+   guitar dialog gets `margin: auto`.
+9. Housekeeping: Geist packages removed, Newsreader/Plex Mono added, `theme-color` meta, manifest
+   colours, `check:settings` colours, `DEPLOYMENT.md`, `guitars-check` (six models), `shell-check`
+   (scroll the Add button into view before measuring page scroll; it was viewport-height dependent).
 
 ## Verification (as of the last commit)
 
-- Passing: `npm test`, `npm run typecheck`, `npm run build`, `check:help`, `check:a11y` (all axe
-  scans, both themes), `check:shell`, `check:settings`, `check:song-files`, `check:voicing-commit`,
-  `check:song-voicings`, `check:guitar-build`, `check:revoice`, `check:variant`, `check:scales`,
-  `check:guitars`, `check:deploy` (offline, CSP, fonts).
+- Passing: `npm test`, `npm run typecheck`, `npm run build`, `check:help` (42), `check:a11y` (45),
+  `check:shell` (17, three runs in a row), `check:guitars` (34), `check:settings` (32),
+  `check:song-files`, `check:voicing-commit`, `check:variant`, `check:perf` (5),
+  `check:song-voicings`, `check:guitar-build`, `check:revoice`, `check:scales`, `check:deploy`
+  (offline, CSP, fonts).
 - Failing on audio output only (the known `AudioContext` flake): `check:chords`, `check:identify`,
-  `check:chord-header`, the audio assertions in `check:deploy`, `check:song-guitar`. `check:song-guitar`
-  and the last step of `check:a11y` (strict-mode "Mute" locator) fail identically on `main`.
-  The other three were not re-run on `main`.
+  `check:chord-header`, the audio assertions in `check:deploy`, `check:song-guitar`.
+  `check:song-guitar` and the last step of `check:a11y` fail identically on `main`. The others were not
+  re-run on `main` (it no longer builds with the Geist packages removed).
 - `npm run lint` fails on `main` too (typescript-eslint does not support TypeScript 7).
-- Not run: `check:perf`, `check:app`, `check:pegs`, `check:fallback`, `check:audio`, `check:clock`,
-  `check:strum`.
+- Not run since the latest commits: `check:app`, `check:pegs`, `check:fallback`, `check:audio`,
+  `check:clock`, `check:strum` (mostly audio-dependent).
 
 ## Still to do / open questions
 
-- **Guitar neck**: an "Engraving" model (ink on paper, fixed paper sheet in both themes) now exists in
-  `guitarSkins.ts` as a sixth option, not the default. Open: make it the default? A dark-theme variant?
+- Decide: make **Engraving the default guitar** (first-run and the model in `DEFAULT_MODEL_ID`;
+  `guitars-check` and a few tests assume steel-acoustic). And a dark-theme paper variant?
   The legend swatches under the neck still use the wood colours.
-- Guitar progression strip (`ProgressionStrip.tsx`, `StripToolbar.tsx`) still has dashed blocks and a
-  filled "Play song" button.
-- Not restyled: Settings and Guide dialogs, print/sheet view (`modules/progression/src/sheet`),
-  variant dialog, Customise popover, the help tooltip and overlay.
-- App icon (`apps/web/public/icon.svg`, regenerate PNGs with `scripts/make-icons.mjs`) is still a dark fretboard.
-- Not yet looked at: phone width on the Guitar screen, dark-mode Library, landscape phone.
+- Not restyled: the help tooltip and overlay, the Customise popover contents beyond radius.
+- Not yet looked at: landscape phone, a real monitor for the 106.25% root size.
 - Optional idea from the Colour Blocks mockup: colour chords by harmonic function. Not planned.
-- Before merging: run the full sweep from CLAUDE.md, re-run the audio-flaky checks once, run
-  `check:perf`, and decide whether to keep the 106.25% root size after seeing it on a real monitor.
-  Formatting-only changes should stay in their own commit.
+- Before merging: re-run the audio-flaky checks once, decide on the root size, and keep any
+  formatting-only change in its own commit.
 
 ## Feature requests queued for after the design pass
 
