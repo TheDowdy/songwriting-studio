@@ -24,8 +24,11 @@ Design mockups (Claude artifacts, private to the owner):
    progression strip (bars; dashed still means "no committed voicing"; the playhead is a pale wash
    with a red-pencil baseline; Play is red pencil).
 6. **Engraving guitar model** (`guitarSkins.ts`): ink on paper, open bracket instead of a headstock,
-   double bar after the last fret, plus a "Paper" board in the customiser. It is the sixth option,
-   not the default. The paper is a fixed sheet in both themes (bright in dark mode).
+   double bar after the last fret, plus a "Paper" board in the customiser. It is **first in the list
+   and the default** (`DEFAULT_MODEL_ID`; unknown ids fall back to it). Saved settings keep whatever
+   model a user already picked. The paper is a fixed sheet in both themes (bright in dark mode).
+   Notes outside the shown fingering or overlay are dimmed to 0.4 (was 0.5), and the selected notes
+   get a 4-unit black outline (`skin.selectedOutline*`).
 7. App icon redrawn (engraved fretboard on ink); `make-icons.mjs` waits for repaint before capture.
 8. Settings dialog was stuck top-left (Tailwind preflight zeroes a dialog's auto margin): now `m-auto`;
    guitar dialog gets `margin: auto`.
@@ -50,9 +53,8 @@ Design mockups (Claude artifacts, private to the owner):
 
 ## Still to do / open questions
 
-- Decide: make **Engraving the default guitar** (first-run and the model in `DEFAULT_MODEL_ID`;
-  `guitars-check` and a few tests assume steel-acoustic). And a dark-theme paper variant?
-  The legend swatches under the neck still use the wood colours.
+- A dark-theme paper variant of the Engraving model? (The paper is a fixed bright sheet in both
+  themes.) The legend swatches under the neck still use the wood colours.
 - Not restyled: the help tooltip and overlay, the Customise popover contents beyond radius.
 - Not yet looked at: landscape phone, a real monitor for the 106.25% root size.
 - Optional idea from the Colour Blocks mockup: colour chords by harmonic function. Not planned.
@@ -61,16 +63,15 @@ Design mockups (Claude artifacts, private to the owner):
 
 ## Feature requests queued for after the design pass
 
-Raised by the owner on 2026-09-30; do not start until the design looks right.
+Raised by the owner on 2026-09-30.
 
 1. **Space bar toggles playback** of the progression on desktop (start and stop). Needs care around
    focus: it must not fire while typing in an input, textarea or select, or when a button has focus
    (space already activates it), and it should work in both the progression and guitar modules.
-2. **Add any built chord to the progression from the guitar module**, for example a chord built in
-   Identify mode. Afterwards the owner wants to switch back to the progression module and get
-   suggestions for what to add next from that chord. Chords built or identified in the guitar module
-   can be arbitrary (any root, quality, colour), so this needs a mapping to a `ChordRef`
-   (`origin` and `numeral` relative to the song's key) through `packages/core`, plus a test.
+   Not started. There is no existing global key handler for it.
+2. **Add any built chord to the progression from the guitar module**: parked by the owner, who has
+   more to add. The brief and a map of the existing code is in
+   `docs/feature-add-built-chords-to-progression.md`. Discuss before building.
 
 ## Running it
 
