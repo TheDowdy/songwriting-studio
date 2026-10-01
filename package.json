@@ -40,7 +40,8 @@
     "check:revoice": "npm run check:revoice --workspace=apps/web",
     "check:variant": "npm run check:variant --workspace=apps/web",
     "check:chord-header": "npm run check:chord-header --workspace=apps/web",
-    "check:spacebar": "npm run check:spacebar --workspace=apps/web"
+    "check:spacebar": "npm run check:spacebar --workspace=apps/web",
+    "check:addchord": "npm run check:addchord --workspace=apps/web"
   },
   "devDependencies": {
     "@types/node": "^24.0.0"

@@ -56,7 +56,7 @@ export function useSongContext(songId: string | null, focusEventId: string | und
 
     applyGuitarSetup();
     const song = songStore.getState().library[songId];
-    const wanted = focusEventId ?? useStore.getState().progressionEventId ?? undefined;
+    const wanted = focusEventId ?? songStore.getState().focusedEventId ?? useStore.getState().progressionEventId ?? undefined;
     const focused = wanted ? selectProgressionEvent(wanted) : false;
     if (!focused) {
       const first = song ? flattenSong(song)[0] : undefined;

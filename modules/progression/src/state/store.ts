@@ -245,6 +245,11 @@ export const useStore = create<AppState>((set, get) => {
   };
 });
 
+// The selected chord is the focus both modules share (the guitar module reads it when it opens).
+useStore.subscribe((s, prev) => {
+  if (s.selectedEventId !== prev.selectedEventId) songStore.getState().setFocusedEventId(s.selectedEventId);
+});
+
 /**
  * The chord at the centre of the map (the sounding chord during playback, otherwise the selected
  * slot), with the chords before it. `chord` is null when nothing is selected: show the start ring.

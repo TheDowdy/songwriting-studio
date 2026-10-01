@@ -21,6 +21,7 @@ export function selectProgressionEvent(eventId: string): boolean {
   if (!found) return false;
   const chord = found.section.events[found.index]!.chord;
   const state = useStore.getState();
+  songStore.getState().setFocusedEventId(eventId);
   state.setProgressionFocus(eventId, chord);
   state.setBassMode(defaultBassMode(chord));
   state.setChordSpec(toChordSpec(chord));
@@ -82,7 +83,7 @@ export function commitCurrentVoicing(): void {
 }
 
 /** `commitCurrentVoicing` without recording an undo step (the caller already has). */
-function commitShownShape(): void {
+export function commitShownShape(): void {
   const state = useStore.getState();
   const { songId, progressionEventId, progressionChord, chordShape, tuning, capo, voicingIndex, editingShape } = state;
   if (!songId || !progressionEventId || !progressionChord || !chordShape) return;

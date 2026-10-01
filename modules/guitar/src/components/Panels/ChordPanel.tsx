@@ -10,6 +10,7 @@ import {
 } from '../../state/chordActions';
 import { inversionOptions } from '../../state/bassMode';
 import { clearCurrentVoicing, commitCurrentVoicing, refitCurrentVoicing } from '../../state/progressionChordActions';
+import { addChordToProgression } from '../../state/progressionEdits';
 import { useStore } from '../../state/store';
 import { chordName, findEvent, voicingStatus, type VoicingStatus } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
@@ -417,6 +418,11 @@ export function ChordPanel() {
           {songId && (
             <button type="button" className="button" onClick={() => commitCurrentVoicing()} disabled={!shape}>
               Use this voicing
+            </button>
+          )}
+          {songId && (
+            <button type="button" className="button primary" onClick={() => addChordToProgression(spec, shape)} disabled={!shape}>
+              Add to progression
             </button>
           )}
           {songId && committed && (

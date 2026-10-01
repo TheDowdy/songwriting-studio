@@ -7,6 +7,7 @@ import {
 } from '@sw/core/fret/identifySelection';
 import { stopChordPlayback, strumFingering } from './chordActions';
 import { playFret } from './playing';
+import { addChordToProgression } from './progressionEdits';
 import { useStore } from './store';
 
 /** The picked fingering as frets (null = silent), also what a strum gesture sounds. */
@@ -51,4 +52,16 @@ export function sendToChordMode(): boolean {
   state.setAdoptShape({ shape: identifyShape(), spec: useStore.getState().chordSpec });
   state.setMode('chord');
   return true;
+}
+
+/**
+ * Adds the best reading of the picked notes to the song's progression, with the picked shape as its
+ * voicing. Only a chord can be added (not a lone note or an interval), like `sendToChordMode`.
+ */
+export function addIdentifiedToProgression(): boolean {
+  const { tuning, identifySel, accidentalPref } = useStore.getState();
+  const spec = readSelection(tuning.strings, identifySel, accidentalPref).readings[0]?.spec;
+  if (!spec || validateChord(spec) !== null) return false;
+  stopChordPlayback();
+  return addChordToProgression(spec, identifyShape());
 }

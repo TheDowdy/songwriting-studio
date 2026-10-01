@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { clearIdentify, playIdentified, sendToChordMode } from '../../state/identifyActions';
+import { addIdentifiedToProgression, clearIdentify, playIdentified, sendToChordMode } from '../../state/identifyActions';
 import { useStore } from '../../state/store';
 import { MAX_STRUM_MS, MIN_STRUM_MS } from '@sw/core/fret/chordSettings';
 import { readSelection, type IdentifyCell } from '@sw/core/fret/identifySelection';
@@ -12,6 +12,7 @@ export function IdentifyPanel() {
   const selection = useStore((s) => s.identifySel);
   const tuning = useStore((s) => s.tuning);
   const pref = useStore((s) => s.accidentalPref);
+  const songId = useStore((s) => s.songId);
   const play = useStore((s) => s.chordPlay);
   const { setChordPlay } = useStore.getState();
 
@@ -102,6 +103,17 @@ export function IdentifyPanel() {
         >
           Send to Chord mode
         </button>
+        {songId && (
+          <button
+            type="button"
+            className="button primary"
+            onClick={() => addIdentifiedToProgression()}
+            disabled={!sendable}
+            title={sendable ? 'Add this chord to the song, with this shape as its voicing' : 'Only a chord can be added'}
+          >
+            Add to progression
+          </button>
+        )}
         <button
           type="button"
           className="button"

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './index.css';
 import SheetView from './sheet/SheetView';
 import KeyPicker from './components/KeyPicker';
@@ -9,7 +9,8 @@ import TransportBar from './components/TransportBar';
 import { useSpaceBarToggle } from '@sw/ui';
 import { previewChordInSong, togglePlay, useLivePlaybackSync } from './state/playback';
 import { selectCenter, useStore } from './state/store';
-import { startChords, suggestNext } from '@sw/core';
+import { findEvent, startChords, suggestNext } from '@sw/core';
+import { songStore } from '@sw/song-store';
 import type { ChordRef } from '@sw/core';
 
 /** The shell's `navigate` (§4 ModuleProps), narrowed to what this module actually calls: jumping
@@ -21,6 +22,8 @@ export type Navigate = (to: { module: string; songId?: string; eventId?: string 
 
 interface Props {
   navigate: Navigate;
+  /** From the shell's URL query (`?event=`): a chord to open on. */
+  focus?: { eventId?: string };
 }
 
 /**
@@ -28,10 +31,19 @@ interface Props {
  * title, module tabs, theme toggle, settings) is the shell's job now, not this module's — see
  * apps/web/src/shell.
  */
-export default function ProgressionModule({ navigate }: Props) {
+export default function ProgressionModule({ navigate, focus }: Props) {
   useLivePlaybackSync();
 
   const song = useStore((s) => s.song);
+  const selectEvent = useStore((s) => s.selectEvent);
+  // Open centred on the chord in focus: the one the URL names, else the one the other module last
+  // focused or added (shared through the song store), so "add it in Guitar, then see what follows"
+  // lands on suggestions from that chord.
+  useEffect(() => {
+    const wanted = focus?.eventId ?? songStore.getState().focusedEventId;
+    const current = songStore.getState().currentSong();
+    if (wanted && current && findEvent(current, wanted)) selectEvent(wanted);
+  }, [focus?.eventId, selectEvent]);
   // Space starts and stops playback (not while there is nothing to play).
   useSpaceBarToggle(togglePlay, song.sections.some((sec) => sec.events.length > 0));
   const selectedEventId = useStore((s) => s.selectedEventId);

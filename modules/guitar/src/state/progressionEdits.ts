@@ -8,6 +8,7 @@ import {
   findEvent,
   flattenSong,
   fromChordSpec,
+  insertionPoint,
   withChordSpec,
   withInversion,
   type ChordRef,
@@ -17,7 +18,7 @@ import {
 import type { ChordSpec } from '@sw/core/fret/chords';
 import { songStore } from '@sw/song-store';
 import { selectBestVoicing, strumChord } from './chordActions';
-import { clearProgressionFocus, selectProgressionEvent } from './progressionChordActions';
+import { clearProgressionFocus, commitShownShape, selectProgressionEvent } from './progressionChordActions';
 import { useStore } from './store';
 import { recordUndo } from './undoRecord';
 
@@ -138,4 +139,29 @@ export function duplicateSection(sectionId: string): void {
 export function makeSectionVariant(sectionId: string, generator: VariantGeneratorId, options?: VariantOptions): void {
   recordUndo('Make variant');
   songStore.getState().makeVariantWithGenerator(sectionId, generator, options);
+}
+
+/**
+ * Adds a chord built or identified on the neck to the song's progression: after the focused chord,
+ * or at the end of the last section when none is focused. `shape` (frets, null = muted) becomes its
+ * committed voicing, so the song plays exactly what was built. The new chord is focused and
+ * strummed, and, because focus is shared through the song store, the Progression module opens
+ * centred on it with suggestions for what could follow. Returns false if there is no song.
+ */
+export function addChordToProgression(spec: ChordSpec, shape: (number | null)[] | null): boolean {
+  const song = currentSong();
+  if (!song) return false;
+  const point = insertionPoint(song, useStore.getState().progressionEventId);
+  if (!point) return false;
+  const chord = fromChordSpec(spec, song.key);
+  recordUndo('Add chord to progression');
+  const id = songStore.getState().addChord(point.sectionId, point.afterEventId, chord);
+  if (!id) return false;
+  if (!selectProgressionEvent(id)) return true;
+  if (shape?.some((f) => typeof f === 'number')) {
+    useStore.getState().setChordShape(shape.slice(), null);
+    commitShownShape();
+  }
+  strumChord();
+  return true;
 }

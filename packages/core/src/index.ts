@@ -42,3 +42,4 @@ export * from './convert';
 export * from './eventVoicing';
 export * from './variants';
 export * from './spaceKey';
+export * from './insertion';

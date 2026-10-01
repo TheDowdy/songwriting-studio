@@ -98,6 +98,11 @@ export interface SongLibraryEntry {
 export interface SongStoreState {
   library: Record<string, Song>;
   currentSongId: string | null;
+  /** The chord both modules treat as "the one in focus": what the Progression module's map is
+   *  centred on and the guitar strip has selected. Not saved with the song. Whichever module changes
+   *  the focus writes it here, and the other reads it when it opens. */
+  focusedEventId: string | null;
+  setFocusedEventId: (id: string | null) => void;
 
   /** The open song, or null if the library is somehow empty (shouldn't normally happen —
    *  `ensureCurrentSong` is called once at startup). */
@@ -186,6 +191,8 @@ function withCurrent<R = void>(
 export const songStore = createStore<SongStoreState>((set, get) => ({
   library: initialLibrary,
   currentSongId: startingId,
+  focusedEventId: null,
+  setFocusedEventId: (focusedEventId) => set({ focusedEventId }),
 
   currentSong: () => {
     const s = get();
@@ -197,11 +204,11 @@ export const songStore = createStore<SongStoreState>((set, get) => ({
       .sort((a, b) => b.updatedAt - a.updatedAt),
 
   loadSong: (id) => {
-    if (get().library[id]) set({ currentSongId: id });
+    if (get().library[id]) set({ currentSongId: id, focusedEventId: get().currentSongId === id ? get().focusedEventId : null });
   },
   newSong: (key) => {
     const song = ops.newSong(key);
-    set((s) => ({ library: { ...s.library, [song.id]: song }, currentSongId: song.id }));
+    set((s) => ({ library: { ...s.library, [song.id]: song }, currentSongId: song.id, focusedEventId: null }));
     return song.id;
   },
   deleteSong: (id) => {

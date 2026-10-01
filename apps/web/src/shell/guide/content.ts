@@ -146,6 +146,8 @@ export const GUIDE: GuideSection[] = [
           'Select the button that creates the variant.',
         ],
       },
+      { h3: 'Add a chord you built on the neck' },
+      { p: 'You can add any chord you build or identify on the neck to your song. In the **Chords** tab, build the chord and choose a voicing, then select **Add to progression**. In the **Identify** tab, select the notes, then select **Add to progression** once the chord is named. The chord goes after the chord that’s selected in the strip, or at the end of the song if none is, and it keeps the shape you chose as its voicing. Select **Progression** to see suggestions for what could come next.' },
       { h3: 'Explore scales and identify chords' },
       {
         ul: [

@@ -78,9 +78,13 @@ Raised by the owner on 2026-09-30.
    Pointer-versus-keyboard focus is tracked in the hook (any non-Space, non-modifier key marks focus as
    keyboard-driven), not read from `:focus-visible`, which Chrome flips on at the first keypress.
    Browser check: `npm run check:spacebar`. Documented in the user guide.
-2. **Add any built chord to the progression from the guitar module**: parked by the owner, who has
-   more to add. The brief and a map of the existing code is in
-   `docs/feature-add-built-chords-to-progression.md`. Discuss before building.
+2. **Add any built chord to the progression from the guitar module**: DONE (2026-10-01), built from
+   `docs/feature-add-built-chords-to-progression.md` with its suggested defaults. "Add to progression"
+   on the Chords tab and the Identify tab (song context only) adds the chord (`fromChordSpec`) after
+   the focused chord, or at the end of the last section, with the neck's shape as its committed
+   voicing. Placement is `insertionPoint` in `packages/core` (tested). The focused chord is now shared
+   through the song store (`focusedEventId`), and the Progression module opens on it, so its chord map
+   is centred on the added chord. Check: `npm run check:addchord`.
 
 ## Running it
 

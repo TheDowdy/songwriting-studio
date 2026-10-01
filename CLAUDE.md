@@ -22,7 +22,7 @@ server) — each is also an `npm run check:<name>` at the root:
 | Script | What it exercises |
 |---|---|
 | `check:app`, `check:pegs`, `check:strum`, `check:scales`, `check:chords`, `check:identify`, `check:guitars`, `check:fallback`, `check:settings`, `check:clock` | the guitar module's own features, stand-alone |
-| `check:shell`, `check:song-guitar`, `check:song-files`, `check:voicing-commit`, `check:song-voicings`, `check:guitar-build`, `check:revoice`, `check:variant`, `check:chord-header`, `check:spacebar` | cross-module behaviour in song context (committing voicings, re-voicing, variants, save/load, the space bar toggling playback) |
+| `check:shell`, `check:song-guitar`, `check:song-files`, `check:voicing-commit`, `check:song-voicings`, `check:guitar-build`, `check:revoice`, `check:variant`, `check:chord-header`, `check:spacebar`, `check:addchord` | cross-module behaviour in song context (committing voicings, re-voicing, variants, save/load, the space bar toggling playback, adding a built chord to the song) |
 | `check:help` | hover tooltip, help mode (nothing activated, taps describe), Settings → user guide, and that **every visible control on every screen has help text** |
 | `check:a11y` | axe-core WCAG 2/2.1 A/AA + best-practice, both themes, keyboard nav |
 | `check:perf` | frame times under CPU throttling (peg drag, chord change, scale playback, stand-alone and in song context) |
