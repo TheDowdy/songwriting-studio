@@ -138,7 +138,7 @@ function ChordSlot({
       className={`snap-start shrink-0 ${isBarStart ? 'border-l-2 border-line pl-1.5' : ''}`}
     >
       <div
-        className={`relative h-24 shrink-0 overflow-hidden rounded-none border-b-2 border-l border-l-fg text-center transition-colors ${
+        className={`relative h-28 shrink-0 overflow-hidden rounded-none border-b-2 border-l border-l-fg text-center transition-colors ${
           active ? 'shadow-[inset_0_0_0_1.5px_var(--accent)]' : ''} ${replacing ? 'ring-2 ring-offset-1 ring-[var(--accent)]' : ''}`}
         style={{
           width: shownBeats * BEAT_PX,
@@ -159,16 +159,12 @@ function ChordSlot({
           aria-label={`Chord: ${chordName(event.chord)}, ${event.chord.numeral}, ${event.beats} beats${
             voicing ? (stale ? ', guitar voicing needs a re-fit' : ', guitar voicing committed') : ''
           }`}
-          className="absolute inset-0 flex flex-col items-center justify-center pr-3"
+          className="absolute inset-0 flex flex-col items-center justify-center pb-7 pr-3"
         >
           <span className="text-2xl font-medium leading-tight" style={{ color: ORIGIN_COLOR[event.chord.origin] }}>{chordName(event.chord)}</span>
           <span className={`font-mono text-xs ${playing ? '' : 'text-muted'}`}>{event.chord.numeral}</span>
           {voicing ? (
             <span className="mt-0.5 flex items-center gap-1.5">
-              {/* A one-beat block has room for the diagram only; its width already says "1". */}
-              {shownBeats > 1 && (
-                <span className={`font-mono text-lg font-medium leading-none ${playing ? '' : 'text-muted'}`}>{shownBeats}</span>
-              )}
               {/* A stale voicing no longer shows its old shape (the owner's call: the diagram was
                   misleading next to a changed chord) — a warning takes its place until it's re-fit. */}
               {stale ? (
@@ -187,10 +183,29 @@ function ChordSlot({
                 </span>
               )}
             </span>
-          ) : (
-            <span className={`mt-1 font-mono text-lg font-medium leading-none ${playing ? '' : 'text-muted'}`}>{shownBeats}</span>
-          )}
+          ) : null}
         </button>
+        {/* One slash per beat on a little staff, as in a lead sheet: the length reads at a glance. The
+            first slash turns red pencil while the block sounds. (The exact count is in the button's
+            label and the length slider.) */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 flex h-7 items-center"
+          style={{ backgroundImage: 'repeating-linear-gradient(to bottom, transparent 0, transparent 5px, var(--line) 5px, var(--line) 6px)' }}
+        >
+          {Array.from({ length: shownBeats }, (_, i) => (
+            <span key={i} className="flex shrink-0 justify-center" style={{ width: BEAT_PX }}>
+              <span
+                className="block h-4 w-0.5"
+                style={{
+                  transform: 'skewX(-28deg)',
+                  background: playing && i === 0 ? 'var(--play)' : 'var(--fg)',
+                  opacity: playing && i === 0 ? 1 : 0.7,
+                }}
+              />
+            </span>
+          ))}
+        </div>
         <div
           role="slider"
           tabIndex={0}

@@ -100,12 +100,9 @@ function StripChord({ slot, event, song, selected }: { slot: number; event: Chor
             )}
           </span>
         )}
+        {/* One slash per beat, as in a lead sheet (a long chord shows its count instead). */}
         <span className="strip-chord-beats" aria-hidden="true" title={`${event.beats} ${event.beats === 1 ? 'beat' : 'beats'}`}>
-          <svg viewBox="0 0 12 12" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" aria-hidden="true">
-            <circle cx="6" cy="6" r="4.9" />
-            <path d="M6 3.2V6l1.9 1.2" />
-          </svg>
-          {event.beats}
+          {event.beats <= 8 ? Array.from({ length: event.beats }, (_, i) => <i key={i} className="strip-slash" />) : `${event.beats} beats`}
         </span>
       </button>
     </li>
