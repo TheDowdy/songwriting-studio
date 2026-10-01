@@ -43,6 +43,7 @@ export const PROGRESSION_HELP: HelpEntry[] = [
   p(/^Add another .+ to the progression/, 'Add another copy of this chord to the end of the progression.'),
   p(/^Add .+ to progression$/, 'Add this chord to the end of the progression.'),
   sel('.map-node', 'A suggested next chord, with its Roman numeral. Select it to hear it, then select + to add it.'),
+  p('Strum patterns', 'Show or hide the strum pattern builder, where you make your own up and down strum rhythms and choose where to use them.'),
   p('Suggestions', 'Show the chord map: chords that fit well after the one you’re on.'),
   p('Circle of fifths', 'Show every chord on the circle of fifths. The ones in your key are shaded, but you can pick any of them.'),
   sel('[aria-label="Circle of fifths"] .map-node', 'A chord on the circle. Select it to hear it, then select + to add it. Shading shows how it relates to the key.'),

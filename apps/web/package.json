@@ -35,7 +35,8 @@
     "check:chord-header": "node scripts/chord-header-check.mjs",
     "check:spacebar": "node scripts/spacebar-check.mjs",
     "check:addchord": "node scripts/addchord-check.mjs",
-    "check:circle": "node scripts/circle-check.mjs"
+    "check:circle": "node scripts/circle-check.mjs",
+    "check:patterns": "node scripts/patterns-check.mjs"
   },
   "dependencies": {
     "@fontsource-variable/newsreader": "^5.3.0",

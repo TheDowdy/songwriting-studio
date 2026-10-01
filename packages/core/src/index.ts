@@ -46,3 +46,5 @@ export * from './insertion';
 export * from './keys';
 export * from './chordQuality';
 export * from './circle';
+export * from './strumPattern';
+export * from './patterns';

@@ -8,11 +8,13 @@ import { sanitizeCapo } from './fret/capo';
 import { resolveTones } from './fret/chords';
 import { chroma } from './theory/scales';
 import type { ChordRef, Key, Mode } from './theory/types';
+import { customPatternId, isCustomPatternId, sanitizeStrumPatterns, type StrumPattern } from './strumPattern';
 
 export const SCHEMA_VERSION = 2 as const;
 
 export type InstrumentId = 'piano' | 'epiano' | 'pad' | 'guitar';
-export type PatternId =
+/** The patterns that ship with the app. */
+export type BuiltInPatternId =
   | 'block'
   | 'pulse'
   | 'strum-down'
@@ -21,6 +23,9 @@ export type PatternId =
   | 'arp-updown'
   | 'arp-broken'
   | 'bass-chord';
+
+/** A built-in pattern, or one of the song's own strum patterns (`custom:<id>`, see `Song.patterns`). */
+export type PatternId = BuiltInPatternId | `custom:${string}`;
 
 export interface TimeSig {
   beats: number;
@@ -46,6 +51,8 @@ export interface ChordEvent {
   chord: ChordRef;
   beats: number;
   attachments?: ChordAttachments;
+  /** A pattern for this chord alone, in place of its section's or the song's. */
+  pattern?: PatternId;
 }
 
 export interface Section {
@@ -55,6 +62,8 @@ export interface Section {
   repeat: number;
   /** This section's own key, when it differs from the song's (a modulation). Absent = the song's key. */
   key?: Key;
+  /** A pattern for the whole section (its chords can still override it). Absent = the song's. */
+  pattern?: PatternId;
   variantOf?: string; // id of the section it was copied from
   variantLabel?: string; // e.g. "Up the neck (5+)"
 }
@@ -80,7 +89,10 @@ export interface Song {
   timeSig: TimeSig;
   bpm: number;
   instrument: InstrumentId;
+  /** The default pattern: a built-in one, or `custom:<id>` of an entry in `patterns`. */
   pattern: PatternId;
+  /** The song's own strum patterns (built in the pattern builder). */
+  patterns?: StrumPattern[];
   sections: Section[];
   arrangement: string[];
   updatedAt: number;
@@ -94,7 +106,7 @@ export interface Song {
 
 const MODES: Mode[] = ['major', 'minor', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'locrian'];
 const INSTRUMENTS: InstrumentId[] = ['piano', 'epiano', 'pad', 'guitar'];
-const PATTERNS: PatternId[] = [
+const PATTERNS: BuiltInPatternId[] = [
   'block',
   'pulse',
   'strum-down',
@@ -199,24 +211,33 @@ function sanitizeAttachments(raw: unknown): ChordAttachments | undefined {
   return guitar ? { guitar } : undefined;
 }
 
-function sanitizeEvent(raw: unknown): ChordEvent | null {
+/** A pattern id from untrusted input: a built-in, or a custom one that exists; otherwise absent. */
+function sanitizePatternId(raw: unknown, known: ReadonlySet<string>): PatternId | undefined {
+  if (oneOf(raw, PATTERNS)) return raw;
+  return typeof raw === 'string' && isCustomPatternId(raw) && known.has(raw) ? raw : undefined;
+}
+
+function sanitizeEvent(raw: unknown, known: ReadonlySet<string>): ChordEvent | null {
   if (!raw || typeof raw !== 'object') return null;
   const r = raw as Record<string, unknown>;
   const chord = sanitizeChordRef(r.chord);
   if (!isString(r.id) || !chord) return null;
   const beats = isFiniteNumber(r.beats) ? Math.max(1, Math.min(32, Math.round(r.beats))) : 4;
   const attachments = sanitizeAttachments(r.attachments);
-  return { id: r.id, chord, beats, ...(attachments ? { attachments } : {}) };
+  const pattern = sanitizePatternId(r.pattern, known);
+  return { id: r.id, chord, beats, ...(attachments ? { attachments } : {}), ...(pattern ? { pattern } : {}) };
 }
 
-function sanitizeSection(raw: unknown): Section | null {
+function sanitizeSection(raw: unknown, known: ReadonlySet<string>): Section | null {
   if (!raw || typeof raw !== 'object') return null;
   const r = raw as Record<string, unknown>;
   if (!isString(r.id)) return null;
-  const events = Array.isArray(r.events) ? r.events.map(sanitizeEvent).filter((e): e is ChordEvent => e !== null) : [];
+  const events = Array.isArray(r.events) ? r.events.map((e) => sanitizeEvent(e, known)).filter((e): e is ChordEvent => e !== null) : [];
   const repeat = isFiniteNumber(r.repeat) ? Math.max(1, Math.min(16, Math.round(r.repeat))) : 1;
   const section: Section = { id: r.id, name: isString(r.name) ? r.name : 'Section', events, repeat };
   if (r.key !== undefined && r.key !== null && typeof r.key === 'object') section.key = sanitizeKey(r.key);
+  const sectionPattern = sanitizePatternId(r.pattern, known);
+  if (sectionPattern) section.pattern = sectionPattern;
   if (isString(r.variantOf)) section.variantOf = r.variantOf;
   if (isString(r.variantLabel)) section.variantLabel = r.variantLabel;
   return section;
@@ -243,7 +264,9 @@ export function migrateSong(raw: unknown): Song | null {
   const r = raw as Record<string, unknown>;
   if (!isString(r.id) || !Array.isArray(r.sections) || !Array.isArray(r.arrangement)) return null;
 
-  const sections = r.sections.map(sanitizeSection).filter((s): s is Section => s !== null);
+  const patterns = sanitizeStrumPatterns(r.patterns);
+  const known = new Set(patterns.map((p) => customPatternId(p.id)));
+  const sections = r.sections.map((x) => sanitizeSection(x, known)).filter((s): s is Section => s !== null);
   if (sections.length === 0) sections.push({ id: 'section-1', name: 'Verse', events: [], repeat: 1 });
   const sectionIds = new Set(sections.map((s) => s.id));
   const arrangement = r.arrangement.filter((id): id is string => typeof id === 'string' && sectionIds.has(id));
@@ -256,7 +279,8 @@ export function migrateSong(raw: unknown): Song | null {
     timeSig: sanitizeTimeSig(r.timeSig),
     bpm: isFiniteNumber(r.bpm) ? Math.max(30, Math.min(300, Math.round(r.bpm))) : 100,
     instrument: oneOf(r.instrument, INSTRUMENTS) ? r.instrument : 'piano',
-    pattern: oneOf(r.pattern, PATTERNS) ? r.pattern : 'block',
+    pattern: sanitizePatternId(r.pattern, known) ?? 'block',
+    ...(patterns.length > 0 ? { patterns } : {}),
     sections,
     arrangement: arrangement.length ? arrangement : [sections[0].id],
     updatedAt: isFiniteNumber(r.updatedAt) ? r.updatedAt : Date.now(),

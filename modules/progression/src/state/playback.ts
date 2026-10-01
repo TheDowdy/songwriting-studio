@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { renderPattern } from '../audio/patterns';
+import { renderPattern, renderStrumPattern } from '../audio/patterns';
 import { previewStrikes, startPlayback, stopPlayback, updatePlayback, type NoteStrike, type PlaybackOptions } from '../audio/engine';
-import { eventVoicing, flattenDetailed, sectionLoopBounds } from '@sw/core';
-import type { ChordEvent, ChordRef, Song } from '@sw/core';
+import { eventVoicing, findStrumPattern, flattenDetailed, resolvePattern, sectionLoopBounds } from '@sw/core';
+import type { ChordEvent, ChordRef, Song, StrumPattern } from '@sw/core';
 import { useStore } from './store';
 
 /** The full note-strike list for the song: each chord voice-led from the one before it — or, on
@@ -11,11 +11,16 @@ import { useStore } from './store';
 export function toNoteStrikes(song: Song): NoteStrike[] {
   const strikes: NoteStrike[] = [];
   let prevVoicing: number[] | null = null;
-  for (const { event, offsetBeats } of flattenDetailed(song)) {
+  for (const { event, offsetBeats, sectionId } of flattenDetailed(song)) {
     const voicing = eventVoicing(event, song.instrument, prevVoicing);
     prevVoicing = voicing;
     const upperCount = voicing.length - 1;
-    const strikesForChord = renderPattern(song.pattern, upperCount, event.beats, song.timeSig);
+    // The chord's own pattern, else its section's, else the song's (a built-in or a custom strum pattern).
+    const pattern = resolvePattern(song, sectionId, event);
+    const strikesForChord =
+      pattern.kind === 'custom'
+        ? renderStrumPattern(pattern.pattern, upperCount, event.beats)
+        : renderPattern(pattern.id, upperCount, event.beats, song.timeSig);
     strikesForChord.forEach((s, i) => {
       strikes.push({
         eventId: event.id,
@@ -37,7 +42,27 @@ export function toNoteStrikes(song: Song): NoteStrike[] {
 export function previewChordInSong(chord: ChordRef, beats?: number, attachments?: ChordEvent['attachments']): Promise<void> {
   const { song } = useStore.getState();
   const voicing = eventVoicing({ chord, attachments }, song.instrument, null);
-  const strikes = renderPattern(song.pattern, voicing.length - 1, beats ?? song.timeSig.beats, song.timeSig).map((s) => ({
+  const custom = findStrumPattern(song, song.pattern);
+  const rendered = custom
+    ? renderStrumPattern(custom, voicing.length - 1, beats ?? song.timeSig.beats)
+    : renderPattern(song.pattern, voicing.length - 1, beats ?? song.timeSig.beats, song.timeSig);
+  const strikes = rendered.map((s) => ({
+    eventId: '',
+    isChordStart: false,
+    offsetBeats: s.offset,
+    durationBeats: s.duration,
+    midi: s.noteIndices.map((idx) => voicing[idx]).filter((n): n is number => n !== undefined),
+    strumSeconds: s.strumSeconds,
+    velocity: s.velocity,
+  }));
+  return previewStrikes(strikes, song.instrument, song.bpm);
+}
+
+/** Hear a strum pattern once through on a chord (the pattern builder's Preview). */
+export function previewStrumPattern(pattern: StrumPattern, chord: ChordRef, attachments?: ChordEvent['attachments']): Promise<void> {
+  const { song } = useStore.getState();
+  const voicing = eventVoicing({ chord, attachments }, song.instrument, null);
+  const strikes = renderStrumPattern(pattern, voicing.length - 1, pattern.beats).map((s) => ({
     eventId: '',
     isChordStart: false,
     offsetBeats: s.offset,

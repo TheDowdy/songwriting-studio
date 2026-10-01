@@ -87,6 +87,25 @@ for (const theme of ['light', 'dark']) {
   await sleep(150);
   await axe(`${theme} theme, Progression module (a song with a chord)`);
 }
+// The circle of fifths (shaded segments), and the strum pattern builder with a pattern in it.
+await page.getByRole('button', { name: 'Circle of fifths' }).click();
+await page.locator('[aria-label="Circle of fifths"] .map-node').nth(8).click();
+for (const theme of ['light', 'dark']) {
+  await setShellTheme(theme);
+  await sleep(150);
+  await axe(`${theme} theme, Progression module (circle of fifths)`);
+}
+await page.getByRole('button', { name: 'Suggestions' }).click();
+await page.getByRole('button', { name: 'More playback settings' }).click();
+await page.getByRole('button', { name: 'Strum patterns' }).click();
+await page.getByLabel('New pattern from').selectOption('Folk (D, DU, UDU)');
+await page.getByRole('button', { name: /^Step 2 of 8/ }).click();
+for (const theme of ['light', 'dark']) {
+  await setShellTheme(theme);
+  await sleep(150);
+  await axe(`${theme} theme, Progression module (strum pattern builder)`);
+}
+await page.getByRole('button', { name: 'Strum patterns' }).click();
 await page.getByRole('tab', { name: 'Guitar' }).click();
 await page.waitForSelector('.fretboard-svg');
 for (const theme of ['light', 'dark']) {

@@ -152,6 +152,11 @@ export interface SongStoreState {
   setTimeSig: (timeSig: Song['timeSig']) => void;
   setInstrument: (instrument: Song['instrument']) => void;
   setPattern: (pattern: Song['pattern']) => void;
+  /** Strum patterns: save (add or replace), delete, and choose where a pattern is used. */
+  saveStrumPattern: (pattern: ops.StrumPattern) => void;
+  deleteStrumPattern: (id: string) => void;
+  applyPattern: (target: ops.PatternTarget, patternId: Song['pattern']) => void;
+  clearOwnPattern: (target: { sectionId: string } | { eventId: string }) => void;
   setTitle: (title: string) => void;
 
   commitVoicing: (eventId: string, voicing: GuitarVoicing) => void;
@@ -269,6 +274,10 @@ export const songStore = createStore<SongStoreState>((set, get) => ({
   setTimeSig: (timeSig) => withCurrent(set, get, (song) => ops.setTimeSig(song, timeSig)),
   setInstrument: (instrument) => withCurrent(set, get, (song) => ops.setInstrument(song, instrument)),
   setPattern: (pattern) => withCurrent(set, get, (song) => ops.setPattern(song, pattern)),
+  saveStrumPattern: (pattern) => withCurrent(set, get, (song) => ops.saveStrumPattern(song, pattern)),
+  deleteStrumPattern: (id) => withCurrent(set, get, (song) => ops.deleteStrumPattern(song, id)),
+  applyPattern: (target, patternId) => withCurrent(set, get, (song) => ops.applyPattern(song, target, patternId)),
+  clearOwnPattern: (target) => withCurrent(set, get, (song) => ops.clearOwnPattern(song, target)),
   setTitle: (title) => withCurrent(set, get, (song) => ops.setTitle(song, title)),
 
   commitVoicing: (eventId, voicing) => withCurrent(set, get, (song) => ops.commitVoicing(song, eventId, voicing)),

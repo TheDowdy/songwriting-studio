@@ -7,7 +7,7 @@
  */
 import { create } from 'zustand';
 import * as core from '@sw/core';
-import type { ChordRef, InstrumentId, Key, PatternId, Song, TimeSig, VariantGeneratorId, VariantOptions } from '@sw/core';
+import type { ChordRef, InstrumentId, Key, PatternId, PatternTarget, Song, StrumPattern, TimeSig, VariantGeneratorId, VariantOptions } from '@sw/core';
 import { songStore } from '@sw/song-store';
 
 export type KeyChangeMode = core.KeyChangeMode;
@@ -80,6 +80,14 @@ interface AppState {
   setTimeSig: (timeSig: TimeSig) => void;
   setInstrument: (instrument: InstrumentId) => void;
   setPattern: (pattern: PatternId) => void;
+  /** The song's own strum patterns: save, delete, and choose where one is used. */
+  saveStrumPattern: (pattern: StrumPattern) => void;
+  deleteStrumPattern: (id: string) => void;
+  applyPattern: (target: PatternTarget, patternId: PatternId) => void;
+  clearOwnPattern: (target: { sectionId: string } | { eventId: string }) => void;
+  /** The strum pattern builder is open under the timeline. */
+  patternsOpen: boolean;
+  setPatternsOpen: (open: boolean) => void;
   setLoop: (loop: boolean) => void;
   setLoopScope: (scope: 'song' | 'section') => void;
   setMetronome: (on: boolean) => void;
@@ -249,6 +257,12 @@ export const useStore = create<AppState>((set, get) => {
     setTimeSig: (timeSig) => songStore.getState().setTimeSig(timeSig),
     setInstrument: (instrument) => songStore.getState().setInstrument(instrument),
     setPattern: (pattern) => songStore.getState().setPattern(pattern),
+    saveStrumPattern: (pattern) => songStore.getState().saveStrumPattern(pattern),
+    deleteStrumPattern: (id) => songStore.getState().deleteStrumPattern(id),
+    applyPattern: (target, patternId) => songStore.getState().applyPattern(target, patternId),
+    clearOwnPattern: (target) => songStore.getState().clearOwnPattern(target),
+    patternsOpen: false,
+    setPatternsOpen: (patternsOpen) => set({ patternsOpen }),
     setLoop: (loop) => set({ loop }),
     setLoopScope: (loopScope) => set({ loopScope }),
     setMetronome: (metronome) => set({ metronome }),

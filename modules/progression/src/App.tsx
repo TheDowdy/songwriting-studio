@@ -7,8 +7,8 @@ import NodeMap from './components/NodeMap';
 import SongPanel from './components/SongPanel';
 import Timeline from './components/Timeline';
 import TransportBar from './components/TransportBar';
-import { useSpaceBarToggle } from '@sw/ui';
-import { previewChordInSong, togglePlay, useLivePlaybackSync } from './state/playback';
+import { PatternPanel, useSpaceBarToggle } from '@sw/ui';
+import { previewChordInSong, previewStrumPattern, togglePlay, useLivePlaybackSync } from './state/playback';
 import { selectCenter, useStore } from './state/store';
 import { findEvent, keyOfSection, startChords, suggestNext } from '@sw/core';
 import type { Key } from '@sw/core';
@@ -63,6 +63,10 @@ export default function ProgressionModule({ navigate, focus }: Props) {
   const key = useMemo(() => keyOfSection(song, activeSectionId), [song, activeSectionId]);
   const suggestions = useMemo(() => (center ? suggestNext(center, key, previous) : []), [center, previous, key]);
   const startRing = useMemo(() => startChords(key), [key]);
+  const patternsOpen = useStore((s) => s.patternsOpen);
+  const saveStrumPattern = useStore((s) => s.saveStrumPattern);
+  const deleteStrumPattern = useStore((s) => s.deleteStrumPattern);
+  const applyPattern = useStore((s) => s.applyPattern);
   const mapMode = useStore((s) => s.mapMode);
   const setMapMode = useStore((s) => s.setMapMode);
   const changeKey = useStore((s) => s.changeKey);
@@ -106,6 +110,23 @@ export default function ProgressionModule({ navigate, focus }: Props) {
           <CircleOfFifths musicKey={key} guitar={song.guitar} replacing={!!replaceTargetId} onPreview={preview} onAdd={addChord} onSetKey={useAsKey} />
         )}
         <Timeline navigate={navigate} />
+        {patternsOpen && (
+          <PatternPanel
+            song={song}
+            focusedEventId={selectedEventId}
+            activeSectionId={activeSectionId}
+            onSave={saveStrumPattern}
+            onDelete={deleteStrumPattern}
+            onApply={applyPattern}
+            onPreview={(pattern) => {
+              // Hear it on the selected chord, else the first one, else a plain C major chord.
+              const events = song.sections.flatMap((s) => s.events);
+              const event = events.find((e) => e.id === selectedEventId) ?? events[0];
+              const chord = event?.chord ?? startChords(key)[0]!;
+              void previewStrumPattern(pattern, chord, event?.attachments);
+            }}
+          />
+        )}
       </div>
       {sheetOpen && <SheetView onClose={() => setSheetOpen(false)} />}
     </div>

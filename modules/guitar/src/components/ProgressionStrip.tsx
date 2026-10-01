@@ -173,6 +173,7 @@ function Transport({ song, hasChords }: { song: Song; hasChords: boolean }) {
   const loop = useStore((s) => s.progressionLoop);
   const undo = useStore((s) => s.guitarUndo);
   const revoiceOpen = useStore((s) => s.revoiceOpen);
+  const patternsOpen = useStore((s) => s.patternsOpen);
   const bpm = song.bpm;
   let stale = 0;
   for (const section of song.sections) {
@@ -210,6 +211,9 @@ function Transport({ song, hasChords }: { song: Song; hasChords: boolean }) {
       </label>
       <span className="muted strip-tempo">{bpm} BPM</span>
       <span className="strip-transport-end">
+        <button type="button" className="button" aria-pressed={patternsOpen} onClick={() => useStore.getState().setPatternsOpen(!patternsOpen)}>
+          Strum patterns
+        </button>
         {stale > 0 && (
           <button
             type="button"

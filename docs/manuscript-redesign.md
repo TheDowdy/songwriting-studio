@@ -104,6 +104,21 @@ Raised by the owner on 2026-09-30.
   Only <section>** scope and **Back to the song's key**; the map, suggestions, flavour picker and the
   guitar module's choices use the section's key. Known gap: the printed/sheet view still uses the
   song's key signature for the whole song.
+- **Strum pattern builder** (both modules): custom patterns are data in the song (`Song.patterns`,
+  `StrumPattern`), referenced as `custom:<id>` from `Song.pattern`, `Section.pattern` or
+  `ChordEvent.pattern` (a chord's own beats its section's, which beats the song's; resolution is
+  `patternIdFor` / `resolvePattern`). A step is a down or up stroke over all, low or high strings
+  (partial strums), optionally accented; the grid is quarter, eighth or sixteenth notes over 1 to 8
+  beats; a pattern tiles across a chord's length (`strumEvents`) and which notes a stroke plays is
+  `strumNotes`. All pure and tested in `packages/core/src/strumPattern.ts` and `patterns.ts`;
+  operations (`saveStrumPattern`, `deleteStrumPattern`, `applyPattern`, `clearOwnPattern`) are in
+  `operations.ts`. The shared UI is `PatternBuilder`, `PatternPanel` and `PatternSelect` in `@sw/ui`
+  (styles in `packages/ui/src/patterns.css`). Progression playback renders custom patterns through
+  `renderStrumPattern`; the guitar module's player turns each stroke into a strike with the right
+  notes in the right order (down low to high, up high to low). Timeline blocks show a custom
+  pattern's strokes as arrows. Not done: patterns for piano and pad (the owner wants those later; a
+  custom pattern does play on them as chord strokes), a lane of strokes drawn alongside the whole
+  timeline, and undo for pattern edits in the guitar module. Check: `npm run check:patterns`.
 - Browser check: `npm run check:circle` (22 checks). `check:help` now also visits the circle and a
   section with its own key.
 

@@ -6,6 +6,7 @@ import { BottomPanel } from './components/Panels/BottomPanel';
 import { Legend } from './components/Panels/Legend';
 import { ProgressionStrip } from './components/ProgressionStrip';
 import { StripToolbar } from './components/StripToolbar';
+import { StrumPatterns } from './components/StrumPatterns';
 import { ConfirmGuitarChange } from './components/ConfirmGuitarChange';
 import { RevoicePanel } from './components/RevoicePanel';
 import { Toolbar } from './components/Toolbar/Toolbar';
@@ -40,6 +41,7 @@ export default function GuitarModule({ songId = null, focus = {} }: Props) {
   // Space starts and stops the progression (only in a song; the stand-alone tool has none).
   useSpaceBarToggle(toggleProgressionPlayback, songId !== null);
   const revoiceOpen = useStore((s) => s.revoiceOpen);
+  const patternsOpen = useStore((s) => s.patternsOpen);
   return (
     <div className="mod-guitar">
       <Toolbar />
@@ -54,6 +56,7 @@ export default function GuitarModule({ songId = null, focus = {} }: Props) {
       {songId && <ProgressionStrip />}
       {songId && revoiceOpen && <RevoicePanel />}
       {songId && <StripToolbar />}
+      {songId && patternsOpen && <StrumPatterns />}
       <ConfirmGuitarChange />
       <BottomPanel />
     </div>

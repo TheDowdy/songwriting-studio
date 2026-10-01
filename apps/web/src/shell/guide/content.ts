@@ -87,6 +87,7 @@ export const GUIDE: GuideSection[] = [
       { p: 'Select a chord in the timeline, and then use the buttons below it:' },
       {
         ul: [
+          '**Strum pattern** chooses how this chord is played: a built-in pattern or one you made, or the same as the section and song.',
           '**Flavor** changes the chord type, such as 7th or sus4.',
           '**Piano / guitar** shows the chord on a keyboard or as a guitar diagram.',
           '**Replace** swaps the chord for one you choose from the map.',
@@ -98,6 +99,17 @@ export const GUIDE: GuideSection[] = [
       { h3: 'Organize sections' },
       { p: 'A song is made of sections, such as a verse and a chorus. Add a section with the buttons below the timeline, for example **+ Verse**. In the arrangement, add sections in the order you want them played. A section can appear more than once.' },
       { p: 'Use **–** and **+** next to a section’s name to set how many times it repeats. **Duplicate section** copies a section, and **Clear** removes its chords.' },
+      { h3: 'Build your own strum patterns' },
+      { p: 'A strum pattern is a rhythm of down and up strums. To make one, select **More ▾** next to the tempo, and then select **Strum patterns**. In **New pattern from**, choose **Blank** or a common rhythm to start from.' },
+      {
+        ul: [
+          'Each box is one step. Select a step to change it: first a down strum (↓), then an up strum (↑), then a rest (·).',
+          'With a step selected, choose **All strings**, **Low strings** or **High strings** for a full or partial strum, and select **Accent** to make it louder.',
+          'Use **Length in beats** and **Steps in each beat** to change how long the pattern is and how finely it divides each beat. Strokes you’ve already placed stay at the same moment where they still fit. Shortening a pattern removes the steps past its end.',
+          'Select **▶ Preview** to hear it on the selected chord.',
+        ],
+      },
+      { p: 'A pattern repeats to fill a longer chord, and a chord shorter than the pattern plays the start of it. To use a pattern, select one of **Selected chord**, **Rest of section** (the selected chord and the ones after it), **Whole section** or **Entire song**. A chord’s own choice wins over its section’s, and a section’s wins over the song’s. You can also pick a pattern for one chord with **Strum pattern** under the timeline. A chord with a pattern of your own shows its strokes as arrows in its block, and a small ≋ if it has a choice of its own. Select **Delete pattern** to remove it; anything that used it goes back to the next level up.' },
       { h3: 'Play the progression' },
       {
         ul: [
@@ -129,6 +141,8 @@ export const GUIDE: GuideSection[] = [
       { p: 'Use **Root in bass only**, **Max stretch (frets)**, and the other rules under **Voicing rules & filters** to narrow the voicings that the app offers.' },
       { h3: 'Edit chords from the guitar tab' },
       { p: 'With a chord selected, the toolbar above the neck lets you change it without leaving the Guitar tab: **Flavour**, **Inversion**, **Replace**, **Beats**, **Duplicate**, **Remove**, and **+ Add after**.' },
+      { h3: 'Strum patterns on guitar' },
+      { p: 'Select **Strum patterns** in the strip to build and place your own strum patterns, the same way as in the Progression tab. With a pattern, **▶ Play song** strums each chord as the pattern says: down strums go from the low strings to the high ones, up strums from high to low, and partial strums use only the low or high strings. A chord with no custom pattern is strummed once at the start of each bar. The **Strum pattern** list in the toolbar above the neck sets the pattern for the selected chord.' },
       { h3: 'Play the song' },
       { p: 'Select **▶ Play song** to hear every chord, or **▶ Play section** to hear the section of the selected chord. The neck and strip follow the chord that’s playing. On a computer, press the space bar to start or stop playback. Select **↶ Undo** to reverse your last change.' },
       { h3: 'Change the tuning or capo' },

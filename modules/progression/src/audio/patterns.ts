@@ -1,4 +1,5 @@
-import type { PatternId, TimeSig } from '@sw/core';
+import { isCustomPatternId, strumEvents, strumNotes, strumVelocity } from '@sw/core';
+import type { PatternId, StrumPattern, TimeSig } from '@sw/core';
 
 /**
  * One strike within a chord's own beat window. `noteIndices` refer to positions in the chord's
@@ -33,6 +34,8 @@ const allIndices = (upperCount: number) => Array.from({ length: upperCount + 1 }
 export function renderPattern(pattern: PatternId, upperCount: number, beats: number, _timeSig: TimeSig): Strike[] {
   const all = allIndices(upperCount);
   const upper = all.slice(1);
+  // A custom pattern is rendered by `renderStrumPattern`; if its definition is gone, play the chord whole.
+  if (isCustomPatternId(pattern)) return [{ offset: 0, duration: beats, noteIndices: all }];
 
   switch (pattern) {
     case 'block':
@@ -87,4 +90,20 @@ export function renderPattern(pattern: PatternId, upperCount: number, beats: num
       ];
     }
   }
+}
+
+/**
+ * The strikes of one of the song's own strum patterns over a chord `beats` long. A down stroke
+ * staggers its notes low to high; an up stroke high to low and lighter; a partial strum sounds only
+ * the lower or upper half of the chord's notes (see `strumNotes`).
+ */
+export function renderStrumPattern(pattern: StrumPattern, upperCount: number, beats: number): Strike[] {
+  const all = allIndices(upperCount);
+  return strumEvents(pattern, beats).map(({ offsetBeats, durationBeats, step }) => ({
+    offset: offsetBeats,
+    duration: durationBeats,
+    noteIndices: strumNotes(all, step),
+    strumSeconds: step.stroke === 'down' ? STRUM_SECONDS : -STRUM_SECONDS,
+    velocity: strumVelocity(step),
+  }));
 }

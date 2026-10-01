@@ -42,7 +42,8 @@
     "check:chord-header": "npm run check:chord-header --workspace=apps/web",
     "check:spacebar": "npm run check:spacebar --workspace=apps/web",
     "check:addchord": "npm run check:addchord --workspace=apps/web",
-    "check:circle": "npm run check:circle --workspace=apps/web"
+    "check:circle": "npm run check:circle --workspace=apps/web",
+    "check:patterns": "npm run check:patterns --workspace=apps/web"
   },
   "devDependencies": {
     "@types/node": "^24.0.0"

@@ -129,6 +129,15 @@ await page.getByRole('group', { name: 'Key applies to' }).getByRole('button', { 
 await page.locator('[aria-label="Key"] [aria-pressed]').filter({ hasText: /^G$/ }).first().click();
 await sleep(200);
 await audit('progression: a section with its own key');
+// The strum pattern builder, with a pattern made and a chord selected.
+await page.getByRole('button', { name: 'More playback settings' }).click();
+await page.getByRole('button', { name: 'Strum patterns' }).click();
+await page.getByLabel('New pattern from').selectOption('Folk (D, DU, UDU)');
+await page.getByRole('button', { name: /^Step 2 of 8/ }).click();
+await sleep(200);
+await audit('progression: strum pattern builder');
+await page.getByRole('button', { name: 'Strum patterns' }).click();
+await page.getByRole('button', { name: 'More playback settings' }).click();
 await page.getByRole('button', { name: /^Make variant/ }).first().click().catch(() => {});
 await sleep(200);
 await audit('progression: variant dialog');
@@ -142,6 +151,12 @@ await page.locator('.strip-chord').first().click();
 await page.getByRole('button', { name: 'Use this voicing', exact: true }).click();
 await page.locator('.strip-chord').first().click();
 await audit('guitar: a chord with a committed voicing selected');
+await page.getByRole('button', { name: 'Strum patterns' }).click();
+await page.getByLabel('New pattern from').selectOption('Down, up');
+await page.getByRole('button', { name: /^Step 1 of 8/ }).click();
+await sleep(200);
+await audit('guitar: strum pattern builder');
+await page.getByRole('button', { name: 'Strum patterns' }).click();
 for (const b of ['Flavour', 'Inversion', 'Replace', '+ Add after']) {
   await page.getByRole('button', { name: b, exact: true }).click();
   await audit(`guitar: ${b} panel`);

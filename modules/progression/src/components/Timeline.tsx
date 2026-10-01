@@ -17,7 +17,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { canToggleMajorMinor, chordName, chroma, keyLabel, keyOfSection, toggleMajorMinor, voicingStatus } from '@sw/core';
+import { canToggleMajorMinor, chordName, chroma, keyLabel, keyOfSection, patternLabel, patternIdFor, resolvePattern, strumEvents, toggleMajorMinor, voicingStatus } from '@sw/core';
 import type { Key } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { ChordDiagram, VariantDialog } from '@sw/ui';
@@ -25,6 +25,7 @@ import type { Navigate } from '../App';
 import { previewChordInSong } from '../state/playback';
 import { BEATS_MAX, useStore } from '../state/store';
 import type { ChordEvent, Section, VariantGeneratorId, VariantOptions } from '@sw/core';
+import { PatternSelect } from '@sw/ui';
 import ChordDetail from './ChordDetail';
 import FlavorPicker from './FlavorPicker';
 
@@ -64,6 +65,9 @@ function ChordSlot({
   const selectEvent = useStore((s) => s.selectEvent);
   const setEventBeats = useStore((s) => s.setEventBeats);
   const guitar = useStore((s) => s.song.guitar);
+  const song = useStore((s) => s.song);
+  // The strokes of this chord's own, section's or song's strum pattern, when it has a custom one.
+  const resolved = resolvePattern(song, sectionId, event);
   // A committed guitar voicing shows as a mini diagram, flagged when it no longer fits the chord
   // or the song's tuning/capo (Phase 5 item 1 — the same badge the guitar module's strip shows).
   const voicing = event.attachments?.guitar;
@@ -194,19 +198,41 @@ function ChordSlot({
           className="pointer-events-none absolute inset-x-0 bottom-0 flex h-7 items-center"
           style={{ backgroundImage: 'repeating-linear-gradient(to bottom, transparent 0, transparent 5px, var(--line) 5px, var(--line) 6px)' }}
         >
-          {Array.from({ length: shownBeats }, (_, i) => (
-            <span key={i} className="flex shrink-0 justify-center" style={{ width: BEAT_PX }}>
-              <span
-                className="block h-4 w-0.5"
-                style={{
-                  transform: 'skewX(-28deg)',
-                  background: playing && i === 0 ? 'var(--play)' : 'var(--fg)',
-                  opacity: playing && i === 0 ? 1 : 0.7,
-                }}
-              />
-            </span>
-          ))}
+          {resolved.kind === 'custom'
+            ? strumEvents(resolved.pattern, shownBeats).map((hit, i) => (
+                <span
+                  key={i}
+                  className="absolute -translate-x-1/2 font-mono leading-none"
+                  title={`${hit.step.stroke === 'down' ? 'Down' : 'Up'} strum${hit.step.extent === 'full' ? '' : ', ' + hit.step.extent + ' strings'}`}
+                  style={{
+                    left: hit.offsetBeats * BEAT_PX + BEAT_PX / 2,
+                    fontSize: hit.step.extent === 'full' ? 15 : 11,
+                    fontWeight: hit.step.accent ? 800 : 500,
+                    color: playing && i === 0 ? 'var(--play)' : 'var(--fg)',
+                    opacity: hit.step.stroke === 'up' ? 0.7 : 1,
+                  }}
+                >
+                  {hit.step.stroke === 'down' ? '↓' : '↑'}
+                </span>
+              ))
+            : Array.from({ length: shownBeats }, (_, i) => (
+                <span key={i} className="flex shrink-0 justify-center" style={{ width: BEAT_PX }}>
+                  <span
+                    className="block h-4 w-0.5"
+                    style={{
+                      transform: 'skewX(-28deg)',
+                      background: playing && i === 0 ? 'var(--play)' : 'var(--fg)',
+                      opacity: playing && i === 0 ? 1 : 0.7,
+                    }}
+                  />
+                </span>
+              ))}
         </div>
+        {event.pattern && (
+          <span aria-hidden="true" title={`Own strum pattern: ${patternLabel(song, event.pattern)}`} className="pointer-events-none absolute left-1 top-0.5 font-mono text-[10px] text-muted">
+            ≋
+          </span>
+        )}
         <div
           role="slider"
           tabIndex={0}
@@ -253,6 +279,11 @@ function ChordToolbar({
   const startReplace = useStore((s) => s.startReplace);
   const cancelReplace = useStore((s) => s.cancelReplace);
   const setEventChord = useStore((s) => s.setEventChord);
+  const song = useStore((s) => s.song);
+  const applyPattern = useStore((s) => s.applyPattern);
+  const clearOwnPattern = useStore((s) => s.clearOwnPattern);
+  const sectionId = song.sections.find((s) => s.events.some((e) => e.id === event.id))?.id ?? '';
+  const inherited = patternIdFor({ ...song, sections: song.sections.map((s) => (s.id === sectionId ? { ...s, events: s.events.map((e) => (e.id === event.id ? { ...e, pattern: undefined } : e)) } : s)) }, sectionId, { pattern: undefined });
   const btn = 'rounded-full border border-fg px-3.5 py-1.5 text-base italic hover:bg-surface-2 aria-pressed:border-accent aria-pressed:text-accent';
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2" aria-label={`Actions for ${chordName(event.chord)}`}>
@@ -276,6 +307,12 @@ function ChordToolbar({
       >
         {event.chord.quality === 'min' ? 'Make major' : 'Make minor'}
       </button>
+      <PatternSelect
+        song={song}
+        value={event.pattern}
+        inheritLabel={`Same as ${song.sections.find((s) => s.id === sectionId)?.pattern ? 'section' : 'song'} (${patternLabel(song, inherited)})`}
+        onChange={(id) => (id ? applyPattern({ scope: 'chord', eventId: event.id }, id) : clearOwnPattern({ eventId: event.id }))}
+      />
       <button onClick={onFlavor} aria-pressed={flavorOpen} className={btn}>Flavor</button>
       <button onClick={onDetail} aria-pressed={detailOpen} className={btn}>Piano / guitar</button>
       <button onClick={onExplore} className={btn}>Explore guitar voicings</button>

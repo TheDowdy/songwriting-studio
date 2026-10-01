@@ -1,0 +1,174 @@
+/*
+ * The strum pattern builder (PatternBuilder, PatternPanel, PatternSelect), styled once for both
+ * modules from the shared tokens. Class names start with pb-.
+ */
+.pb {
+  display: grid;
+  gap: 0.9rem;
+  color: var(--fg);
+  font-family: var(--font-sans);
+}
+.pb-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.6rem 1.1rem;
+}
+.pb-field {
+  display: grid;
+  gap: 0.15rem;
+  font: 500 0.6875rem var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.pb-field input,
+.pb-field select {
+  min-height: 2.25rem;
+  padding: 0 0.25rem;
+  font: inherit;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-style: italic;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fg);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--fg);
+  border-radius: 0;
+}
+.pb-btn {
+  min-height: 2.25rem;
+  padding: 0 1rem;
+  font: inherit;
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid var(--fg);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.pb-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.pb-btn[aria-pressed='true'] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.pb-btn.pb-primary {
+  color: var(--accent-fg);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.pb-hint {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-style: italic;
+  color: var(--muted);
+}
+.pb-label {
+  font: 500 0.6875rem var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* The step grid: one column per step, a little extra space at each beat. */
+.pb-grid {
+  display: grid;
+  gap: 0.25rem 0;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+.pb-count {
+  text-align: center;
+  font: 500 0.75rem var(--font-mono);
+  color: var(--muted);
+}
+.pb-count.pb-beat {
+  color: var(--fg);
+}
+.pb-step {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 2.4rem;
+  height: 3.1rem;
+  margin: 0 1px;
+  padding: 0;
+  font: 500 1.25rem var(--font-sans);
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  cursor: pointer;
+}
+.pb-step.pb-beat-start {
+  margin-left: 0.5rem;
+}
+.pb-step[data-stroke='down'] {
+  background: var(--t-diatonic);
+  border-color: var(--c-diatonic);
+}
+.pb-step[data-stroke='up'] {
+  background: var(--surface-2);
+  border-color: var(--fg);
+}
+.pb-step[data-selected='true'] {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.pb-step[data-accent='true'] {
+  font-weight: 800;
+}
+.pb-step small {
+  position: absolute;
+  bottom: 0.1rem;
+  left: 0;
+  right: 0;
+  font: 500 0.625rem var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.pb-step:focus-visible,
+.pb-btn:focus-visible,
+.pb-field input:focus-visible,
+.pb-field select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.pb-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-block: 1px solid var(--fg);
+}
+.pb-panel h3 {
+  margin: 0;
+  font: italic 500 1.375rem var(--font-sans);
+}
+.pb-seg {
+  display: inline-flex;
+  gap: 0.9rem;
+}
+.pb-seg button {
+  padding: 0 0.1rem;
+  font: inherit;
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.pb-seg button[aria-pressed='true'] {
+  color: var(--fg);
+  box-shadow: inset 0 -1.5px 0 var(--accent);
+}
+.pb-seg button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { BPM_MAX, BPM_MIN, useStore } from '../state/store';
 import { togglePlay } from '../state/playback';
-import { flattenSong } from '@sw/core';
+import { flattenSong, patternOptions } from '@sw/core';
 import type { InstrumentId, PatternId } from '@sw/core';
 
 const INSTRUMENTS: { id: InstrumentId; label: string }[] = [
@@ -9,17 +9,6 @@ const INSTRUMENTS: { id: InstrumentId; label: string }[] = [
   { id: 'epiano', label: 'Electric piano' },
   { id: 'pad', label: 'Pad' },
   { id: 'guitar', label: 'Guitar' },
-];
-
-const PATTERNS: { id: PatternId; label: string }[] = [
-  { id: 'block', label: 'Block' },
-  { id: 'pulse', label: 'Pulse' },
-  { id: 'strum-down', label: 'Strum down' },
-  { id: 'strum-updown', label: 'Strum down-up' },
-  { id: 'arp-up', label: 'Arpeggio up' },
-  { id: 'arp-updown', label: 'Arpeggio up-down' },
-  { id: 'arp-broken', label: 'Arpeggio broken' },
-  { id: 'bass-chord', label: 'Bass + chord' },
 ];
 
 const DENOMINATORS = [1, 2, 4, 8, 16] as const;
@@ -60,6 +49,9 @@ export default function TransportBar() {
   const timeSig = useStore((s) => s.song.timeSig);
   const instrument = useStore((s) => s.song.instrument);
   const pattern = useStore((s) => s.song.pattern);
+  const songPatterns = useStore((s) => s.song.patterns);
+  const patternsOpen = useStore((s) => s.patternsOpen);
+  const setPatternsOpen = useStore((s) => s.setPatternsOpen);
   const loop = useStore((s) => s.loop);
   const loopScope = useStore((s) => s.loopScope);
   const metronome = useStore((s) => s.metronome);
@@ -221,13 +213,21 @@ export default function TransportBar() {
                 onChange={(e) => setPattern(e.target.value as PatternId)}
                 className="h-10 rounded-none border-0 border-b border-fg bg-transparent px-2"
               >
-                {PATTERNS.map((p) => (
+                {patternOptions({ patterns: songPatterns }).map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.label}
                   </option>
                 ))}
               </select>
             </div>
+
+            <button
+              onClick={() => setPatternsOpen(!patternsOpen)}
+              aria-pressed={patternsOpen}
+              className={`h-10 rounded-full border px-4 text-base italic ${patternsOpen ? 'border-accent text-accent' : 'border-fg text-muted hover:bg-surface-2'}`}
+            >
+              Strum patterns
+            </button>
 
             <button
               onClick={() => setMetronome(!metronome)}

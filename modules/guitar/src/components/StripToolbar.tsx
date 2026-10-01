@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { chordName, chroma, findEvent, inversionCount, inversionOf, keyOfEvent, toChordSpec, type ChordRef } from '@sw/core';
+import { chordName, chroma, findEvent, inversionCount, inversionOf, keyOfEvent, patternIdFor, patternLabel, toChordSpec, type ChordRef } from '@sw/core';
 import { DEFAULT_CHORD, type ChordSpec } from '@sw/core/fret/chords';
 import { chromaticName, formatNoteName } from '@sw/core/fret/notes';
 import { useSong } from '@sw/song-store/react';
-import { ChordBuilderChips } from '@sw/ui';
+import { ChordBuilderChips, PatternSelect } from '@sw/ui';
+import { songStore } from '@sw/song-store';
 import { chordChoices } from '../state/chordChoices';
 import {
   addChordAfter,
@@ -200,6 +201,14 @@ export function StripToolbar() {
             +
           </button>
         </span>
+        {song && (
+          <PatternSelect
+            song={song}
+            value={event.pattern}
+            inheritLabel={`Same as ${findEvent(song, event.id)?.section.pattern ? 'section' : 'song'} (${patternLabel(song, patternIdFor(song, findEvent(song, event.id)?.section.id ?? '', { pattern: undefined }))})`}
+            onChange={(id) => (id ? songStore.getState().applyPattern({ scope: 'chord', eventId: event.id }, id) : songStore.getState().clearOwnPattern({ eventId: event.id }))}
+          />
+        )}
         <button type="button" className="button" onClick={() => duplicateChord(event.id)}>
           Duplicate
         </button>
