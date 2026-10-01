@@ -15,6 +15,8 @@ import { useIdentifySync } from './hooks/useIdentifySync';
 import { useAudioUnlock } from './hooks/useAudioUnlock';
 import { useSongContext } from './hooks/useSongContext';
 import { useStore } from './state/store';
+import { toggleProgressionPlayback } from './state/progressionPlayback';
+import { useSpaceBarToggle } from '@sw/ui';
 
 interface Props {
   /** null when opened as a stand-alone tool (`#/tools/guitar`); a song id in song context. */
@@ -35,6 +37,8 @@ export default function GuitarModule({ songId = null, focus = {} }: Props) {
   useIdentifySync();
   useAudioUnlock();
   useSongContext(songId, focus.eventId);
+  // Space starts and stops the progression (only in a song; the stand-alone tool has none).
+  useSpaceBarToggle(toggleProgressionPlayback, songId !== null);
   const revoiceOpen = useStore((s) => s.revoiceOpen);
   return (
     <div className="mod-guitar">

@@ -102,6 +102,10 @@ await sleep(200);
 check('Remove takes it away again', JSON.stringify(await stripNames()) === '["C/E","G7","Em","F"]', JSON.stringify(await stripNames()));
 
 // ---------------------------------------------------------------- drag to reorder (keyboard drag)
+// A keyboard user arrives by keyboard: any key other than Space tells the space bar shortcut that
+// the keyboard, not the mouse, is driving focus, so Space then picks the block up instead of
+// starting playback.
+await page.keyboard.press('Tab');
 await block('Em').focus();
 await page.keyboard.press('Space');
 await sleep(150);

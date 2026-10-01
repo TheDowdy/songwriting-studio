@@ -87,7 +87,7 @@ export const GUIDE: GuideSection[] = [
           '**Piano / guitar** shows the chord on a keyboard or as a guitar diagram.',
           '**Replace** swaps the chord for one you choose from the map.',
           '**Duplicate** copies the chord. **Remove** deletes it.',
-          'The **Beats** field sets how long the chord lasts.',
+          'The **Beats** field sets how long the chord lasts. A chord shows one slash for each beat.',
         ],
       },
       { p: 'To reorder chords, press and hold a chord, and then drag it to a new position.' },
@@ -97,7 +97,7 @@ export const GUIDE: GuideSection[] = [
       { h3: 'Play the progression' },
       {
         ul: [
-          'Select **Play** or **Stop** to start or stop playback.',
+          'Select **Play** or **Stop** to start or stop playback. On a computer, you can also press the space bar.',
           'Turn on **Loop** to repeat playback. Choose **Whole song** or **This section**.',
           'Set the tempo with the slider, or select **Tap** repeatedly in time.',
           'Select **More playback settings** to change the time signature, instrument, pattern, metronome, and volume.',
@@ -111,7 +111,7 @@ export const GUIDE: GuideSection[] = [
     blocks: [
       { p: 'Select the **Guitar** tab to see your song on a guitar neck. Your chords appear in a strip above the neck.' },
       { h3: 'Show a chord on the neck' },
-      { p: 'Select a chord in the strip. The neck shows the recommended shape for it, and you hear it play. The number next to the clock icon on each chord is how many beats it lasts.' },
+      { p: 'Select a chord in the strip. The neck shows the recommended shape for it, and you hear it play. Each chord shows one slash for every beat it lasts, as on a lead sheet.' },
       { h3: 'Choose a voicing' },
       { p: 'A voicing is one way to play a chord on the neck. To choose one:' },
       {
@@ -126,7 +126,7 @@ export const GUIDE: GuideSection[] = [
       { h3: 'Edit chords from the guitar tab' },
       { p: 'With a chord selected, the toolbar above the neck lets you change it without leaving the Guitar tab: **Flavour**, **Inversion**, **Replace**, **Beats**, **Duplicate**, **Remove**, and **+ Add after**.' },
       { h3: 'Play the song' },
-      { p: 'Select **▶ Play song** to hear every chord, or **▶ Play section** to hear the section of the selected chord. The neck and strip follow the chord that’s playing. Select **↶ Undo** to reverse your last change.' },
+      { p: 'Select **▶ Play song** to hear every chord, or **▶ Play section** to hear the section of the selected chord. The neck and strip follow the chord that’s playing. On a computer, press the space bar to start or stop playback. Select **↶ Undo** to reverse your last change.' },
       { h3: 'Change the tuning or capo' },
       {
         ol: [

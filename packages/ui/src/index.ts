@@ -10,3 +10,4 @@ export {
 export { VariantDialog, type VariantDialogProps } from './VariantDialog';
 export { type HelpEntry } from './help';
 export { UI_HELP } from './uiHelp';
+export { useSpaceBarToggle } from './useSpaceBarToggle';

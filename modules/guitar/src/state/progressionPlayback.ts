@@ -3,7 +3,7 @@
  * through the guitar synth — its committed voicing, or the shape the neck would suggest for it —
  * at the song's tempo, optionally looping, with the neck following the chord you hear.
  */
-import { findEvent, playbackRange, toChordSpec, type ChordEvent, type Song } from '@sw/core';
+import { findEvent, flattenSong, playbackRange, toChordSpec, type ChordEvent, type Song } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { shapeNotes } from '@sw/core/fret/voicings';
 import { songStore } from '@sw/song-store';
@@ -82,4 +82,14 @@ export function playProgression(scope: 'song' | 'section'): void {
 export function stopProgression(): void {
   player.stop();
   useStore.getState().setProgressionPlaying(false);
+}
+
+/** Starts the whole progression, or stops it if it is playing (the space bar). Nothing without a song with chords. */
+export function toggleProgressionPlayback(): void {
+  if (useStore.getState().progressionPlaying) {
+    stopProgression();
+    return;
+  }
+  const song = songStore.getState().currentSong();
+  if (song && flattenSong(song).length > 0) playProgression('song');
 }

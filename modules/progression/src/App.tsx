@@ -6,7 +6,8 @@ import NodeMap from './components/NodeMap';
 import SongPanel from './components/SongPanel';
 import Timeline from './components/Timeline';
 import TransportBar from './components/TransportBar';
-import { previewChordInSong, useLivePlaybackSync } from './state/playback';
+import { useSpaceBarToggle } from '@sw/ui';
+import { previewChordInSong, togglePlay, useLivePlaybackSync } from './state/playback';
 import { selectCenter, useStore } from './state/store';
 import { startChords, suggestNext } from '@sw/core';
 import type { ChordRef } from '@sw/core';
@@ -31,6 +32,8 @@ export default function ProgressionModule({ navigate }: Props) {
   useLivePlaybackSync();
 
   const song = useStore((s) => s.song);
+  // Space starts and stops playback (not while there is nothing to play).
+  useSpaceBarToggle(togglePlay, song.sections.some((sec) => sec.events.length > 0));
   const selectedEventId = useStore((s) => s.selectedEventId);
   const playingEventId = useStore((s) => s.playingEventId);
   const isPlaying = useStore((s) => s.isPlaying);

@@ -32,7 +32,10 @@ Design mockups (Claude artifacts, private to the owner):
 7. App icon redrawn (engraved fretboard on ink); `make-icons.mjs` waits for repaint before capture.
 8. Settings dialog was stuck top-left (Tailwind preflight zeroes a dialog's auto margin): now `m-auto`;
    guitar dialog gets `margin: auto`.
-9. Housekeeping: Geist packages removed, Newsreader/Plex Mono added, `theme-color` meta, manifest
+9. **Strum slashes**: timeline blocks (progression) show one slash per beat on a small staff
+   instead of a beat number; the first slash turns red pencil while the block sounds. The guitar
+   strip shows slashes too (a long chord shows "N beats"). The user guide describes this.
+10. Housekeeping: Geist packages removed, Newsreader/Plex Mono added, `theme-color` meta, manifest
    colours, `check:settings` colours, `DEPLOYMENT.md`, `guitars-check` (six models), `shell-check`
    (scroll the Add button into view before measuring page scroll; it was viewport-height dependent).
 
@@ -65,10 +68,16 @@ Design mockups (Claude artifacts, private to the owner):
 
 Raised by the owner on 2026-09-30.
 
-1. **Space bar toggles playback** of the progression on desktop (start and stop). Needs care around
-   focus: it must not fire while typing in an input, textarea or select, or when a button has focus
-   (space already activates it), and it should work in both the progression and guitar modules.
-   Not started. There is no existing global key handler for it.
+1. **Space bar toggles playback**: DONE (2026-10-01). Plain Space starts and stops the progression in
+   the progression module and in the guitar module (song context only). The rule is a pure function,
+   `shouldToggleOnSpace` in `packages/core/src/spaceKey.ts` (tested), used by the `useSpaceBarToggle`
+   hook in `@sw/ui`. It never acts in text fields, selects, sliders, checkboxes, tabs, or while a
+   dialog/help/sheet overlay is open. On a button or link it acts only if the mouse focused it
+   (so Space after clicking "+ Add" or a chord toggles playback instead of pressing it again); a
+   keyboard user who tabbed there keeps Space for activation and for keyboard drag-and-drop.
+   Pointer-versus-keyboard focus is tracked in the hook (any non-Space, non-modifier key marks focus as
+   keyboard-driven), not read from `:focus-visible`, which Chrome flips on at the first keypress.
+   Browser check: `npm run check:spacebar`. Documented in the user guide.
 2. **Add any built chord to the progression from the guitar module**: parked by the owner, who has
    more to add. The brief and a map of the existing code is in
    `docs/feature-add-built-chords-to-progression.md`. Discuss before building.
