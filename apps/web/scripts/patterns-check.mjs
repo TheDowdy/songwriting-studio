@@ -144,6 +144,9 @@ await sleep(300);
 await page.getByRole('button', { name: 'Strum patterns' }).click();
 await page.waitForSelector('[aria-label="Strum patterns"]');
 check('the guitar module has the same builder', (await page.getByLabel('Pattern to edit').count()) === 1);
+const stripArrows = await page.locator('.strip-chord').first().locator('.strip-stroke').count();
+const stripSlashes = await page.locator('.strip-chord').first().locator('.strip-slash').count();
+check('a chord with a custom pattern shows its strokes as arrows in the guitar strip', stripArrows === s.patterns[1].steps.filter(Boolean).length && stripSlashes === 0, `${stripArrows} arrows, ${stripSlashes} slashes`);
 const gs = await page.evaluate(() => {
   const song = window.__songwriting.store.getState().song;
   return window.__fluidfrets.progressionStrikes(song, null).strikes.map((k) => ({ id: k.eventId, at: k.atSeconds, n: k.notes.length, midi: k.notes.map((x) => x.midi) }));

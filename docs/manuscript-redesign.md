@@ -102,8 +102,9 @@ Raised by the owner on 2026-09-30.
   `keyOfSection` / `keyOfEvent` in `packages/core/src/keys.ts`; `changeSectionKey` in operations;
   `changeKey` leaves modulated sections alone. The key picker has a **Key applies to: Whole song |
   Only <section>** scope and **Back to the song's key**; the map, suggestions, flavour picker and the
-  guitar module's choices use the section's key. Known gap: the printed/sheet view still uses the
-  song's key signature for the whole song.
+  guitar module's choices use the section's key. The sheet music draws each section in its own
+  key signature (`SheetSection.keySignature`), cancels the old one with naturals where the key changes,
+  and names the new key in the section heading; the page header still states the song's key.
 - **Strum pattern builder** (both modules): custom patterns are data in the song (`Song.patterns`,
   `StrumPattern`), referenced as `custom:<id>` from `Song.pattern`, `Section.pattern` or
   `ChordEvent.pattern` (a chord's own beats its section's, which beats the song's; resolution is
@@ -116,9 +117,8 @@ Raised by the owner on 2026-09-30.
   (styles in `packages/ui/src/patterns.css`). Progression playback renders custom patterns through
   `renderStrumPattern`; the guitar module's player turns each stroke into a strike with the right
   notes in the right order (down low to high, up high to low). Timeline blocks show a custom
-  pattern's strokes as arrows. Not done: patterns for piano and pad (the owner wants those later; a
-  custom pattern does play on them as chord strokes), a lane of strokes drawn alongside the whole
-  timeline, and undo for pattern edits in the guitar module. Check: `npm run check:patterns`.
+  pattern's strokes as arrows. The guitar strip's chord blocks show a custom pattern's strokes as arrows too. Not done: patterns for piano and pad (the owner wants those later; a
+  custom pattern does play on them as chord strokes), and undo for pattern edits in the guitar module. Check: `npm run check:patterns`.
 - Browser check: `npm run check:circle` (22 checks). `check:help` now also visits the circle and a
   section with its own key.
 

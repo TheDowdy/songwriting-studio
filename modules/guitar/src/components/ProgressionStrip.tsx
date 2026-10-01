@@ -11,7 +11,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { chordName, chroma, voicingStatus, type ChordEvent, type Section, type Song, type VariantGeneratorId, type VariantOptions } from '@sw/core';
+import { chordName, chroma, resolvePattern, strumEvents, voicingStatus, type ChordEvent, type Section, type Song, type VariantGeneratorId, type VariantOptions } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { useSong } from '@sw/song-store/react';
 import { ChordDiagram, VariantDialog } from '@sw/ui';
@@ -59,6 +59,10 @@ function StripChord({ slot, event, song, selected }: { slot: number; event: Chor
   }, [playing]);
   const voicing = event.attachments?.guitar;
   const stale = voicing ? voicingStatus(event, song) !== 'ok' : false;
+  // A chord with one of the song's own strum patterns shows its strokes in order, as arrows.
+  const sectionId = song.sections.find((sec) => sec.events.some((e) => e.id === event.id))?.id ?? '';
+  const resolved = resolvePattern(song, sectionId, event);
+  const strokes = resolved.kind === 'custom' ? strumEvents(resolved.pattern, event.beats) : null;
   return (
     <li
       ref={setNodeRef}
@@ -100,9 +104,24 @@ function StripChord({ slot, event, song, selected }: { slot: number; event: Chor
             )}
           </span>
         )}
-        {/* One slash per beat, as in a lead sheet (a long chord shows its count instead). */}
+        {/* One slash per beat, as in a lead sheet (a long chord shows its count instead). With a
+            custom strum pattern, the strokes themselves: down and up arrows, smaller if partial. */}
         <span className="strip-chord-beats" aria-hidden="true" title={`${event.beats} ${event.beats === 1 ? 'beat' : 'beats'}`}>
-          {event.beats <= 8 ? Array.from({ length: event.beats }, (_, i) => <i key={i} className="strip-slash" />) : `${event.beats} beats`}
+          {strokes ? (
+            strokes.length <= 8 ? (
+              strokes.map((hit, i) => (
+                <b key={i} className={`strip-stroke${hit.step.extent === 'full' ? '' : ' partial'}${hit.step.stroke === 'up' ? ' up' : ''}${hit.step.accent ? ' accent' : ''}`}>
+                  {hit.step.stroke === 'down' ? '↓' : '↑'}
+                </b>
+              ))
+            ) : (
+              `${strokes.length} strokes`
+            )
+          ) : event.beats <= 8 ? (
+            Array.from({ length: event.beats }, (_, i) => <i key={i} className="strip-slash" />)
+          ) : (
+            `${event.beats} beats`
+          )}
         </span>
       </button>
     </li>

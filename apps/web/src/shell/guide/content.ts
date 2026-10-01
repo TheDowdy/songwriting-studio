@@ -71,7 +71,7 @@ export const GUIDE: GuideSection[] = [
     blocks: [
       { h3: 'Choose a key' },
       { p: 'Use the key controls to set the key of the song. If your song already has chords, the app asks whether to **Transpose them** to the new key, or to **Keep chords, relabel numerals**.' },
-      { p: 'To change key partway through a song, add a section for the new part. Then, above the key controls, select **Only** and the section’s name, and choose the new key. That section shows its key next to its name. Select **Back to the song’s key** to undo it.' },
+      { p: 'To change key partway through a song, add a section for the new part. Then, above the key controls, select **Only** and the section’s name, and choose the new key. That section shows its key next to its name. Select **Back to the song’s key** to undo it. The printed sheet music draws each section in its own key, and names the new key where it changes.' },
       { h3: 'Add chords from the map' },
       { p: 'The chord map shows the chord you’re building from at the center, with the chords that usually follow it around the edge. The colors show where each chord comes from: the key, another key, or a secondary chord.' },
       {

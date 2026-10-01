@@ -44,13 +44,17 @@ function makeNotes(cells: SheetNote[], staff: 'treble' | 'bass'): StaveNote[] {
 interface SystemProps {
   bars: SheetBar[];
   data: SheetData;
+  /** The key signature this system is drawn in (its section's). */
+  keySignature: string;
+  /** The previous section's signature, to cancel with naturals where the key changes. */
+  cancelKeySignature?: string;
   showTime: boolean;
   repeatStart: boolean;
   repeatEnd: boolean;
   showNumerals: boolean;
 }
 
-function drawSystem(div: HTMLDivElement, { bars, data, showTime, repeatStart, repeatEnd, showNumerals }: SystemProps) {
+function drawSystem(div: HTMLDivElement, { bars, data, keySignature, cancelKeySignature, showTime, repeatStart, repeatEnd, showNumerals }: SystemProps) {
   div.innerHTML = '';
   const renderer = new Renderer(div, Renderer.Backends.SVG);
   renderer.resize(WIDTH, HEIGHT);
@@ -58,7 +62,7 @@ function drawSystem(div: HTMLDivElement, { bars, data, showTime, repeatStart, re
   ctx.setFillStyle(INK);
   ctx.setStrokeStyle(INK);
 
-  const sigCount = Math.abs(sharpsOrFlats(data.keySignature));
+  const sigCount = Math.abs(sharpsOrFlats(keySignature)) + (cancelKeySignature ? Math.abs(sharpsOrFlats(cancelKeySignature)) : 0);
   const prefix = 44 + sigCount * 11 + (showTime ? 26 : 0);
   const barWidth = (WIDTH - 2 * MARGIN - prefix) / BARS_PER_SYSTEM;
   const time = `${data.timeSig.beats}/${data.timeSig.unit}`;
@@ -71,8 +75,8 @@ function drawSystem(div: HTMLDivElement, { bars, data, showTime, repeatStart, re
     const treble = new Stave(x, TREBLE_Y, w);
     const bass = new Stave(x, BASS_Y, w);
     if (i === 0) {
-      treble.addClef('treble').addKeySignature(data.keySignature);
-      bass.addClef('bass').addKeySignature(data.keySignature);
+      treble.addClef('treble').addKeySignature(keySignature, cancelKeySignature);
+      bass.addClef('bass').addKeySignature(keySignature, cancelKeySignature);
       if (showTime) {
         treble.addTimeSignature(time);
         bass.addTimeSignature(time);
@@ -96,7 +100,7 @@ function drawSystem(div: HTMLDivElement, { bars, data, showTime, repeatStart, re
       voice.addTickables(notes);
       return voice;
     });
-    Accidental.applyAccidentals(voices, data.keySignature);
+    Accidental.applyAccidentals(voices, keySignature);
     const usable = w - (i === 0 ? prefix : 0) - 24;
     new Formatter().joinVoices([voices[0]]).joinVoices([voices[1]]).format(voices, Math.max(40, usable));
     voices[0].draw(ctx, treble);
@@ -190,6 +194,7 @@ export default function SheetMusic({ showNumerals }: { showNumerals: boolean }) 
             <h2>
               {section.name}
               {section.repeat > 1 && <span> &nbsp;x{section.repeat}</span>}
+              {section.keyChange && <span className="sheet-key-change"> &nbsp;· key of {section.keyLabel}</span>}
             </h2>
             {rows.map((bars, ri) => {
               const isFirstSystem = systemsSoFar === 0;
@@ -199,6 +204,8 @@ export default function SheetMusic({ showNumerals }: { showNumerals: boolean }) 
                   key={`${si}-${ri}`}
                   bars={bars}
                   data={data}
+                  keySignature={section.keySignature}
+                  cancelKeySignature={ri === 0 ? section.cancelKeySignature : undefined}
                   showTime={isFirstSystem}
                   repeatStart={section.repeat > 1 && ri === 0}
                   repeatEnd={section.repeat > 1 && ri === rows.length - 1}

@@ -839,6 +839,20 @@
   background: currentColor;
   transform: skewX(-28deg);
 }
+.mod-guitar .strip-stroke {
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1;
+}
+.mod-guitar .strip-stroke.up {
+  opacity: 0.7;
+}
+.mod-guitar .strip-stroke.partial {
+  font-size: 0.65rem;
+}
+.mod-guitar .strip-stroke.accent {
+  font-weight: 800;
+}
 .mod-guitar .strip-chord[aria-pressed='true'] {
   box-shadow: inset 0 0 0 1.5px var(--accent);
   border-color: var(--accent);

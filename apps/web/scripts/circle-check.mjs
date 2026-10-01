@@ -104,6 +104,15 @@ await circle().getByRole('button', { name: 'Use as key' }).click();
 await sleep(300);
 s = await song();
 check('Use as key on the circle changes the section’s key', s.sections[1].key?.tonic === 'D' && s.key.tonic === 'C', JSON.stringify(s.sections[1].key));
+// The sheet music draws that section in its own key and says where the key changes.
+await page.evaluate(() => window.__songwriting.store.getState().addChord({ root: 'D', quality: 'maj', seventh: 'maj7', flavor: 'triad', origin: 'diatonic', numeral: 'I' })); // into the chorus, which is active
+await sleep(200);
+await page.getByRole('button', { name: 'Save, load and export' }).click();
+await page.getByRole('button', { name: /Sheet music/i }).first().click();
+await page.waitForSelector('[data-testid="sheet-paper"]');
+const headings = await page.locator('.sheet-section h2').allTextContents();
+check('the sheet names the key where a section modulates', headings.some((h) => /key of D Major/.test(h)) && !/key of/.test(headings[0] ?? ''), headings.join(' | '));
+await page.getByRole('button', { name: 'Back to editor' }).click();
 await page.getByRole('button', { name: 'Back to the song’s key' }).click();
 await sleep(300);
 s = await song();

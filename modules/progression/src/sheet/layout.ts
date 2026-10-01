@@ -1,4 +1,4 @@
-import { chordName, chordTones, chroma, eventVoicing, flattenDetailed } from '@sw/core';
+import { chordName, chordTones, chroma, eventVoicing, flattenDetailed, keyLabel as labelOfKey, keyOfSection, sameKey } from '@sw/core';
 import type { Key, Mode, Song, TimeSig } from '@sw/core';
 
 /** Everything the sheet-music view needs, with all musical decisions made and no drawing. */
@@ -49,6 +49,13 @@ export interface SheetSection {
   name: string;
   repeat: number;
   bars: SheetBar[];
+  /** The section's own key signature (a VexFlow major-key name), which may differ from the song's. */
+  keySignature: string;
+  keyLabel: string;
+  /** The key signature the previous section ended in, when this one changes it; otherwise undefined. */
+  cancelKeySignature?: string;
+  /** This section's key differs from the one before it (a modulation), so the sheet says so. */
+  keyChange: boolean;
 }
 
 export interface SheetData {
@@ -181,9 +188,16 @@ export function buildSheet(song: Song, keyLabel: string): SheetData {
     if (!voicings.has(id)) voicings.set(id, voicing);
   }
 
+  // Each section is drawn in its own key; where the key changes from the section before, the sheet
+  // cancels the old signature and names the new key.
+  let previousKey: Key | null = null;
   const sections: SheetSection[] = song.arrangement.flatMap((sectionId, arrangementIndex) => {
     const section = song.sections.find((s) => s.id === sectionId);
     if (!section || section.events.length === 0) return [];
+    const key = keyOfSection(song, sectionId);
+    const keyChange = previousKey !== null && !sameKey(previousKey, key);
+    const cancel = keyChange ? keySignatureFor(previousKey!) : undefined;
+    previousKey = key;
     const events = section.events.map((event) => ({
       symbol: chordName(event.chord),
       numeral: event.chord.numeral,
@@ -191,7 +205,17 @@ export function buildSheet(song: Song, keyLabel: string): SheetData {
       spellings: chordTones(event.chord),
       beats: event.beats,
     }));
-    return [{ name: section.name, repeat: Math.max(1, section.repeat), bars: layoutBars(events, song.timeSig) }];
+    return [
+      {
+        name: section.name,
+        repeat: Math.max(1, section.repeat),
+        bars: layoutBars(events, song.timeSig),
+        keySignature: keySignatureFor(key),
+        keyLabel: labelOfKey(key),
+        ...(cancel && cancel !== keySignatureFor(key) ? { cancelKeySignature: cancel } : {}),
+        keyChange,
+      },
+    ];
   });
 
   return {
