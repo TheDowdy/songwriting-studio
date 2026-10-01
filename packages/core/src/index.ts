@@ -43,3 +43,6 @@ export * from './eventVoicing';
 export * from './variants';
 export * from './spaceKey';
 export * from './insertion';
+export * from './keys';
+export * from './chordQuality';
+export * from './circle';

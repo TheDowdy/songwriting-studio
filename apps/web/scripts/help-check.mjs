@@ -119,6 +119,16 @@ await page.getByRole('button', { name: 'Close flavor picker' }).click();
 await page.getByRole('button', { name: 'Piano / guitar' }).click();
 await audit('progression: chord detail');
 await page.getByRole('button', { name: 'Close chord detail' }).click();
+// The circle of fifths, with a chord picked (so its card and "Use as key" show), and a section key.
+await page.getByRole('button', { name: 'Circle of fifths' }).click();
+await page.locator('[aria-label="Circle of fifths"] .map-node').nth(8).click();
+await audit('progression: circle of fifths');
+await page.getByRole('button', { name: 'Suggestions' }).click();
+await page.getByRole('button', { name: '+ Chorus' }).click();
+await page.getByRole('group', { name: 'Key applies to' }).getByRole('button', { name: /^Only/ }).click();
+await page.locator('[aria-label="Key"] [aria-pressed]').filter({ hasText: /^G$/ }).first().click();
+await sleep(200);
+await audit('progression: a section with its own key');
 await page.getByRole('button', { name: /^Make variant/ }).first().click().catch(() => {});
 await sleep(200);
 await audit('progression: variant dialog');

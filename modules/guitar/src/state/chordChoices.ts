@@ -4,7 +4,7 @@
  * chord before, with everything before that as context), then the key's diatonic chords not
  * already suggested. Pure — no store, no React — so it's unit-tested without a DOM.
  */
-import { chordKey, diatonicChords, flattenSong, startChords, suggestNext, type ChordRef, type Song, type Suggestion } from '@sw/core';
+import { chordKey, diatonicChords, flattenSong, keyOfEvent, startChords, suggestNext, type ChordRef, type Song, type Suggestion } from '@sw/core';
 
 export interface ChordChoices {
   /** Ranked by how well each follows the chord before (empty when there is no chord before). */
@@ -28,9 +28,11 @@ export function chordChoices(song: Song, eventId: string | null, mode: 'add' | '
   const follow = followIndex >= 0 ? flat[followIndex]?.chord : undefined;
   const previous = followIndex > 0 ? flat.slice(0, followIndex).map((e) => e.chord) : [];
 
-  const suggested = follow ? suggestNext(follow, song.key, previous).slice(0, MAX_SUGGESTED) : [];
+  // Judged in the key of the section the chord will go into (a modulated section has its own).
+  const key = keyOfEvent(song, eventId);
+  const suggested = follow ? suggestNext(follow, key, previous).slice(0, MAX_SUGGESTED) : [];
   const taken = new Set(suggested.map((s) => chordKey(s.chord)));
-  const pool = follow ? diatonicChords(song.key) : startChords(song.key);
+  const pool = follow ? diatonicChords(key) : startChords(key);
   const diatonic = pool.filter((c) => !taken.has(chordKey(c)));
   return { suggested, diatonic };
 }

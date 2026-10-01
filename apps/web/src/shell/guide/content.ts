@@ -71,6 +71,7 @@ export const GUIDE: GuideSection[] = [
     blocks: [
       { h3: 'Choose a key' },
       { p: 'Use the key controls to set the key of the song. If your song already has chords, the app asks whether to **Transpose them** to the new key, or to **Keep chords, relabel numerals**.' },
+      { p: 'To change key partway through a song, add a section for the new part. Then, above the key controls, select **Only** and the section’s name, and choose the new key. That section shows its key next to its name. Select **Back to the song’s key** to undo it.' },
       { h3: 'Add chords from the map' },
       { p: 'The chord map shows the chord you’re building from at the center, with the chords that usually follow it around the edge. The colors show where each chord comes from: the key, another key, or a secondary chord.' },
       {
@@ -79,6 +80,9 @@ export const GUIDE: GuideSection[] = [
           'Select **+ Add** to add it to the end of the progression.',
         ],
       },
+      { p: 'To make a chord major or minor without changing the key, select it and then select **Make minor** or **Make major**. The chord keeps its root and type. For example, in C major, F becomes Fm, a chord borrowed from the parallel minor.' },
+      { h3: 'Use the circle of fifths' },
+      { p: 'Above the map, select **Circle of fifths** to see every chord at once instead of suggestions. Major chords are on the outside, their relative minor chords in the middle, and the diminished chord of each key inside. The shading shows each chord’s place in your key: the key chord is solid, the other chords of the key are tinted, chords borrowed from the parallel key are amber, and the rest are plain. You can pick any of them, so it’s a way to reach unusual or discordant chords. Select a chord to hear it, and then select **+ Add**. Select **Use as key** to shift the key of the section you’re editing to that chord. Select **Suggestions** to go back to the map.' },
       { h3: 'Edit a chord' },
       { p: 'Select a chord in the timeline, and then use the buttons below it:' },
       {

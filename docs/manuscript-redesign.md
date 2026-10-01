@@ -86,6 +86,27 @@ Raised by the owner on 2026-09-30.
    through the song store (`focusedEventId`), and the Progression module opens on it, so its chord map
    is centred on the added chord. Check: `npm run check:addchord`.
 
+## Features added after the design pass (2026-10-01)
+
+- **Circle of fifths map** (progression module): a **Suggestions | Circle of fifths** switch above the
+  chord map (choice remembered in `localStorage`, `sw:map-mode`). The circle shows 36 chords (major,
+  relative minor and the leading-tone diminished at 12 positions), shaded as key chord / in the key /
+  borrowed from the parallel key / outside the key. All are selectable. The content and roles are a
+  pure, tested function (`circleOfFifths` in `packages/core/src/circle.ts`); the component is
+  `CircleOfFifths.tsx`. "Use as key" shifts the key of the active section (or the song, if it has only
+  one section). Diminished sevenths come through the shared Flavor menu.
+- **Major <-> minor without changing the key**: `toggleMajorMinor` in `packages/core/src/chordQuality.ts`
+  (tested). A **Make minor / Make major** button is on the shared focus card (`ChordFocusCard.tsx`,
+  extracted from `NodeMap`, so both map modes have it) and in the timeline's chord toolbar.
+- **Key per section**: optional `Section.key` (schema stays v2, `migrateSong` sanitises it).
+  `keyOfSection` / `keyOfEvent` in `packages/core/src/keys.ts`; `changeSectionKey` in operations;
+  `changeKey` leaves modulated sections alone. The key picker has a **Key applies to: Whole song |
+  Only <section>** scope and **Back to the song's key**; the map, suggestions, flavour picker and the
+  guitar module's choices use the section's key. Known gap: the printed/sheet view still uses the
+  song's key signature for the whole song.
+- Browser check: `npm run check:circle` (22 checks). `check:help` now also visits the circle and a
+  section with its own key.
+
 ## Running it
 
 ```

@@ -53,6 +53,8 @@ export interface Section {
   name: string;
   events: ChordEvent[];
   repeat: number;
+  /** This section's own key, when it differs from the song's (a modulation). Absent = the song's key. */
+  key?: Key;
   variantOf?: string; // id of the section it was copied from
   variantLabel?: string; // e.g. "Up the neck (5+)"
 }
@@ -214,6 +216,7 @@ function sanitizeSection(raw: unknown): Section | null {
   const events = Array.isArray(r.events) ? r.events.map(sanitizeEvent).filter((e): e is ChordEvent => e !== null) : [];
   const repeat = isFiniteNumber(r.repeat) ? Math.max(1, Math.min(16, Math.round(r.repeat))) : 1;
   const section: Section = { id: r.id, name: isString(r.name) ? r.name : 'Section', events, repeat };
+  if (r.key !== undefined && r.key !== null && typeof r.key === 'object') section.key = sanitizeKey(r.key);
   if (isString(r.variantOf)) section.variantOf = r.variantOf;
   if (isString(r.variantLabel)) section.variantLabel = r.variantLabel;
   return section;

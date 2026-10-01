@@ -19,11 +19,15 @@
   animation: node-pop 0.35s ease-out both;
 }
 
-.map-node:focus-visible {
+/* Doubled up so it beats the shell's generic [role='button'] focus ring, which would draw a box
+   around the whole group; the shape itself (a circle, or a segment of the circle of fifths) gets
+   the heavier outline instead. */
+.map-svg .map-node:focus,
+.map-svg .map-node:focus-visible {
   outline: none;
 }
 
-.map-node:focus-visible circle.node-body {
+.map-svg .map-node:focus-visible .node-body {
   stroke-width: 4;
 }
 

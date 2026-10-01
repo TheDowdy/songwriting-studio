@@ -23,6 +23,9 @@ interface AppState {
   activeSectionId: string;
   /** The chord slot whose chord is the map's centre; new chords insert after it. */
   selectedEventId: string | null;
+  /** What the chord map shows: suggested next chords, or the whole circle of fifths. */
+  mapMode: MapMode;
+  setMapMode: (mode: MapMode) => void;
   /** The chord slot currently sounding during playback. */
   playingEventId: string | null;
   isPlaying: boolean;
@@ -71,6 +74,8 @@ interface AppState {
   reorderArrangement: (fromIndex: number, toIndex: number) => void;
 
   changeKey: (key: Key, how: KeyChangeMode) => void;
+  /** Change one section's key (a modulation); null returns it to the song's key. */
+  changeSectionKey: (sectionId: string, key: Key | null, how: KeyChangeMode) => void;
   setBpm: (bpm: number) => void;
   setTimeSig: (timeSig: TimeSig) => void;
   setInstrument: (instrument: InstrumentId) => void;
@@ -89,6 +94,16 @@ interface AppState {
   /** Returns the new song's id, so a caller that also owns the URL (SongPanel) can point it at
    *  the new song — see `Navigate` in `../App`. */
   newSong: () => string;
+}
+
+export type MapMode = 'suggest' | 'circle';
+const MAP_MODE_KEY = 'sw:map-mode';
+function loadMapMode(): MapMode {
+  try {
+    return localStorage.getItem(MAP_MODE_KEY) === 'circle' ? 'circle' : 'suggest';
+  } catch {
+    return 'suggest';
+  }
 }
 
 const clampVolume = (n: number) => Math.max(0, Math.min(1, n));
@@ -123,6 +138,15 @@ export const useStore = create<AppState>((set, get) => {
     song: initialSong,
     activeSectionId: initialSong.sections[0]!.id,
     selectedEventId: null,
+    mapMode: loadMapMode(),
+    setMapMode: (mapMode) => {
+      try {
+        localStorage.setItem(MAP_MODE_KEY, mapMode);
+      } catch {
+        // private mode: the choice just lasts for this visit
+      }
+      set({ mapMode });
+    },
     playingEventId: null,
     isPlaying: false,
     loop: true,
@@ -220,6 +244,7 @@ export const useStore = create<AppState>((set, get) => {
     reorderArrangement: (fromIndex, toIndex) => songStore.getState().reorderArrangement(fromIndex, toIndex),
 
     changeKey: (key, how) => songStore.getState().changeKey(key, how),
+    changeSectionKey: (sectionId, key, how) => songStore.getState().changeSectionKey(sectionId, key, how),
     setBpm: (bpm) => songStore.getState().setBpm(bpm),
     setTimeSig: (timeSig) => songStore.getState().setTimeSig(timeSig),
     setInstrument: (instrument) => songStore.getState().setInstrument(instrument),

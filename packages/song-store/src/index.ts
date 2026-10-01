@@ -146,6 +146,8 @@ export interface SongStoreState {
   reorderArrangement: (fromIndex: number, toIndex: number) => void;
 
   changeKey: (key: Key, how: ops.KeyChangeMode) => void;
+  /** Change one section's key (a modulation); null returns it to the song's key. */
+  changeSectionKey: (sectionId: string, key: Key | null, how: ops.KeyChangeMode) => void;
   setBpm: (bpm: number) => void;
   setTimeSig: (timeSig: Song['timeSig']) => void;
   setInstrument: (instrument: Song['instrument']) => void;
@@ -262,6 +264,7 @@ export const songStore = createStore<SongStoreState>((set, get) => ({
   reorderArrangement: (fromIndex, toIndex) => withCurrent(set, get, (song) => ops.reorderArrangement(song, fromIndex, toIndex)),
 
   changeKey: (key, how) => withCurrent(set, get, (song) => ops.changeKey(song, key, how)),
+  changeSectionKey: (sectionId, key, how) => withCurrent(set, get, (song) => ops.changeSectionKey(song, sectionId, key, how)),
   setBpm: (bpm) => withCurrent(set, get, (song) => ops.setBpm(song, bpm)),
   setTimeSig: (timeSig) => withCurrent(set, get, (song) => ops.setTimeSig(song, timeSig)),
   setInstrument: (instrument) => withCurrent(set, get, (song) => ops.setInstrument(song, instrument)),

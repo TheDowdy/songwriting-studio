@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { chordKey, chordName, defaultGuitarSetup, keyLabel } from '@sw/core';
+import { chordKey, chordName, keyLabel } from '@sw/core';
 import type { ChordRef, GuitarSetup, Key, Origin, Suggestion } from '@sw/core';
-import ChordDetail from './ChordDetail';
-import FlavorPicker from './FlavorPicker';
+import ChordFocusCard from './ChordFocusCard';
 
 const SIZE = 400;
 const C = SIZE / 2;
@@ -72,19 +71,10 @@ function NodeLabel({ chord, r }: { chord: ChordRef; r: number }) {
 
 export default function NodeMap({ musicKey, center, suggestions, startRing, onPreview, onAdd, guitar, replacing }: Props) {
   const [focusId, setFocusId] = useState<string | null>(null);
-  const [flavorOpen, setFlavorOpen] = useState(false);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [pendingChord, setPendingChord] = useState<ChordRef | null>(null);
   const centerId = center ? chordKey(center) : `start:${musicKey.tonic}:${musicKey.mode}`;
 
   // A new centre (or key) means a new set of nodes: clear the focused one.
   useEffect(() => setFocusId(null), [centerId]);
-  // A new focus starts fresh: any flavor tweak was for the previous node.
-  useEffect(() => {
-    setFlavorOpen(false);
-    setDetailOpen(false);
-    setPendingChord(null);
-  }, [focusId]);
 
   const nodes: NodeSpec[] = useMemo(() => {
     if (center) {
@@ -268,61 +258,16 @@ export default function NodeMap({ musicKey, center, suggestions, startRing, onPr
 
       <div className="mx-auto min-h-[4.5rem] max-w-[520px] space-y-2 px-1" aria-live="polite">
         {focused ? (
-          <>
-            <div className="flex items-center gap-3 border-y border-fg py-3">
-              <div className="min-w-0 flex-1">
-                <p className="text-xl font-medium">
-                  {chordName(pendingChord ?? focused.chord)}{' '}
-                  <span className="font-normal text-muted">({(pendingChord ?? focused.chord).numeral})</span>
-                </p>
-                <p className="text-base italic text-muted">{focused.reason}</p>
-              </div>
-              <button
-                onClick={() => {
-                  setDetailOpen(false);
-                  setFlavorOpen((v) => !v);
-                }}
-                aria-pressed={flavorOpen}
-                aria-label="Change flavor or inversion"
-                className={`shrink-0 grid size-10 place-items-center rounded-lg border text-base ${flavorOpen ? 'border-accent text-accent' : 'border-line text-muted hover:bg-surface-2'}`}
-              >
-                ⚙
-              </button>
-              <button
-                onClick={() => {
-                  setFlavorOpen(false);
-                  setDetailOpen((v) => !v);
-                }}
-                aria-pressed={detailOpen}
-                aria-label="Expand: piano keyboard or guitar diagram"
-                className={`shrink-0 grid size-10 place-items-center rounded-lg border text-base ${detailOpen ? 'border-accent text-accent' : 'border-line text-muted hover:bg-surface-2'}`}
-              >
-                ⛶
-              </button>
-              <button
-                onClick={() => onAdd(pendingChord ?? focused.chord)}
-                className="shrink-0 rounded-full bg-accent px-5 py-2.5 text-base font-medium italic text-accent-fg"
-              >
-                {replacing ? 'Replace' : '+ Add'}
-              </button>
-            </div>
-            {flavorOpen && (
-              <FlavorPicker
-                chord={pendingChord ?? focused.chord}
-                musicKey={musicKey}
-                onPreview={onPreview}
-                onChoose={setPendingChord}
-                onClose={() => setFlavorOpen(false)}
-              />
-            )}
-            {detailOpen && (
-              <ChordDetail
-                chord={pendingChord ?? focused.chord}
-                guitar={guitar ?? defaultGuitarSetup()}
-                onClose={() => setDetailOpen(false)}
-              />
-            )}
-          </>
+          <ChordFocusCard
+            key={focusId}
+            chord={focused.chord}
+            reason={focused.reason}
+            musicKey={musicKey}
+            guitar={guitar}
+            replacing={replacing}
+            onPreview={onPreview}
+            onAdd={onAdd}
+          />
         ) : (
           <p className="pt-2 text-center text-base italic text-muted">
             {center

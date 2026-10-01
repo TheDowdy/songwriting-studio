@@ -17,7 +17,8 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { chordName, chroma, voicingStatus } from '@sw/core';
+import { canToggleMajorMinor, chordName, chroma, keyLabel, keyOfSection, toggleMajorMinor, voicingStatus } from '@sw/core';
+import type { Key } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { ChordDiagram, VariantDialog } from '@sw/ui';
 import type { Navigate } from '../App';
@@ -230,6 +231,7 @@ function ChordToolbar({
   flavorOpen,
   detailOpen,
   replacing,
+  musicKey,
   onFlavor,
   onDetail,
   onExplore,
@@ -238,6 +240,8 @@ function ChordToolbar({
   flavorOpen: boolean;
   detailOpen: boolean;
   replacing: boolean;
+  /** The key of this chord's section, for switching it between major and minor. */
+  musicKey: Key;
   onFlavor: () => void;
   onDetail: () => void;
   /** Opens the guitar module with this chord selected (§7 Phase 3 item 1). */
@@ -248,6 +252,7 @@ function ChordToolbar({
   const setEventBeats = useStore((s) => s.setEventBeats);
   const startReplace = useStore((s) => s.startReplace);
   const cancelReplace = useStore((s) => s.cancelReplace);
+  const setEventChord = useStore((s) => s.setEventChord);
   const btn = 'rounded-full border border-fg px-3.5 py-1.5 text-base italic hover:bg-surface-2 aria-pressed:border-accent aria-pressed:text-accent';
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2" aria-label={`Actions for ${chordName(event.chord)}`}>
@@ -264,6 +269,13 @@ function ChordToolbar({
           className="w-16 rounded-none border-0 border-b border-fg bg-transparent px-2 py-1.5 text-base text-fg"
         />
       </label>
+      <button
+        onClick={() => setEventChord(event.id, toggleMajorMinor(event.chord, musicKey))}
+        disabled={!canToggleMajorMinor(event.chord)}
+        className={`${btn} disabled:opacity-40`}
+      >
+        {event.chord.quality === 'min' ? 'Make major' : 'Make minor'}
+      </button>
       <button onClick={onFlavor} aria-pressed={flavorOpen} className={btn}>Flavor</button>
       <button onClick={onDetail} aria-pressed={detailOpen} className={btn}>Piano / guitar</button>
       <button onClick={onExplore} className={btn}>Explore guitar voicings</button>
@@ -355,6 +367,11 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
             aria-label="Section name"
             className="w-44 rounded-none border-0 border-b border-transparent bg-transparent px-1 text-2xl font-medium italic hover:border-line focus:border-fg"
           />
+          {section.key && (
+            <span className="font-mono text-xs text-muted" title="This section has its own key">
+              Key: {keyLabel(section.key)}
+            </span>
+          )}
           <div className="flex items-center gap-1 text-sm text-muted">
             <button
               onClick={() => setSectionRepeat(section.id, section.repeat - 1)}
@@ -428,6 +445,7 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
           flavorOpen={toolbarEvent.id === flavorId}
           detailOpen={detailOpen}
           replacing={toolbarEvent.id === replaceTargetId}
+          musicKey={keyOfSection(song, section.id)}
           onFlavor={() => {
             setFlavorId(flavorId === toolbarEvent.id ? null : toolbarEvent.id);
           }}
@@ -442,7 +460,7 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
         <div className="mt-2">
           <FlavorPicker
             chord={flavorEvent.chord}
-            musicKey={song.key}
+            musicKey={keyOfSection(song, section.id)}
             onPreview={(c) => void previewChordInSong(c)}
             onChoose={(c) => useStore.getState().setEventChord(flavorEvent.id, c)}
             onClose={() => setFlavorId(null)}

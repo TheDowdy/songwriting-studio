@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { chordName, chroma, findEvent, inversionCount, inversionOf, toChordSpec, type ChordRef } from '@sw/core';
+import { chordName, chroma, findEvent, inversionCount, inversionOf, keyOfEvent, toChordSpec, type ChordRef } from '@sw/core';
 import { DEFAULT_CHORD, type ChordSpec } from '@sw/core/fret/chords';
 import { chromaticName, formatNoteName } from '@sw/core/fret/notes';
 import { useSong } from '@sw/song-store/react';
@@ -32,12 +32,12 @@ const ORIGIN_COLOR = {
 };
 
 /** "Build any chord…": a root plus the full rich builder, for a chord no suggestion covers. */
-function BuildAnyChord({ onUse }: { onUse: (chord: ChordRef) => void }) {
+function BuildAnyChord({ onUse, eventId }: { onUse: (chord: ChordRef) => void; eventId: string | null }) {
   const pref = useStore((s) => s.accidentalPref);
-  const tonic = useSong((s) => s.currentSong()?.key.tonic);
+  const tonic = useSong((s) => { const song = s.currentSong(); return song ? keyOfEvent(song, eventId).tonic : undefined; });
   // Start on the key's tonic: the likeliest root, and one tap from any other.
   const [spec, setSpec] = useState<ChordSpec>(() => ({ ...DEFAULT_CHORD, rootPc: tonic ? chroma(tonic) : DEFAULT_CHORD.rootPc }));
-  const chord = chordFromBuilder(spec);
+  const chord = chordFromBuilder(spec, eventId);
   return (
     <div className="build-any" data-testid="build-any">
       <label className="field">
@@ -100,7 +100,7 @@ function ChordChoicePanel({
           Build any chord…
         </button>
       </div>
-      {building && <BuildAnyChord onUse={onChoose} />}
+      {building && <BuildAnyChord onUse={onChoose} eventId={eventId} />}
     </div>
   );
 }

@@ -253,16 +253,40 @@ export type KeyChangeMode = 'transpose' | 'relabel';
  *  key. A transpose clears guitar attachments on the moved events — the old shape no longer fits
  *  the new notes. */
 export function changeKey(song: Song, key: Key, how: KeyChangeMode): Song {
-  const shift = how === 'transpose' ? Interval.distance(song.key.tonic, key.tonic) : null;
-  const sections = song.sections.map((section) => ({
-    ...section,
-    events: section.events.map((e) => ({
-      ...e,
-      chord: shift ? transposeChord(e.chord, shift, key) : relabel(e.chord, key),
-      attachments: shift ? undefined : e.attachments,
-    })),
-  }));
+  // A section with its own key is a deliberate modulation: it keeps its key and its chords, and only
+  // the sections that follow the song's key move with it.
+  const sections = song.sections.map((section) =>
+    section.key ? section : { ...section, events: rekeyEvents(section.events, song.key, key, how) },
+  );
   return touch({ ...song, key, sections });
+}
+
+/** Moves a section's chords from one key to another (see `changeKey` for the two modes). */
+function rekeyEvents(events: ChordEvent[], from: Key, to: Key, how: KeyChangeMode): ChordEvent[] {
+  const shift = how === 'transpose' ? Interval.distance(from.tonic, to.tonic) : null;
+  return events.map((e) => ({
+    ...e,
+    chord: shift ? transposeChord(e.chord, shift, to) : relabel(e.chord, to),
+    attachments: shift ? undefined : e.attachments,
+  }));
+}
+
+/**
+ * Change one section's key (a modulation), leaving every other section alone. `key` null returns the
+ * section to the song's key; choosing the song's own key does the same. The modes are those of
+ * `changeKey`: 'transpose' moves the section's chords by the same interval (numerals stay the same),
+ * 'relabel' keeps the notes and recomputes numerals for the new key.
+ */
+export function changeSectionKey(song: Song, sectionId: string, key: Key | null, how: KeyChangeMode): Song {
+  const section = song.sections.find((s) => s.id === sectionId);
+  if (!section) return song;
+  const from = section.key ?? song.key;
+  const to = key ?? song.key;
+  const inherits = !key || (key.tonic === song.key.tonic && key.mode === song.key.mode);
+  const { key: _old, ...rest } = section;
+  void _old;
+  const events = from.tonic === to.tonic && from.mode === to.mode ? section.events : rekeyEvents(section.events, from, to, how);
+  return withSection(song, sectionId, inherits ? { ...rest, events } : { ...rest, events, key: to });
 }
 
 export function setBpm(song: Song, bpm: number): Song {

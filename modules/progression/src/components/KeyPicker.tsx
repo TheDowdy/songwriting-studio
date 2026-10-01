@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { keyNote, MODES, MODE_INFO, TONIC_OPTIONS, chroma, fmt, flattenSong } from '@sw/core';
+import { useEffect, useState } from 'react';
+import { keyNote, keyOfSection, MODES, MODE_INFO, TONIC_OPTIONS, chroma, fmt, flattenSong } from '@sw/core';
 import type { Key, Mode } from '@sw/core';
 import { useStore } from '../state/store';
 
@@ -11,19 +11,31 @@ const optionsFor = (tonic: string) => TONIC_OPTIONS.find((o) => o.some((n) => ch
 export default function KeyPicker() {
   const song = useStore((s) => s.song);
   const changeKey = useStore((s) => s.changeKey);
+  const changeSectionKey = useStore((s) => s.changeSectionKey);
+  const activeSectionId = useStore((s) => s.activeSectionId);
   const [pending, setPending] = useState<Key | null>(null);
 
-  const hasChords = flattenSong(song).length > 0;
-  const key = song.key;
+  // The key can apply to the whole song, or only to the section being edited (a key change partway
+  // through). The section's own key, when it has one, is what the picker shows in that scope.
+  const section = song.sections.find((sec) => sec.id === activeSectionId);
+  const hasOwnKey = !!section?.key;
+  const [scope, setScope] = useState<'song' | 'section'>(hasOwnKey ? 'section' : 'song');
+  useEffect(() => setScope(hasOwnKey ? 'section' : 'song'), [activeSectionId, hasOwnKey]);
+  const scoped = scope === 'section' && !!section;
+
+  const hasChords = scoped ? section!.events.length > 0 : flattenSong(song).length > 0;
+  const key = scoped ? keyOfSection(song, section!.id) : song.key;
   const spellings = optionsFor(key.tonic);
 
   const request = (next: Key) => {
     if (next.tonic === key.tonic && next.mode === key.mode) return;
     if (hasChords) setPending(next);
-    else changeKey(next, 'relabel');
+    else apply(next, 'relabel');
   };
+  const apply = (next: Key, how: 'transpose' | 'relabel') =>
+    scoped ? changeSectionKey(section!.id, next, how) : changeKey(next, how);
   const confirm = (how: 'transpose' | 'relabel') => {
-    if (pending) changeKey(pending, how);
+    if (pending) apply(pending, how);
     setPending(null);
   };
 
@@ -31,6 +43,32 @@ export default function KeyPicker() {
 
   return (
     <section aria-label="Key" className="space-y-3">
+      {(song.sections.length > 1 || hasOwnKey) && section && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1" role="group" aria-label="Key applies to">
+          <span className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Key applies to</span>
+          {([['song', 'Whole song'], ['section', `Only ${section.name}`]] as const).map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() => setScope(value)}
+              aria-pressed={scope === value}
+              className="px-1 text-base italic text-muted aria-pressed:text-fg aria-pressed:shadow-[inset_0_-1.5px_0_var(--accent)]"
+            >
+              {label}
+            </button>
+          ))}
+          {hasOwnKey && (
+            <button
+              onClick={() => {
+                changeSectionKey(section.id, null, 'relabel');
+                setScope('song');
+              }}
+              className="px-1 text-base italic text-muted underline hover:text-fg"
+            >
+              Back to the song’s key
+            </button>
+          )}
+        </div>
+      )}
       <div>
         <div className="mb-1.5 flex items-center justify-between gap-2">
           <h2 className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Root note</h2>

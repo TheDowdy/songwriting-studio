@@ -1,4 +1,4 @@
-import { findEvent, toChordSpec, withInversion, type GuitarVoicing } from '@sw/core';
+import { findEvent, keyOfEvent, toChordSpec, withInversion, type GuitarVoicing } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { nearestVoicing, shapeNotes, shiftCapo } from '@sw/core/fret/voicings';
 import { songStore } from '@sw/song-store';
@@ -101,7 +101,7 @@ export function commitShownShape(): void {
   const bassPc = ((lowest.midi % 12) + 12) % 12;
   const inversion = inversionForBassPc(progressionChord, bassPc);
   if (inversion === null) return;
-  const updated = withInversion(progressionChord, inversion, song.key);
+  const updated = withInversion(progressionChord, inversion, keyOfEvent(song, progressionEventId));
   if (updated.bass === progressionChord.bass) return; // already matches — nothing to change
   songStore.getState().setEventChord(progressionEventId, updated);
   state.setProgressionFocus(progressionEventId, updated);

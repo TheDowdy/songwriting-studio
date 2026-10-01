@@ -9,6 +9,8 @@ import {
   flattenSong,
   fromChordSpec,
   insertionPoint,
+  keyOfEvent,
+  keyOfSection,
   withChordSpec,
   withInversion,
   type ChordRef,
@@ -67,7 +69,7 @@ export function setChordFlavour(eventId: string, chord: ChordRef, spec: ChordSpe
   const song = currentSong();
   if (!song) return;
   recordUndo('Flavour');
-  songStore.getState().setEventChord(eventId, withChordSpec(chord, spec, song.key));
+  songStore.getState().setEventChord(eventId, withChordSpec(chord, spec, keyOfEvent(song, eventId)));
   selectBestVoicing({ play: true });
 }
 
@@ -75,14 +77,14 @@ export function setChordInversion(eventId: string, chord: ChordRef, inversion: n
   const song = currentSong();
   if (!song) return;
   recordUndo('Inversion');
-  songStore.getState().setEventChord(eventId, withInversion(chord, inversion, song.key));
+  songStore.getState().setEventChord(eventId, withInversion(chord, inversion, keyOfEvent(song, eventId)));
   selectBestVoicing({ play: true });
 }
 
 /** "Build any chord…": a chord from the builder's root + spec, spelled and labelled for the key. */
-export function chordFromBuilder(spec: ChordSpec): ChordRef | null {
+export function chordFromBuilder(spec: ChordSpec, eventId?: string | null): ChordRef | null {
   const song = currentSong();
-  return song ? fromChordSpec(spec, song.key) : null;
+  return song ? fromChordSpec(spec, keyOfEvent(song, eventId)) : null;
 }
 
 export function duplicateChord(eventId: string): void {
@@ -153,7 +155,7 @@ export function addChordToProgression(spec: ChordSpec, shape: (number | null)[] 
   if (!song) return false;
   const point = insertionPoint(song, useStore.getState().progressionEventId);
   if (!point) return false;
-  const chord = fromChordSpec(spec, song.key);
+  const chord = fromChordSpec(spec, keyOfSection(song, point.sectionId));
   recordUndo('Add chord to progression');
   const id = songStore.getState().addChord(point.sectionId, point.afterEventId, chord);
   if (!id) return false;
