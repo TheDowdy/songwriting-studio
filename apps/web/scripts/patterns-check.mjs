@@ -40,7 +40,6 @@ const [a, b] = s.sections[0].events;
 check('start with three chords', s.sections[0].events.length === 3);
 
 // ---------------------------------------------------------------- make a pattern
-await page.getByRole('button', { name: 'More playback settings' }).click();
 await page.getByRole('button', { name: 'Strum patterns' }).click();
 await page.getByLabel('New pattern from').selectOption('Folk (D, DU, UDU)');
 await sleep(300);

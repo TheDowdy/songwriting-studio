@@ -96,7 +96,6 @@ for (const theme of ['light', 'dark']) {
   await axe(`${theme} theme, Progression module (circle of fifths)`);
 }
 await page.getByRole('button', { name: 'Suggestions' }).click();
-await page.getByRole('button', { name: 'More playback settings' }).click();
 await page.getByRole('button', { name: 'Strum patterns' }).click();
 await page.getByLabel('New pattern from').selectOption('Folk (D, DU, UDU)');
 await page.getByRole('button', { name: /^Step 2 of 8/ }).click();

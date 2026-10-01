@@ -100,7 +100,7 @@ export const GUIDE: GuideSection[] = [
       { p: 'A song is made of sections, such as a verse and a chorus. Add a section with the buttons below the timeline, for example **+ Verse**. In the arrangement, add sections in the order you want them played. A section can appear more than once.' },
       { p: 'Use **–** and **+** next to a section’s name to set how many times it repeats. **Duplicate section** copies a section, and **Clear** removes its chords.' },
       { h3: 'Build your own strum patterns' },
-      { p: 'A strum pattern is a rhythm of down and up strums. To make one, select **More ▾** next to the tempo, and then select **Strum patterns**. In **New pattern from**, choose **Blank** or a common rhythm to start from.' },
+      { p: 'A strum pattern is a rhythm of down and up strums. To make one, select **Strum patterns** next to **More ▾** in the playback bar. In **New pattern from**, choose **Blank** or a common rhythm to start from.' },
       {
         ul: [
           'Each box is one step. Select a step to change it: first a down strum (↓), then an up strum (↑), then a rest (·).',

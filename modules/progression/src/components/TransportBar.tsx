@@ -146,6 +146,19 @@ export default function TransportBar() {
           <TapTempo />
 
           <button
+            onClick={() => {
+              setPatternsOpen(!patternsOpen);
+              // Below the desktop width this bar is pinned to the bottom of the screen, and left
+              // open it would cover the pattern builder it just opened.
+              setExpanded(false);
+            }}
+            aria-pressed={patternsOpen}
+            className={`h-10 rounded-full border px-4 text-base italic ${patternsOpen ? 'border-accent text-accent' : 'border-fg text-muted hover:bg-surface-2'}`}
+          >
+            Strum patterns
+          </button>
+
+          <button
             onClick={() => setExpanded((v) => !v)}
             aria-pressed={expanded}
             aria-label="More playback settings"
@@ -220,14 +233,6 @@ export default function TransportBar() {
                 ))}
               </select>
             </div>
-
-            <button
-              onClick={() => setPatternsOpen(!patternsOpen)}
-              aria-pressed={patternsOpen}
-              className={`h-10 rounded-full border px-4 text-base italic ${patternsOpen ? 'border-accent text-accent' : 'border-fg text-muted hover:bg-surface-2'}`}
-            >
-              Strum patterns
-            </button>
 
             <button
               onClick={() => setMetronome(!metronome)}

@@ -130,14 +130,12 @@ await page.locator('[aria-label="Key"] [aria-pressed]').filter({ hasText: /^G$/ 
 await sleep(200);
 await audit('progression: a section with its own key');
 // The strum pattern builder, with a pattern made and a chord selected.
-await page.getByRole('button', { name: 'More playback settings' }).click();
 await page.getByRole('button', { name: 'Strum patterns' }).click();
 await page.getByLabel('New pattern from').selectOption('Folk (D, DU, UDU)');
 await page.getByRole('button', { name: /^Step 2 of 8/ }).click();
 await sleep(200);
 await audit('progression: strum pattern builder');
 await page.getByRole('button', { name: 'Strum patterns' }).click();
-await page.getByRole('button', { name: 'More playback settings' }).click();
 await page.getByRole('button', { name: /^Make variant/ }).first().click().catch(() => {});
 await sleep(200);
 await audit('progression: variant dialog');
