@@ -225,9 +225,7 @@ check('patterns and where they are used survive a reload', s.schemaVersion === 3
 await page.getByRole('tab', { name: 'Guitar' }).click();
 await page.waitForSelector('.fretboard-svg');
 await sleep(300);
-await page.getByRole('button', { name: 'Strum patterns' }).click();
-await page.waitForSelector('[aria-label="Strum patterns"]');
-check('the guitar module has the same builder', (await page.getByLabel('Pattern to edit').count()) === 1);
+check('the guitar module has no separate pattern builder or Strum patterns button', (await page.getByRole('button', { name: 'Strum patterns' }).count()) === 0 && (await page.getByLabel('Pattern name').count()) === 0);
 const stripArrows = await page.locator('.strip-chord').first().locator('.strip-stroke').count();
 const stripSlashes = await page.locator('.strip-chord').first().locator('.strip-slash').count();
 check('a chord with a custom pattern shows its strokes as arrows in the guitar strip', stripArrows === s.patterns[1].steps.filter(Boolean).length && stripSlashes === 0, `${stripArrows} arrows, ${stripSlashes} slashes`);
@@ -246,20 +244,16 @@ await ownPattern().selectOption(`custom:${pid}`);
 await sleep(250);
 s = await song();
 check('the chord toolbar in the guitar module sets a chord’s own pattern', s.sections[0].events[1].pattern === `custom:${pid}`);
-await page.evaluate(() => {
-  window.__plays = [];
-  window.__fluidfrets.store.subscribe((st, prev) => st.progressionPlaying !== prev.progressionPlaying && window.__plays.push(st.progressionPlaying));
-});
-await page.getByRole('button', { name: '▶ Preview' }).click();
-await sleep(400);
-check('Preview plays the pattern on the focused chord', (await page.evaluate(() => window.__plays)).includes(true));
-
-// ---------------------------------------------------------------- delete
-await page.getByLabel('Pattern to edit').selectOption(pid);
+// ---------------------------------------------------------------- delete (from the progression's editor)
+await page.getByRole('tab', { name: 'Progression' }).click();
+await page.waitForSelector('.map-node');
+await lane(1).click();
+await blockSelect().selectOption(`custom:${pid}`);
+await page.getByRole('button', { name: 'Edit pattern' }).click();
 await page.getByRole('button', { name: 'Delete pattern' }).click();
 await sleep(300);
 s = await song();
-check('deleting a pattern puts everything that used it back a level', s.patterns.length === 1 && s.pattern === 'block' && !s.sections[0].events[1].pattern, JSON.stringify({ pattern: s.pattern, own: s.sections[0].events[1].pattern }));
+check('deleting a pattern puts everything that used it back to the song default', s.patterns.length === 1 && s.pattern === 'block' && !s.sections[0].events[1].pattern, JSON.stringify({ pattern: s.pattern, own: s.sections[0].events[1].pattern }));
 
 check('no console or page errors', errors.length === 0, errors.join(' | '));
 await browser.close();

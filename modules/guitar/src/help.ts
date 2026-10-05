@@ -81,7 +81,6 @@ export const GUITAR_HELP: HelpEntry[] = [
   g('◀ Prev', 'Go to the previous voicing.'),
   g('Next ▶', 'Go to the next voicing.'),
   g('Best voicing', 'Go back to the voicing the app recommends for this chord.'),
-  g('Strum patterns', 'Show or hide the strum pattern builder, where you make your own up and down strum rhythms and choose where to use them.'),
   g('Add to progression', 'Add this chord to your song, after the chord in focus, with this shape as its voicing. Then switch to Progression to see what could come next.'),
   g('Use this voicing', 'Save this voicing on the chord in your song, so it plays this exact shape.'),
   g('Remove voicing', 'Forget the saved voicing. The chord goes back to the recommended shape.'),

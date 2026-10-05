@@ -13,6 +13,5 @@ export { type HelpEntry } from './help';
 export { UI_HELP } from './uiHelp';
 export { useSpaceBarToggle } from './useSpaceBarToggle';
 export { PatternBuilder } from './PatternBuilder';
-export { PatternPanel } from './PatternPanel';
 export { PatternEditor } from './PatternEditor';
 export { PatternSelect } from './PatternSelect';

@@ -1281,8 +1281,3 @@
 .mod-guitar .strip-variant-link:hover {
   color: var(--fg);
 }
-
-/* The strum pattern builder under the strip (its own styles come from @sw/ui). */
-.mod-guitar .strum-patterns {
-  padding: 0 1rem 0.75rem;
-}

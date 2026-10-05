@@ -1,5 +1,5 @@
 /*
- * The strum pattern builder (PatternBuilder, PatternPanel, PatternSelect), styled once for both
+ * The strum pattern builder (PatternBuilder, PatternEditor, PatternSelect), styled once for both
  * modules from the shared tokens. Class names start with pb-.
  */
 .pb {
@@ -140,16 +140,6 @@
   outline-offset: 2px;
 }
 
-.pb-panel {
-  display: grid;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-block: 1px solid var(--fg);
-}
-.pb-panel h3 {
-  margin: 0;
-  font: italic 500 1.375rem var(--font-sans);
-}
 .pb-seg {
   display: inline-flex;
   gap: 0.9rem;

@@ -153,7 +153,7 @@ export const GUIDE: GuideSection[] = [
       { h3: 'Edit chords from the guitar tab' },
       { p: 'With a chord selected, the toolbar above the neck lets you change it without leaving the Guitar tab: **Flavour**, **Inversion**, **Replace**, **Beats**, **Duplicate**, **Remove**, and **+ Add after**.' },
       { h3: 'Strum patterns on guitar' },
-      { p: 'Select **Strum patterns** in the strip to build and place your own strum patterns, the same way as in the Progression tab. With a pattern, **▶ Play song** strums each chord as the pattern says: down strums go from the low strings to the high ones, up strums from high to low, and partial strums use only the low or high strings. A chord with no custom pattern is strummed once at the start of each bar. The **Strum pattern** list in the toolbar above the neck sets the pattern for the selected chord.' },
+      { p: 'Build and place your own strum patterns in the Progression tab’s pattern lane. With a pattern, **▶ Play song** strums each chord as the pattern says: down strums go from the low strings to the high ones, up strums from high to low, and partial strums use only the low or high strings. A chord with no custom pattern is strummed once at the start of each bar. The **Strum pattern** list in the toolbar above the neck sets the pattern for the selected chord, or leaves it on the song default.' },
       { h3: 'Play the song' },
       { p: 'Select **▶ Play song** to hear every chord, or **▶ Play section** to hear the section of the selected chord. The neck and strip follow the chord that’s playing. On a computer, press the space bar to start or stop playback. Select **↶ Undo** to reverse your last change.' },
       { h3: 'Change the tuning or capo' },

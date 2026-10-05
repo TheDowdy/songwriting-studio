@@ -151,12 +151,6 @@ await page.locator('.strip-chord').first().click();
 await page.getByRole('button', { name: 'Use this voicing', exact: true }).click();
 await page.locator('.strip-chord').first().click();
 await audit('guitar: a chord with a committed voicing selected');
-await page.getByRole('button', { name: 'Strum patterns' }).click();
-await page.getByLabel('New pattern from').selectOption('Down, up');
-await page.getByRole('button', { name: /^Step 1 of 8/ }).click();
-await sleep(200);
-await audit('guitar: strum pattern builder');
-await page.getByRole('button', { name: 'Strum patterns' }).click();
 for (const b of ['Flavour', 'Inversion', 'Replace', '+ Add after']) {
   await page.getByRole('button', { name: b, exact: true }).click();
   await audit(`guitar: ${b} panel`);

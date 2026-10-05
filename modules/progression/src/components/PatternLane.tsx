@@ -176,7 +176,7 @@ export function PatternLaneCell({
           aria-valuenow={blockChords}
           onPointerDown={onHandleDown}
           onKeyDown={onHandleKey}
-          className="absolute right-0 top-0 flex h-full w-6 cursor-ew-resize touch-none items-center justify-center text-[11px] hover:bg-surface-2"
+          className="absolute right-0 top-0 flex h-full w-6 cursor-ew-resize touch-none items-center justify-center text-[14px] hover:bg-surface-2"
         >
           <span aria-hidden="true">◆</span>
         </div>

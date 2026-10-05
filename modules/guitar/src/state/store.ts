@@ -102,8 +102,6 @@ export interface AppState {
   pendingGuitarChange: { kind: 'tuning'; tuning: Tuning; count: number } | { kind: 'capo'; capo: number; count: number } | null;
   /** The re-voice panel (Phase 7 item 2) is open. Not persisted. */
   revoiceOpen: boolean;
-  /** The strum pattern builder is open under the strip. */
-  patternsOpen: boolean;
   accidentalPref: AccidentalPref;
   leftHanded: boolean;
   fretSpacing: FretSpacing;
@@ -190,7 +188,6 @@ export interface AppState {
   setGuitarUndo: (undo: AppState['guitarUndo']) => void;
   setPendingGuitarChange: (pending: AppState['pendingGuitarChange']) => void;
   setRevoiceOpen: (open: boolean) => void;
-  setPatternsOpen: (open: boolean) => void;
   setAccidentalPref: (pref: AccidentalPref) => void;
   setLeftHanded: (leftHanded: boolean) => void;
   setFretSpacing: (spacing: FretSpacing) => void;
@@ -283,7 +280,6 @@ export const useStore = create<AppState>()(
       guitarUndo: null,
       pendingGuitarChange: null,
       revoiceOpen: false,
-      patternsOpen: false,
       accidentalPref: 'sharp',
       leftHanded: false,
       fretSpacing: 'auto',
@@ -339,7 +335,6 @@ export const useStore = create<AppState>()(
       setGuitarUndo: (guitarUndo) => set({ guitarUndo }),
       setPendingGuitarChange: (pendingGuitarChange) => set({ pendingGuitarChange }),
       setRevoiceOpen: (revoiceOpen) => set({ revoiceOpen }),
-      setPatternsOpen: (patternsOpen) => set({ patternsOpen }),
       setAccidentalPref: (accidentalPref) => set({ accidentalPref }),
       setLeftHanded: (leftHanded) => set({ leftHanded }),
       setFretSpacing: (fretSpacing) => set({ fretSpacing }),
