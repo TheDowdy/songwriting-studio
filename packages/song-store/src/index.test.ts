@@ -35,7 +35,7 @@ describe('song-store: first run', () => {
     const { songStore } = await import('./index');
     const song = songStore.getState().currentSong();
     expect(song).not.toBeNull();
-    expect(song!.schemaVersion).toBe(2);
+    expect(song!.schemaVersion).toBe(3);
     expect(song!.sections).toHaveLength(1);
   });
 
@@ -58,14 +58,14 @@ describe('song-store: first run', () => {
     const { songStore } = await import('./index');
     const state = songStore.getState();
     expect(state.currentSongId).toBe('legacy-1');
-    expect(state.library['legacy-1']?.schemaVersion).toBe(2);
+    expect(state.library['legacy-1']?.schemaVersion).toBe(3);
     expect(state.library['legacy-1']?.title).toBe('Old Song');
-    expect(state.library['legacy-1']?.guitar).toBeDefined(); // v1 → v2 upgrade filled this in
+    expect(state.library['legacy-1']?.guitar).toBeDefined(); // v1 → v3 upgrade filled this in
   });
 
   it('prefers sw:songs over the legacy keys once it exists', async () => {
     const current = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       id: 'current-1',
       title: 'Current',
       key: c,

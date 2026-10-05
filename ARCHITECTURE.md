@@ -34,7 +34,7 @@ This keeps each module replaceable: delete `modules/guitar` and the rest of the 
 
 ## The song model (`packages/core`)
 
-`Song` (schema v2) is the single document both modules read and write, held in one store — there
+`Song` (schema v3; strum patterns live on chords — `ChordEvent.pattern` over a song default — and a run of chords sharing one is a pattern block, computed in `core/patterns`) is the single document both modules read and write, held in one store — there
 is no per-module copy and no URL hand-off between modules.
 
 - `ChordRef` — a chord's identity (root, quality, seventh, flavor, numeral, origin), plus an
@@ -51,7 +51,7 @@ is no per-module copy and no URL hand-off between modules.
   that doesn't belong in the shared shape.
 
 `migrateSong(raw: unknown): Song | null` is the one function allowed to read a `Song` from
-untrusted input (storage or JSON import): it upgrades v1 songs (no `schemaVersion`) to v2 and
+untrusted input (storage or JSON import): it upgrades v1 songs (no `schemaVersion`) and v2 songs (section patterns fold onto chords) to v3 and
 sanitises the result field by field. Nothing else parses a `Song` from `unknown`.
 
 Voicing staleness is **computed, never stored**: `voicingStatus(event, song)` returns `'none' |

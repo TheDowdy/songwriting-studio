@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { renderPattern, renderStrumPattern } from '../audio/patterns';
 import { previewStrikes, startPlayback, stopPlayback, updatePlayback, type NoteStrike, type PlaybackOptions } from '../audio/engine';
-import { eventVoicing, findStrumPattern, flattenDetailed, resolvePattern, sectionLoopBounds } from '@sw/core';
+import { eventVoicing, findStrumPattern, chordPattern, flattenDetailed, sectionLoopBounds } from '@sw/core';
 import type { ChordEvent, ChordRef, Song, StrumPattern } from '@sw/core';
 import { useStore } from './store';
 
@@ -11,15 +11,16 @@ import { useStore } from './store';
 export function toNoteStrikes(song: Song): NoteStrike[] {
   const strikes: NoteStrike[] = [];
   let prevVoicing: number[] | null = null;
-  for (const { event, offsetBeats, sectionId } of flattenDetailed(song)) {
+  for (const { event, offsetBeats } of flattenDetailed(song)) {
     const voicing = eventVoicing(event, song.instrument, prevVoicing);
     prevVoicing = voicing;
     const upperCount = voicing.length - 1;
-    // The chord's own pattern, else its section's, else the song's (a built-in or a custom strum pattern).
-    const pattern = resolvePattern(song, sectionId, event);
+    // The chord's own pattern, else the song's (a built-in or a custom strum pattern); a custom one
+    // keeps its phase across the chords of its block.
+    const { resolved: pattern, phaseBeats } = chordPattern(song, event.id) ?? { resolved: { kind: 'builtin' as const, id: song.pattern }, phaseBeats: 0 };
     const strikesForChord =
       pattern.kind === 'custom'
-        ? renderStrumPattern(pattern.pattern, upperCount, event.beats)
+        ? renderStrumPattern(pattern.pattern, upperCount, event.beats, phaseBeats)
         : renderPattern(pattern.id, upperCount, event.beats, song.timeSig);
     strikesForChord.forEach((s, i) => {
       strikes.push({
@@ -125,6 +126,7 @@ export function useLivePlaybackSync(): void {
           s.song.timeSig !== prev.song.timeSig ||
           s.song.instrument !== prev.song.instrument ||
           s.song.pattern !== prev.song.pattern ||
+          s.song.patterns !== prev.song.patterns ||
           s.loop !== prev.loop ||
           s.loopScope !== prev.loopScope ||
           s.metronome !== prev.metronome ||

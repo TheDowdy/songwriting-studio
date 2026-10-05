@@ -32,7 +32,7 @@ describe('migrateSong: v1 → v2', () => {
   it('upgrades a real-shaped v1 song', () => {
     const song = migrateSong(v1Fixture());
     expect(song).not.toBeNull();
-    expect(song!.schemaVersion).toBe(2);
+    expect(song!.schemaVersion).toBe(3);
     expect(song!.id).toBe('song-1');
     expect(song!.title).toBe('My Song');
     expect(song!.sections[0]!.events[0]!.chord.root).toBe('C');
@@ -134,5 +134,48 @@ describe('voicingStatus', () => {
     const event: Pick<ChordEvent, 'chord' | 'attachments'> = { chord: cMajor, attachments: { guitar: cShape } };
     expect(voicingStatus(event, { guitar: { tuning: STANDARD_GUITAR_TUNING, capo: 2 } })).toBe('tuning-changed');
     expect(voicingStatus(event, { guitar: { tuning: [38, 43, 47, 52, 56, 61], capo: 0 } })).toBe('tuning-changed');
+  });
+});
+
+describe('migrateSong: v2 → v3 (section patterns fold onto chords)', () => {
+  const strum = { id: 'x', name: 'X', beats: 4, stepsPerBeat: 2, steps: Array.from({ length: 8 }, () => null) };
+  const v2 = (sectionPattern: unknown, songPattern: unknown = 'block') => ({
+    ...(v1Fixture() as object),
+    schemaVersion: 2,
+    pattern: songPattern,
+    patterns: [strum],
+    sections: [
+      {
+        id: 's1',
+        name: 'Verse',
+        repeat: 1,
+        pattern: sectionPattern,
+        events: [
+          { id: 'e1', chord: { root: 'C', quality: 'maj' }, beats: 4, pattern: 'strum-down' },
+          { id: 'e2', chord: { root: 'F', quality: 'maj' }, beats: 4 },
+        ],
+      },
+    ],
+    arrangement: ['s1'],
+  });
+
+  it("gives a v2 section's pattern to the chords without their own, keeps the own, and drops the section field", () => {
+    const song = migrateSong(v2('custom:x'))!;
+    expect(song.schemaVersion).toBe(3);
+    expect(song.sections[0]!.events.map((e) => e.pattern)).toEqual(['strum-down', 'custom:x']);
+    expect('pattern' in song.sections[0]!).toBe(false);
+  });
+  it('does not fold a section pattern equal to the song default', () => {
+    const song = migrateSong(v2('pulse', 'pulse'))!;
+    expect(song.sections[0]!.events.map((e) => e.pattern)).toEqual(['strum-down', undefined]);
+  });
+  it('drops an unknown or deleted section pattern', () => {
+    expect(migrateSong(v2('custom:gone'))!.sections[0]!.events[1]!.pattern).toBeUndefined();
+    expect(migrateSong(v2('nonsense'))!.sections[0]!.events[1]!.pattern).toBeUndefined();
+  });
+  it('ignores a stray section pattern on a v3 song', () => {
+    const song = migrateSong({ ...(v2('custom:x') as object), schemaVersion: 3 })!;
+    expect(song.sections[0]!.events[1]!.pattern).toBeUndefined();
+    expect('pattern' in song.sections[0]!).toBe(false);
   });
 });

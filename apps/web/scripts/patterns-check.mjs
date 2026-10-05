@@ -128,14 +128,14 @@ check('Rest of section uses it for that chord and the ones after', s.sections[0]
 await page.getByRole('button', { name: 'Whole section' }).click();
 await sleep(250);
 s = await song();
-check('Whole section sets the section’s pattern and clears its chords’ own', s.sections[0].pattern === `custom:${second.id}` && s.sections[0].events.every((e) => !e.pattern));
+check('Whole section gives every chord in it the pattern', s.sections[0].events.every((e) => e.pattern === `custom:${second.id}`));
 
 // ---------------------------------------------------------------- it is saved with the song
 await sleep(1200); // the song store autosaves after a short debounce
 await page.reload();
 await page.waitForSelector('.map-node');
 s = await song();
-check('patterns and where they are used survive a reload', s.patterns?.length === 2 && s.sections[0].pattern === `custom:${second.id}` && s.pattern === `custom:${pid}`);
+check('patterns and where they are used survive a reload', s.patterns?.length === 2 && s.sections[0].events.every((e) => e.pattern === `custom:${second.id}`) && s.pattern === `custom:${pid}`);
 
 // ---------------------------------------------------------------- the guitar module
 await page.getByRole('tab', { name: 'Guitar' }).click();

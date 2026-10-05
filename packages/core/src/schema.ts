@@ -1,6 +1,7 @@
 /**
- * The song schema (§3.2), v2: PB's original song plus attachments, a guitar setup and free
- * per-module storage. `migrateSong` upgrades v1 songs (PB's original, no `schemaVersion`) and
+ * The song schema (§3.2), v3: PB's original song plus attachments, a guitar setup, free
+ * per-module storage, and strum patterns that live on chords. `migrateSong` upgrades v1 songs
+ * (PB's original, no `schemaVersion`) and v2 songs (section-level patterns, folded onto chords) and
  * sanitises anything read from storage or an import — that input is always untrusted (§8).
  */
 import { toChordSpec } from './convert';
@@ -10,7 +11,7 @@ import { chroma } from './theory/scales';
 import type { ChordRef, Key, Mode } from './theory/types';
 import { customPatternId, isCustomPatternId, sanitizeStrumPatterns, type StrumPattern } from './strumPattern';
 
-export const SCHEMA_VERSION = 2 as const;
+export const SCHEMA_VERSION = 3 as const;
 
 export type InstrumentId = 'piano' | 'epiano' | 'pad' | 'guitar';
 /** The patterns that ship with the app. */
@@ -51,7 +52,7 @@ export interface ChordEvent {
   chord: ChordRef;
   beats: number;
   attachments?: ChordAttachments;
-  /** A pattern for this chord alone, in place of its section's or the song's. */
+  /** A pattern for this chord alone, in place of the song's default. Neighbouring chords with the same pattern form a block. */
   pattern?: PatternId;
 }
 
@@ -62,8 +63,6 @@ export interface Section {
   repeat: number;
   /** This section's own key, when it differs from the song's (a modulation). Absent = the song's key. */
   key?: Key;
-  /** A pattern for the whole section (its chords can still override it). Absent = the song's. */
-  pattern?: PatternId;
   variantOf?: string; // id of the section it was copied from
   variantLabel?: string; // e.g. "Up the neck (5+)"
 }
@@ -82,7 +81,7 @@ export function defaultGuitarSetup(): GuitarSetup {
 }
 
 export interface Song {
-  schemaVersion: 2;
+  schemaVersion: 3;
   id: string;
   title: string;
   key: Key;
@@ -228,16 +227,17 @@ function sanitizeEvent(raw: unknown, known: ReadonlySet<string>): ChordEvent | n
   return { id: r.id, chord, beats, ...(attachments ? { attachments } : {}), ...(pattern ? { pattern } : {}) };
 }
 
-function sanitizeSection(raw: unknown, known: ReadonlySet<string>): Section | null {
+function sanitizeSection(raw: unknown, known: ReadonlySet<string>, foldFrom?: PatternId): Section | null {
   if (!raw || typeof raw !== 'object') return null;
   const r = raw as Record<string, unknown>;
   if (!isString(r.id)) return null;
-  const events = Array.isArray(r.events) ? r.events.map((e) => sanitizeEvent(e, known)).filter((e): e is ChordEvent => e !== null) : [];
+  let events = Array.isArray(r.events) ? r.events.map((e) => sanitizeEvent(e, known)).filter((e): e is ChordEvent => e !== null) : [];
+  // v2 sections could carry a pattern of their own; v3 keeps it only on the chords.
+  const sectionPattern = foldFrom ? sanitizePatternId(r.pattern, known) : undefined;
+  if (sectionPattern && sectionPattern !== foldFrom) events = events.map((e) => (e.pattern ? e : { ...e, pattern: sectionPattern }));
   const repeat = isFiniteNumber(r.repeat) ? Math.max(1, Math.min(16, Math.round(r.repeat))) : 1;
   const section: Section = { id: r.id, name: isString(r.name) ? r.name : 'Section', events, repeat };
   if (r.key !== undefined && r.key !== null && typeof r.key === 'object') section.key = sanitizeKey(r.key);
-  const sectionPattern = sanitizePatternId(r.pattern, known);
-  if (sectionPattern) section.pattern = sectionPattern;
   if (isString(r.variantOf)) section.variantOf = r.variantOf;
   if (isString(r.variantLabel)) section.variantLabel = r.variantLabel;
   return section;
@@ -256,7 +256,7 @@ function sanitizeGuitarSetup(raw: unknown): GuitarSetup {
 }
 
 /**
- * Upgrades a v1 song (PB's original, no `schemaVersion`) or sanitises a v2 one — storage and
+ * Upgrades a v1 song (PB's original, no `schemaVersion`) or sanitises a v3 one — storage and
  * imports are untrusted (§8). Returns null only when `raw` isn't shaped like a song at all.
  */
 export function migrateSong(raw: unknown): Song | null {
@@ -266,7 +266,9 @@ export function migrateSong(raw: unknown): Song | null {
 
   const patterns = sanitizeStrumPatterns(r.patterns);
   const known = new Set(patterns.map((p) => customPatternId(p.id)));
-  const sections = r.sections.map((x) => sanitizeSection(x, known)).filter((s): s is Section => s !== null);
+  const songPattern = sanitizePatternId(r.pattern, known) ?? 'block';
+  const upgradingFrom = r.schemaVersion === 3 ? undefined : songPattern;
+  const sections = r.sections.map((x) => sanitizeSection(x, known, upgradingFrom)).filter((s): s is Section => s !== null);
   if (sections.length === 0) sections.push({ id: 'section-1', name: 'Verse', events: [], repeat: 1 });
   const sectionIds = new Set(sections.map((s) => s.id));
   const arrangement = r.arrangement.filter((id): id is string => typeof id === 'string' && sectionIds.has(id));
@@ -279,7 +281,7 @@ export function migrateSong(raw: unknown): Song | null {
     timeSig: sanitizeTimeSig(r.timeSig),
     bpm: isFiniteNumber(r.bpm) ? Math.max(30, Math.min(300, Math.round(r.bpm))) : 100,
     instrument: oneOf(r.instrument, INSTRUMENTS) ? r.instrument : 'piano',
-    pattern: sanitizePatternId(r.pattern, known) ?? 'block',
+    pattern: songPattern,
     ...(patterns.length > 0 ? { patterns } : {}),
     sections,
     arrangement: arrangement.length ? arrangement : [sections[0].id],

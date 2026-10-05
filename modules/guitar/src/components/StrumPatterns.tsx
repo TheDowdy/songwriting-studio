@@ -18,7 +18,9 @@ export function StrumPatterns() {
         activeSectionId={null}
         onSave={(p) => songStore.getState().saveStrumPattern(p)}
         onDelete={(id) => songStore.getState().deleteStrumPattern(id)}
-        onApply={(target, id) => songStore.getState().applyPattern(target, id)}
+        onApplyChords={(sectionId, from, to, id) => songStore.getState().setChordPatterns(sectionId, from, to, id)}
+        onApplySection={(sectionId, id) => songStore.getState().patternForSection(sectionId, id)}
+        onApplySong={(id) => songStore.getState().patternForSong(id)}
         onPreview={previewStrumPattern}
       />
     </div>

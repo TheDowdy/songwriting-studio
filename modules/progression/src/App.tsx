@@ -66,7 +66,9 @@ export default function ProgressionModule({ navigate, focus }: Props) {
   const patternsOpen = useStore((s) => s.patternsOpen);
   const saveStrumPattern = useStore((s) => s.saveStrumPattern);
   const deleteStrumPattern = useStore((s) => s.deleteStrumPattern);
-  const applyPattern = useStore((s) => s.applyPattern);
+  const setChordPatterns = useStore((s) => s.setChordPatterns);
+  const patternForSection = useStore((s) => s.patternForSection);
+  const patternForSong = useStore((s) => s.patternForSong);
   const mapMode = useStore((s) => s.mapMode);
   const setMapMode = useStore((s) => s.setMapMode);
   const changeKey = useStore((s) => s.changeKey);
@@ -117,7 +119,9 @@ export default function ProgressionModule({ navigate, focus }: Props) {
             activeSectionId={activeSectionId}
             onSave={saveStrumPattern}
             onDelete={deleteStrumPattern}
-            onApply={applyPattern}
+            onApplyChords={setChordPatterns}
+            onApplySection={patternForSection}
+            onApplySong={patternForSong}
             onPreview={(pattern) => {
               // Hear it on the selected chord, else the first one, else a plain C major chord.
               const events = song.sections.flatMap((s) => s.events);

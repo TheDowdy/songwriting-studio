@@ -10,8 +10,8 @@ import { isValidStrings } from './fret/tunings';
 import { relabel, transposeChord } from './theory/chords';
 import type { ChordRef, Key } from './theory/types';
 import { findEvent, newEvent, newId, newSection, withSection } from './song';
-import { customPatternId, isCustomPatternId, type StrumPattern } from './strumPattern';
-import { blockOf, findStrumPattern, usable, type PatternTarget } from './patterns';
+import { customPatternId, type StrumPattern } from './strumPattern';
+import { blockOf, usable } from './patterns';
 import { generateVariantShapes, variantLabelFor, type VariantGeneratorId, type VariantOptions } from './variants';
 import type { ChordAttachments, ChordEvent, GuitarSetup, GuitarVoicing, InstrumentId, PatternId, Section, Song, TimeSig } from './schema';
 
@@ -51,7 +51,11 @@ export function addChord(
   const event = newEvent(chord);
   const at = afterEventId ? active.events.findIndex((e) => e.id === afterEventId) : -1;
   const events = [...active.events];
-  events.splice(at < 0 ? events.length : at + 1, 0, event);
+  const insertAt = at < 0 ? events.length : at + 1;
+  // A chord added after one with its own pattern continues that block.
+  const before = events[insertAt - 1];
+  if (before && usable(song, before.pattern)) event.pattern = before.pattern;
+  events.splice(insertAt, 0, event);
   return { song: withSection(song, active.id, { ...active, events }), eventId: event.id };
 }
 
@@ -316,7 +320,7 @@ export function saveStrumPattern(song: Song, pattern: StrumPattern): Song {
   return touch({ ...song, patterns });
 }
 
-/** Removes a strum pattern. Anything that used it (the song, a section, a chord) goes back to the next level up. */
+/** Removes a strum pattern. Anything that used it (the song, a chord) goes back to the song default. */
 export function deleteStrumPattern(song: Song, id: string): Song {
   const custom = customPatternId(id);
   const patterns = (song.patterns ?? []).filter((p) => p.id !== id);
@@ -326,66 +330,10 @@ export function deleteStrumPattern(song: Song, id: string): Song {
     void _p;
     return rest as T;
   };
-  const sections = song.sections.map((section) => ({ ...clear(section), events: section.events.map(clear) }));
+  const sections = song.sections.map((section) => ({ ...section, events: section.events.map(clear) }));
   const { patterns: _old, ...base } = song;
   void _old;
   return touch({ ...base, ...(patterns.length > 0 ? { patterns } : {}), pattern: song.pattern === custom ? 'block' : song.pattern, sections });
-}
-
-/**
- * Use `patternId` (a built-in id or `custom:<id>`) for part of the song. `song` sets the default and
- * clears every section's and chord's own choice, so it really applies everywhere; `section` sets the
- * section's pattern and clears its chords' choices; `chord` and `from-chord` set the chords' own.
- * Patterns that do not exist are ignored.
- */
-export function applyPattern(song: Song, target: PatternTarget, patternId: PatternId): Song {
-  if (isCustomPatternId(patternId) && !findStrumPattern(song, patternId)) return song;
-  const withoutOwn = <T extends { pattern?: PatternId }>(x: T): T => {
-    const { pattern: _p, ...rest } = x;
-    void _p;
-    return rest as T;
-  };
-  switch (target.scope) {
-    case 'song':
-      return touch({
-        ...song,
-        pattern: patternId,
-        sections: song.sections.map((s) => ({ ...withoutOwn(s), events: s.events.map(withoutOwn) })),
-      });
-    case 'section': {
-      const section = song.sections.find((s) => s.id === target.sectionId);
-      return section ? withSection(song, section.id, { ...section, pattern: patternId, events: section.events.map(withoutOwn) }) : song;
-    }
-    case 'chord':
-    case 'from-chord': {
-      const found = findEvent(song, target.eventId);
-      if (!found) return song;
-      const from = found.index;
-      const to = target.scope === 'chord' ? found.index : found.section.events.length - 1;
-      const events = found.section.events.map((e, i) => (i >= from && i <= to ? { ...e, pattern: patternId } : e));
-      return withSection(song, found.section.id, { ...found.section, events });
-    }
-  }
-}
-
-/** Clear a chord's or a section's own pattern, so it follows the level above again. */
-export function clearOwnPattern(song: Song, target: { sectionId: string } | { eventId: string }): Song {
-  if ('eventId' in target) {
-    const found = findEvent(song, target.eventId);
-    if (!found) return song;
-    const events = found.section.events.map((e) => {
-      if (e.id !== target.eventId) return e;
-      const { pattern: _p, ...rest } = e;
-      void _p;
-      return rest;
-    });
-    return withSection(song, found.section.id, { ...found.section, events });
-  }
-  const section = song.sections.find((s) => s.id === target.sectionId);
-  if (!section) return song;
-  const { pattern: _p, ...rest } = section;
-  void _p;
-  return withSection(song, section.id, rest);
 }
 
 // ---- pattern lane operations: a chord's own pattern is the only stored level; blocks are derived

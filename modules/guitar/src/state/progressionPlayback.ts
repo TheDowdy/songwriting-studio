@@ -3,7 +3,7 @@
  * through the guitar synth — its committed voicing, or the shape the neck would suggest for it —
  * at the song's tempo, optionally looping, with the neck following the chord you hear.
  */
-import { findEvent, flattenSong, playbackRange, resolvePattern, strumEvents, strumNotes, strumVelocity, toChordSpec, type ChordEvent, type Song, type StrumPattern } from '@sw/core';
+import { findEvent, flattenSong, chordStrokes, playbackRange, strumEvents, strumNotes, strumVelocity, toChordSpec, type ChordEvent, type Song, type StrumPattern } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { shapeNotes } from '@sw/core/fret/voicings';
 import { songStore } from '@sw/song-store';
@@ -44,14 +44,13 @@ export function progressionStrikes(song: Song, sectionId: string | null): { stri
   const { events, lengthBeats } = playbackRange(song, sectionId);
   const strikes: ProgressionStrike[] = [];
   const barBeats = Math.max(1, song.timeSig.beats);
-  for (const { event, startBeats, sectionId } of events) {
+  for (const { event, startBeats } of events) {
     const notes = chordNotes(event, song);
     if (notes.length === 0) continue;
     // A chord with one of the song's own strum patterns plays that pattern's strokes: down strokes low
     // to high, up strokes high to low, partial strums on the lower or upper strings only.
-    const pattern = resolvePattern(song, sectionId, event);
-    if (pattern.kind === 'custom') {
-      const hits = strumEvents(pattern.pattern, event.beats);
+    const hits = chordStrokes(song, event.id);
+    if (hits) {
       // A silent marker at the chord's start, so the neck follows the chord even if the pattern opens on a rest.
       if (hits.length === 0 || hits[0]!.offsetBeats > 0) {
         strikes.push({ atSeconds: startBeats * secondsPerBeat, eventId: event.id, notes: [], velocity: 0 });

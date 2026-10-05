@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addChord, addSection, applyPattern, clearOwnPattern, deleteStrumPattern, saveStrumPattern } from './operations';
+import { addChord, addSection, deleteStrumPattern, duplicateEvent, moveEvent, patternForSection, patternForSong, saveStrumPattern, setBlockPattern, setChordPatterns } from './operations';
 import { findStrumPattern, patternIdFor, resolvePattern } from './patterns';
 import { migrateSong } from './schema';
 import { diatonicChords } from './theory/chords';
@@ -40,96 +40,82 @@ describe('saving and deleting strum patterns', () => {
     expect(findStrumPattern(song, customPatternId('missing'))).toBeNull();
   });
 
-  it('deleting a pattern puts everything that used it back to the level above', () => {
-    let { song, ids, verse, chorus } = build();
+  it('deleting a pattern puts everything that used it back to the song default', () => {
+    let { song, ids } = build();
     const id = customPatternId('folk');
-    song = applyPattern(song, { scope: 'song' }, id);
-    song = applyPattern(song, { scope: 'section', sectionId: chorus }, customPatternId('chops'));
-    song = applyPattern(song, { scope: 'chord', eventId: ids[0]! }, id);
+    song = patternForSong(song, id);
+    song = setBlockPattern(song, ids[0]!, customPatternId('chops'));
+    song = setBlockPattern(song, ids[1]!, id);
     const after = deleteStrumPattern(song, 'folk');
     expect(after.patterns?.map((p) => p.id)).toEqual(['chops']);
     expect(after.pattern).toBe('block');
-    expect(after.sections.find((s) => s.id === verse)!.events[0]!.pattern).toBeUndefined();
-    expect(after.sections.find((s) => s.id === chorus)!.pattern).toBe(customPatternId('chops')); // a different pattern is kept
+    expect(after.sections[0]!.events[1]!.pattern).toBeUndefined();
+    expect(after.sections[0]!.events[0]!.pattern).toBe(customPatternId('chops')); // a different pattern is kept
     expect(deleteStrumPattern(after, 'chops').patterns).toBeUndefined();
   });
 });
 
 describe('resolving a chord’s pattern', () => {
-  it('a chord’s own beats its section’s, which beats the song’s', () => {
+  it('a chord’s own beats the song’s', () => {
     let { song, ids, verse } = build();
-    expect(patternIdFor(song, verse, {})).toBe('block');
-    song = applyPattern(song, { scope: 'song' }, 'strum-updown');
-    expect(patternIdFor(song, verse, song.sections[0]!.events[0]!)).toBe('strum-updown');
-    song = { ...song, sections: song.sections.map((s) => (s.id === verse ? { ...s, pattern: customPatternId('folk') } : s)) };
-    expect(patternIdFor(song, verse, song.sections[0]!.events[0]!)).toBe(customPatternId('folk'));
-    song = applyPattern({ ...song, sections: song.sections.map((s) => (s.id === verse ? { ...s, pattern: customPatternId('folk') } : s)) }, { scope: 'chord', eventId: ids[1]! }, customPatternId('chops'));
-    expect(patternIdFor(song, verse, song.sections[0]!.events[1]!)).toBe(customPatternId('chops'));
-    expect(patternIdFor(song, verse, song.sections[0]!.events[0]!)).toBe(customPatternId('folk'));
+    expect(patternIdFor(song, {})).toBe('block');
+    song = patternForSong(song, 'strum-updown');
+    expect(patternIdFor(song, song.sections[0]!.events[0]!)).toBe('strum-updown');
+    song = setChordPatterns(song, verse, 1, 1, customPatternId('chops'));
+    expect(patternIdFor(song, song.sections[0]!.events[1]!)).toBe(customPatternId('chops'));
+    expect(patternIdFor(song, song.sections[0]!.events[0]!)).toBe('strum-updown');
+    expect(ids).toHaveLength(4); // three verse chords and one chorus chord
   });
 
-  it('a reference to a deleted pattern falls back a level instead of breaking', () => {
-    const { song, verse } = build();
+  it('a reference to a deleted pattern falls back to the song instead of breaking', () => {
+    const { song } = build();
     const stale = { ...song, pattern: 'pulse' as const };
-    expect(patternIdFor(stale, verse, { pattern: customPatternId('gone') })).toBe('pulse');
-    expect(patternIdFor({ ...stale, pattern: customPatternId('gone') }, verse, {})).toBe('block');
+    expect(patternIdFor(stale, { pattern: customPatternId('gone') })).toBe('pulse');
+    expect(patternIdFor({ ...stale, pattern: customPatternId('gone') }, {})).toBe('block');
   });
 
   it('resolvePattern returns the strum pattern itself for a custom id', () => {
-    let { song, verse } = build();
-    expect(resolvePattern(song, verse, {})).toEqual({ kind: 'builtin', id: 'block' });
-    song = applyPattern(song, { scope: 'song' }, customPatternId('chops'));
-    const r = resolvePattern(song, verse, {});
+    let { song } = build();
+    expect(resolvePattern(song, {})).toEqual({ kind: 'builtin', id: 'block' });
+    song = patternForSong(song, customPatternId('chops'));
+    const r = resolvePattern(song, {});
     expect(r.kind === 'custom' && r.pattern.name).toBe(chops.name);
   });
 });
 
-describe('applying a pattern', () => {
-  it('to the song sets the default and clears every other choice', () => {
-    let { song, ids, chorus } = build();
-    song = applyPattern(song, { scope: 'chord', eventId: ids[0]! }, customPatternId('chops'));
-    song = applyPattern(song, { scope: 'section', sectionId: chorus }, customPatternId('chops'));
-    const all = applyPattern(song, { scope: 'song' }, customPatternId('folk'));
-    expect(all.pattern).toBe(customPatternId('folk'));
-    expect(all.sections.every((s) => s.pattern === undefined && s.events.every((e) => e.pattern === undefined))).toBe(true);
-  });
-
-  it('to a section sets that section and clears its chords’ own choices', () => {
-    let { song, ids, verse, chorus } = build();
-    song = applyPattern(song, { scope: 'chord', eventId: ids[0]! }, customPatternId('chops'));
-    const next = applyPattern(song, { scope: 'section', sectionId: verse }, customPatternId('folk'));
-    expect(next.sections.find((s) => s.id === verse)!.pattern).toBe(customPatternId('folk'));
-    expect(next.sections.find((s) => s.id === verse)!.events.every((e) => e.pattern === undefined)).toBe(true);
-    expect(next.sections.find((s) => s.id === chorus)!.pattern).toBeUndefined();
-  });
-
-  it('to a chord sets just that chord; from a chord sets it and the rest of its section', () => {
-    const { song, ids, verse, chorus } = build();
-    const one = applyPattern(song, { scope: 'chord', eventId: ids[1]! }, customPatternId('folk'));
-    expect(one.sections[0]!.events.map((e) => e.pattern)).toEqual([undefined, customPatternId('folk'), undefined]);
-    const rest = applyPattern(song, { scope: 'from-chord', eventId: ids[1]! }, customPatternId('folk'));
-    expect(rest.sections[0]!.events.map((e) => e.pattern)).toEqual([undefined, customPatternId('folk'), customPatternId('folk')]);
-    expect(rest.sections.find((s) => s.id === chorus)!.events[0]!.pattern).toBeUndefined();
-    expect(rest.sections.find((s) => s.id === verse)).toBeDefined();
-  });
-
-  it('ignores a pattern that does not exist, an unknown chord or section, and can clear a choice', () => {
+describe('chords and patterns', () => {
+  it('a chord added after one with its own pattern inherits it; after a default chord it does not', () => {
     const { song, ids, verse } = build();
-    expect(applyPattern(song, { scope: 'song' }, customPatternId('nope'))).toBe(song);
-    expect(applyPattern(song, { scope: 'chord', eventId: 'x' }, 'pulse')).toBe(song);
-    expect(applyPattern(song, { scope: 'section', sectionId: 'x' }, 'pulse')).toBe(song);
-    const set = applyPattern(song, { scope: 'chord', eventId: ids[0]! }, 'pulse');
-    expect(set.sections[0]!.events[0]!.pattern).toBe('pulse');
-    expect(clearOwnPattern(set, { eventId: ids[0]! }).sections[0]!.events[0]!.pattern).toBeUndefined();
-    const sec = applyPattern(song, { scope: 'section', sectionId: verse }, 'pulse');
-    expect(clearOwnPattern(sec, { sectionId: verse }).sections[0]!.pattern).toBeUndefined();
+    const patterned = setChordPatterns(song, verse, 2, 2, customPatternId('folk'));
+    const after = addChord(patterned, verse, ids[2]!, I!);
+    expect(after.song.sections[0]!.events.map((e) => e.pattern)).toEqual([undefined, undefined, customPatternId('folk'), customPatternId('folk')]);
+    const plain = addChord(patterned, verse, ids[1]!, I!);
+    expect(plain.song.sections[0]!.events[2]!.pattern).toBeUndefined();
+    const appended = addChord(setChordPatterns(song, verse, 2, 2, 'pulse'), verse, null, I!);
+    expect(appended.song.sections[0]!.events.at(-1)!.pattern).toBe('pulse'); // appended after the last chord
+  });
+
+  it('duplicating and moving a chord carries its pattern', () => {
+    const { song, ids, verse } = build();
+    const patterned = setChordPatterns(song, verse, 0, 0, 'pulse');
+    const dup = duplicateEvent(patterned, ids[0]!).song;
+    expect(dup.sections[0]!.events.filter((e) => e.pattern === 'pulse')).toHaveLength(2);
+    const moved = moveEvent(patterned, ids[0]!, verse, 2);
+    expect(moved.sections[0]!.events[2]!.pattern).toBe('pulse');
+  });
+
+  it('patternForSection paints every chord of that section only', () => {
+    const { song, verse, chorus } = build();
+    const next = patternForSection(song, verse, customPatternId('folk'));
+    expect(next.sections.find((s) => s.id === verse)!.events.every((e) => e.pattern === customPatternId('folk'))).toBe(true);
+    expect(next.sections.find((s) => s.id === chorus)!.events[0]!.pattern).toBeUndefined();
   });
 });
 
 describe('storage', () => {
   it('migrateSong keeps patterns and valid references, and drops references to missing ones', () => {
     const { song, ids } = build();
-    const used = applyPattern(applyPattern(song, { scope: 'song' }, customPatternId('folk')), { scope: 'chord', eventId: ids[0]! }, customPatternId('chops'));
+    const used = setBlockPattern(patternForSong(song, customPatternId('folk')), ids[0]!, customPatternId('chops'));
     const round = migrateSong(JSON.parse(JSON.stringify(used)))!;
     expect(round.patterns?.map((p) => p.id)).toEqual(['folk', 'chops']);
     expect(round.pattern).toBe(customPatternId('folk'));

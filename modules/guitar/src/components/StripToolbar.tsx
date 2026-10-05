@@ -205,8 +205,11 @@ export function StripToolbar() {
           <PatternSelect
             song={song}
             value={event.pattern}
-            inheritLabel={`Same as ${findEvent(song, event.id)?.section.pattern ? 'section' : 'song'} (${patternLabel(song, patternIdFor(song, findEvent(song, event.id)?.section.id ?? '', { pattern: undefined }))})`}
-            onChange={(id) => (id ? songStore.getState().applyPattern({ scope: 'chord', eventId: event.id }, id) : songStore.getState().clearOwnPattern({ eventId: event.id }))}
+            inheritLabel={`Song default (${patternLabel(song, patternIdFor(song, { pattern: undefined }))})`}
+            onChange={(id) => {
+              const found = findEvent(song, event.id);
+              if (found) songStore.getState().setChordPatterns(found.section.id, found.index, found.index, id || null);
+            }}
           />
         )}
         <button type="button" className="button" onClick={() => duplicateChord(event.id)}>

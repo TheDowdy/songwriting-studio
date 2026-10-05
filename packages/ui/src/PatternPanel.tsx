@@ -7,7 +7,7 @@ import {
   newId,
   strumPatternFromPreset,
 } from '@sw/core';
-import type { PatternId, PatternTarget, Song, StrumPattern } from '@sw/core';
+import type { PatternId, Song, StrumPattern } from '@sw/core';
 import { PatternBuilder } from './PatternBuilder';
 
 interface Props {
@@ -18,17 +18,18 @@ interface Props {
   activeSectionId: string | null;
   onSave: (pattern: StrumPattern) => void;
   onDelete: (id: string) => void;
-  onApply: (target: PatternTarget, patternId: PatternId) => void;
+  /** Sets the pattern on chords `from`..`to` of a section. */
+  onApplyChords: (sectionId: string, from: number, to: number, patternId: PatternId) => void;
+  onApplySection: (sectionId: string, patternId: PatternId) => void;
+  onApplySong: (patternId: PatternId) => void;
   onPreview: (pattern: StrumPattern) => void;
 }
 
 /** How many chords, sections and whether the song itself use a pattern, as a sentence. */
 function usage(song: Song, id: PatternId): string {
   const chords = song.sections.reduce((n, s) => n + s.events.filter((e) => e.pattern === id).length, 0);
-  const sections = song.sections.filter((s) => s.pattern === id).length;
   const parts: string[] = [];
   if (song.pattern === id) parts.push('the whole song');
-  if (sections > 0) parts.push(sections === 1 ? '1 section' : `${sections} sections`);
   if (chords > 0) parts.push(chords === 1 ? '1 chord' : `${chords} chords`);
   return parts.length > 0 ? `Used by ${parts.join(', ')}.` : 'Not used yet. Choose where to use it below.';
 }
@@ -38,7 +39,7 @@ function usage(song: Song, id: PatternId): string {
  * use it for one chord, the rest of a section, a whole section or the whole song. Placing is done with
  * the pure operations in `@sw/core`; this only shows the choices.
  */
-export function PatternPanel({ song, focusedEventId, activeSectionId, onSave, onDelete, onApply, onPreview }: Props) {
+export function PatternPanel({ song, focusedEventId, activeSectionId, onSave, onDelete, onApplyChords, onApplySection, onApplySong, onPreview }: Props) {
   const patterns = song.patterns ?? [];
   const [editingId, setEditingId] = useState<string | null>(patterns[0]?.id ?? null);
   const [message, setMessage] = useState('');
@@ -53,11 +54,19 @@ export function PatternPanel({ song, focusedEventId, activeSectionId, onSave, on
     return own?.id ?? activeSectionId ?? song.sections[0]?.id ?? null;
   }, [song.sections, focusedEventId, activeSectionId]);
 
-  const apply = (target: PatternTarget, where: string) => {
+  const apply = (run: (id: PatternId) => void, where: string) => {
     if (!patternId) return;
-    onApply(target, patternId);
+    run(patternId);
     setMessage(`“${pattern!.name}” is now used for ${where}.`);
   };
+
+  const focused = useMemo(() => {
+    for (const s of song.sections) {
+      const i = s.events.findIndex((e) => e.id === focusedEventId);
+      if (i >= 0) return { sectionId: s.id, index: i, last: s.events.length - 1 };
+    }
+    return null;
+  }, [song.sections, focusedEventId]);
 
   const create = (value: string) => {
     if (value === '') return;
@@ -129,16 +138,16 @@ export function PatternPanel({ song, focusedEventId, activeSectionId, onSave, on
           <PatternBuilder pattern={pattern} onChange={onSave} onPreview={() => onPreview(pattern)} />
           <div className="pb-row" role="group" aria-label="Use this pattern for">
             <span className="pb-label">Use it for</span>
-            <button type="button" className="pb-btn" disabled={!focusedEventId} onClick={() => apply({ scope: 'chord', eventId: focusedEventId! }, 'the selected chord')}>
+            <button type="button" className="pb-btn" disabled={!focused} onClick={() => apply((id) => onApplyChords(focused!.sectionId, focused!.index, focused!.index, id), 'the selected chord')}>
               Selected chord
             </button>
-            <button type="button" className="pb-btn" disabled={!focusedEventId} onClick={() => apply({ scope: 'from-chord', eventId: focusedEventId! }, 'the selected chord and the ones after it in its section')}>
+            <button type="button" className="pb-btn" disabled={!focused} onClick={() => apply((id) => onApplyChords(focused!.sectionId, focused!.index, focused!.last, id), 'the selected chord and the ones after it in its section')}>
               Rest of section
             </button>
-            <button type="button" className="pb-btn" disabled={!sectionId} onClick={() => apply({ scope: 'section', sectionId: sectionId! }, 'this section')}>
+            <button type="button" className="pb-btn" disabled={!sectionId} onClick={() => apply((id) => onApplySection(sectionId!, id), 'this section')}>
               Whole section
             </button>
-            <button type="button" className="pb-btn pb-primary" onClick={() => apply({ scope: 'song' }, 'the whole song')}>
+            <button type="button" className="pb-btn pb-primary" onClick={() => apply(onApplySong, 'the whole song')}>
               Entire song
             </button>
           </div>

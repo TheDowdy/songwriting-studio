@@ -7,7 +7,7 @@
  */
 import { create } from 'zustand';
 import * as core from '@sw/core';
-import type { ChordRef, InstrumentId, Key, PatternId, PatternTarget, Song, StrumPattern, TimeSig, VariantGeneratorId, VariantOptions } from '@sw/core';
+import type { ChordRef, InstrumentId, Key, PatternId, Song, StrumPattern, TimeSig, VariantGeneratorId, VariantOptions } from '@sw/core';
 import { songStore } from '@sw/song-store';
 
 export type KeyChangeMode = core.KeyChangeMode;
@@ -83,8 +83,12 @@ interface AppState {
   /** The song's own strum patterns: save, delete, and choose where one is used. */
   saveStrumPattern: (pattern: StrumPattern) => void;
   deleteStrumPattern: (id: string) => void;
-  applyPattern: (target: PatternTarget, patternId: PatternId) => void;
-  clearOwnPattern: (target: { sectionId: string } | { eventId: string }) => void;
+  setChordPatterns: (sectionId: string, fromIndex: number, toIndex: number, patternId: PatternId | null) => void;
+  setBlockPattern: (eventId: string, patternId: PatternId | null) => void;
+  setBlockLength: (eventId: string, chords: number) => void;
+  patternForChordOnly: (eventId: string) => void;
+  patternForSection: (sectionId: string, patternId: PatternId) => void;
+  patternForSong: (patternId: PatternId) => void;
   /** The strum pattern builder is open under the timeline. */
   patternsOpen: boolean;
   setPatternsOpen: (open: boolean) => void;
@@ -259,8 +263,12 @@ export const useStore = create<AppState>((set, get) => {
     setPattern: (pattern) => songStore.getState().setPattern(pattern),
     saveStrumPattern: (pattern) => songStore.getState().saveStrumPattern(pattern),
     deleteStrumPattern: (id) => songStore.getState().deleteStrumPattern(id),
-    applyPattern: (target, patternId) => songStore.getState().applyPattern(target, patternId),
-    clearOwnPattern: (target) => songStore.getState().clearOwnPattern(target),
+    setChordPatterns: (sectionId, from, to, patternId) => songStore.getState().setChordPatterns(sectionId, from, to, patternId),
+    setBlockPattern: (eventId, patternId) => songStore.getState().setBlockPattern(eventId, patternId),
+    setBlockLength: (eventId, chords) => songStore.getState().setBlockLength(eventId, chords),
+    patternForChordOnly: (eventId) => songStore.getState().patternForChordOnly(eventId),
+    patternForSection: (sectionId, patternId) => songStore.getState().patternForSection(sectionId, patternId),
+    patternForSong: (patternId) => songStore.getState().patternForSong(patternId),
     patternsOpen: false,
     setPatternsOpen: (patternsOpen) => set({ patternsOpen }),
     setLoop: (loop) => set({ loop }),

@@ -97,9 +97,9 @@ export function renderPattern(pattern: PatternId, upperCount: number, beats: num
  * staggers its notes low to high; an up stroke high to low and lighter; a partial strum sounds only
  * the lower or upper half of the chord's notes (see `strumNotes`).
  */
-export function renderStrumPattern(pattern: StrumPattern, upperCount: number, beats: number): Strike[] {
+export function renderStrumPattern(pattern: StrumPattern, upperCount: number, beats: number, phaseBeats = 0): Strike[] {
   const all = allIndices(upperCount);
-  return strumEvents(pattern, beats).map(({ offsetBeats, durationBeats, step }) => ({
+  return strumEvents(pattern, beats, phaseBeats).map(({ offsetBeats, durationBeats, step }) => ({
     offset: offsetBeats,
     duration: durationBeats,
     noteIndices: strumNotes(all, step),

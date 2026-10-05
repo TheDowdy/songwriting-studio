@@ -12,33 +12,22 @@ export const usable = (song: Pick<Song, 'patterns'>, id: PatternId | undefined):
   !!id && (!isCustomPatternId(id) || findStrumPattern(song, id) !== null);
 
 /**
- * The pattern a chord plays: its own if it has one, else its section's, else the song's. An id that
+ * The pattern a chord plays: its own if it has one, else the song's. An id that
  * points at a pattern that has since been deleted is skipped, so the chord falls back a level.
  */
-export function patternIdFor(song: Song, sectionId: string, event: Pick<ChordEvent, 'pattern'>): PatternId {
-  const section = song.sections.find((s) => s.id === sectionId);
+export function patternIdFor(song: Song, event: Pick<ChordEvent, 'pattern'>): PatternId {
   if (usable(song, event.pattern)) return event.pattern;
-  if (usable(song, section?.pattern)) return section!.pattern!;
   return usable(song, song.pattern) ? song.pattern : 'block';
 }
 
 /** What to play for a chord: a built-in id, or the song's own strum pattern. */
 export type ResolvedPattern = { kind: 'builtin'; id: PatternId } | { kind: 'custom'; pattern: StrumPattern };
 
-export function resolvePattern(song: Song, sectionId: string, event: Pick<ChordEvent, 'pattern'>): ResolvedPattern {
-  const id = patternIdFor(song, sectionId, event);
+export function resolvePattern(song: Song, event: Pick<ChordEvent, 'pattern'>): ResolvedPattern {
+  const id = patternIdFor(song, event);
   const custom = findStrumPattern(song, id);
   return custom ? { kind: 'custom', pattern: custom } : { kind: 'builtin', id };
 }
-
-/** Where `applyPattern` puts a pattern. */
-export type PatternTarget =
-  | { scope: 'song' }
-  | { scope: 'section'; sectionId: string }
-  /** One chord. */
-  | { scope: 'chord'; eventId: string }
-  /** This chord and every chord after it in its section. */
-  | { scope: 'from-chord'; eventId: string };
 
 /** The built-in patterns, with the names shown in pickers. */
 export const BUILT_IN_PATTERNS: readonly { id: PatternId; label: string }[] = [
@@ -126,7 +115,7 @@ export function chordPattern(song: Song, eventId: string): { resolved: ResolvedP
   const block = patternBlocks(song, found.section.id).find((b) => b.eventIds.includes(eventId));
   if (!block) return null;
   const phaseBeats = found.section.events.slice(block.startIndex, found.index).reduce((sum, e) => sum + e.beats, 0);
-  return { resolved: resolvePattern(song, found.section.id, found.section.events[found.index]!), phaseBeats };
+  return { resolved: resolvePattern(song, found.section.events[found.index]!), phaseBeats };
 }
 
 /**

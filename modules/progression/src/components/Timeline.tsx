@@ -17,7 +17,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { canToggleMajorMinor, chordName, chroma, keyLabel, keyOfSection, patternLabel, patternIdFor, resolvePattern, strumEvents, toggleMajorMinor, voicingStatus } from '@sw/core';
+import { canToggleMajorMinor, chordName, chroma, keyLabel, keyOfSection, patternLabel, patternIdFor, chordStrokes, toggleMajorMinor, voicingStatus } from '@sw/core';
 import type { Key } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { ChordDiagram, NumberField, VariantDialog } from '@sw/ui';
@@ -67,7 +67,6 @@ function ChordSlot({
   const guitar = useStore((s) => s.song.guitar);
   const song = useStore((s) => s.song);
   // The strokes of this chord's own, section's or song's strum pattern, when it has a custom one.
-  const resolved = resolvePattern(song, sectionId, event);
   // A committed guitar voicing shows as a mini diagram, flagged when it no longer fits the chord
   // or the song's tuning/capo (Phase 5 item 1 — the same badge the guitar module's strip shows).
   const voicing = event.attachments?.guitar;
@@ -80,6 +79,7 @@ function ChordSlot({
   const isBarStart = cumulativeBeats % barLength === 0;
   const [resizeBeats, setResizeBeats] = useState<number | null>(null);
   const shownBeats = resizeBeats ?? event.beats;
+  const strokes = chordStrokes(song, event.id, shownBeats);
 
   // When this chord becomes the selected one (just added, or picked), scroll the timeline row
   // sideways so it's in view. Only the row scrolls, never the page, so adding from the map above
@@ -198,8 +198,8 @@ function ChordSlot({
           className="pointer-events-none absolute inset-x-0 bottom-0 flex h-7 items-center"
           style={{ backgroundImage: 'repeating-linear-gradient(to bottom, transparent 0, transparent 5px, var(--line) 5px, var(--line) 6px)' }}
         >
-          {resolved.kind === 'custom'
-            ? strumEvents(resolved.pattern, shownBeats).map((hit, i) => (
+          {strokes
+            ? strokes.map((hit, i) => (
                 <span
                   key={i}
                   className="absolute -translate-x-1/2 font-mono leading-none"
@@ -280,10 +280,9 @@ function ChordToolbar({
   const cancelReplace = useStore((s) => s.cancelReplace);
   const setEventChord = useStore((s) => s.setEventChord);
   const song = useStore((s) => s.song);
-  const applyPattern = useStore((s) => s.applyPattern);
-  const clearOwnPattern = useStore((s) => s.clearOwnPattern);
+  const setChordPatterns = useStore((s) => s.setChordPatterns);
   const sectionId = song.sections.find((s) => s.events.some((e) => e.id === event.id))?.id ?? '';
-  const inherited = patternIdFor({ ...song, sections: song.sections.map((s) => (s.id === sectionId ? { ...s, events: s.events.map((e) => (e.id === event.id ? { ...e, pattern: undefined } : e)) } : s)) }, sectionId, { pattern: undefined });
+  const chordIndex = song.sections.find((s) => s.id === sectionId)?.events.findIndex((e) => e.id === event.id) ?? 0;
   const btn = 'rounded-full border border-fg px-3.5 py-1.5 text-base italic hover:bg-surface-2 aria-pressed:border-accent aria-pressed:text-accent';
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2" aria-label={`Actions for ${chordName(event.chord)}`}>
@@ -309,8 +308,8 @@ function ChordToolbar({
       <PatternSelect
         song={song}
         value={event.pattern}
-        inheritLabel={`Same as ${song.sections.find((s) => s.id === sectionId)?.pattern ? 'section' : 'song'} (${patternLabel(song, inherited)})`}
-        onChange={(id) => (id ? applyPattern({ scope: 'chord', eventId: event.id }, id) : clearOwnPattern({ eventId: event.id }))}
+        inheritLabel={`Song default (${patternLabel(song, patternIdFor(song, { pattern: undefined }))})`}
+        onChange={(id) => setChordPatterns(sectionId, chordIndex, chordIndex, id || null)}
       />
       <button onClick={onFlavor} aria-pressed={flavorOpen} className={btn}>Flavor</button>
       <button onClick={onDetail} aria-pressed={detailOpen} className={btn}>Piano / guitar</button>

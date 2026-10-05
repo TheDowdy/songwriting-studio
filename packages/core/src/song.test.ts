@@ -34,7 +34,7 @@ describe('song helpers', () => {
 
   it('newSong is a valid v2 song with a standard guitar setup', () => {
     const song = newSong();
-    expect(song.schemaVersion).toBe(2);
+    expect(song.schemaVersion).toBe(3);
     expect(song.guitar.capo).toBe(0);
     expect(song.guitar.tuning).toHaveLength(6);
     expect(song.sections).toHaveLength(1);

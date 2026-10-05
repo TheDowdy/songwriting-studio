@@ -155,8 +155,12 @@ export interface SongStoreState {
   /** Strum patterns: save (add or replace), delete, and choose where a pattern is used. */
   saveStrumPattern: (pattern: ops.StrumPattern) => void;
   deleteStrumPattern: (id: string) => void;
-  applyPattern: (target: ops.PatternTarget, patternId: Song['pattern']) => void;
-  clearOwnPattern: (target: { sectionId: string } | { eventId: string }) => void;
+  setChordPatterns: (sectionId: string, fromIndex: number, toIndex: number, patternId: Song['pattern'] | null) => void;
+  setBlockPattern: (eventId: string, patternId: Song['pattern'] | null) => void;
+  setBlockLength: (eventId: string, chords: number) => void;
+  patternForChordOnly: (eventId: string) => void;
+  patternForSection: (sectionId: string, patternId: Song['pattern']) => void;
+  patternForSong: (patternId: Song['pattern']) => void;
   setTitle: (title: string) => void;
 
   commitVoicing: (eventId: string, voicing: GuitarVoicing) => void;
@@ -276,8 +280,12 @@ export const songStore = createStore<SongStoreState>((set, get) => ({
   setPattern: (pattern) => withCurrent(set, get, (song) => ops.setPattern(song, pattern)),
   saveStrumPattern: (pattern) => withCurrent(set, get, (song) => ops.saveStrumPattern(song, pattern)),
   deleteStrumPattern: (id) => withCurrent(set, get, (song) => ops.deleteStrumPattern(song, id)),
-  applyPattern: (target, patternId) => withCurrent(set, get, (song) => ops.applyPattern(song, target, patternId)),
-  clearOwnPattern: (target) => withCurrent(set, get, (song) => ops.clearOwnPattern(song, target)),
+  setChordPatterns: (sectionId, from, to, patternId) => withCurrent(set, get, (song) => ops.setChordPatterns(song, sectionId, from, to, patternId)),
+  setBlockPattern: (eventId, patternId) => withCurrent(set, get, (song) => ops.setBlockPattern(song, eventId, patternId)),
+  setBlockLength: (eventId, chords) => withCurrent(set, get, (song) => ops.setBlockLength(song, eventId, chords)),
+  patternForChordOnly: (eventId) => withCurrent(set, get, (song) => ops.patternForChordOnly(song, eventId)),
+  patternForSection: (sectionId, patternId) => withCurrent(set, get, (song) => ops.patternForSection(song, sectionId, patternId)),
+  patternForSong: (patternId) => withCurrent(set, get, (song) => ops.patternForSong(song, patternId)),
   setTitle: (title) => withCurrent(set, get, (song) => ops.setTitle(song, title)),
 
   commitVoicing: (eventId, voicing) => withCurrent(set, get, (song) => ops.commitVoicing(song, eventId, voicing)),

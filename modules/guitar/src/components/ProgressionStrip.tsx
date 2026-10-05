@@ -11,7 +11,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { chordName, chroma, resolvePattern, strumEvents, voicingStatus, type ChordEvent, type Section, type Song, type VariantGeneratorId, type VariantOptions } from '@sw/core';
+import { chordName, chordStrokes, chroma, voicingStatus, type ChordEvent, type Section, type Song, type VariantGeneratorId, type VariantOptions } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { useSong } from '@sw/song-store/react';
 import { ChordDiagram, VariantDialog } from '@sw/ui';
@@ -60,9 +60,7 @@ function StripChord({ slot, event, song, selected }: { slot: number; event: Chor
   const voicing = event.attachments?.guitar;
   const stale = voicing ? voicingStatus(event, song) !== 'ok' : false;
   // A chord with one of the song's own strum patterns shows its strokes in order, as arrows.
-  const sectionId = song.sections.find((sec) => sec.events.some((e) => e.id === event.id))?.id ?? '';
-  const resolved = resolvePattern(song, sectionId, event);
-  const strokes = resolved.kind === 'custom' ? strumEvents(resolved.pattern, event.beats) : null;
+  const strokes = chordStrokes(song, event.id);
   return (
     <li
       ref={setNodeRef}
