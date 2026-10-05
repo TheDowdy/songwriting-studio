@@ -12,7 +12,7 @@ export function toNoteStrikes(song: Song): NoteStrike[] {
   const strikes: NoteStrike[] = [];
   let prevVoicing: number[] | null = null;
   for (const { event, offsetBeats } of flattenDetailed(song)) {
-    const voicing = eventVoicing(event, song.instrument, prevVoicing);
+    const voicing = eventVoicing(event, song.instrument, prevVoicing, song.guitar);
     prevVoicing = voicing;
     const upperCount = voicing.length - 1;
     // The chord's own pattern, else the song's (a built-in or a custom strum pattern); a custom one
@@ -42,7 +42,7 @@ export function toNoteStrikes(song: Song): NoteStrike[] {
  *  `attachments` too, so on guitar it previews its committed voicing, as playback will. */
 export function previewChordInSong(chord: ChordRef, beats?: number, attachments?: ChordEvent['attachments']): Promise<void> {
   const { song } = useStore.getState();
-  const voicing = eventVoicing({ chord, attachments }, song.instrument, null);
+  const voicing = eventVoicing({ chord, attachments }, song.instrument, null, song.guitar);
   const custom = findStrumPattern(song, song.pattern);
   const rendered = custom
     ? renderStrumPattern(custom, voicing.length - 1, beats ?? song.timeSig.beats)
@@ -62,7 +62,7 @@ export function previewChordInSong(chord: ChordRef, beats?: number, attachments?
 /** Hear a strum pattern once through on a chord (the pattern builder's Preview). */
 export function previewStrumPattern(pattern: StrumPattern, chord: ChordRef, attachments?: ChordEvent['attachments']): Promise<void> {
   const { song } = useStore.getState();
-  const voicing = eventVoicing({ chord, attachments }, song.instrument, null);
+  const voicing = eventVoicing({ chord, attachments }, song.instrument, null, song.guitar);
   const strikes = renderStrumPattern(pattern, voicing.length - 1, pattern.beats).map((s) => ({
     eventId: '',
     isChordStart: false,

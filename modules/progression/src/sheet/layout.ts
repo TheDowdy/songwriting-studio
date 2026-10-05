@@ -182,7 +182,7 @@ export function buildSheet(song: Song, keyLabel: string): SheetData {
   const voicings = new Map<string, number[]>();
   let prev: number[] | null = null;
   for (const f of flat) {
-    const voicing = eventVoicing(f.event, song.instrument, prev);
+    const voicing = eventVoicing(f.event, song.instrument, prev, song.guitar);
     prev = voicing;
     const id = `${f.arrangementIndex}:${f.event.id}`;
     if (!voicings.has(id)) voicings.set(id, voicing);

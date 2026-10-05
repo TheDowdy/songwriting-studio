@@ -31,6 +31,15 @@ describe('eventVoicing', () => {
     expect(eventVoicing({ chord: C, attachments: { guitar: openC } }, 'piano', null)).toEqual(voiceLeadChord(C, null));
   });
 
+  it('an uncommitted chord on guitar plays the default guitar shape when the setup is given', () => {
+    const guitar = { tuning: [40, 45, 50, 55, 59, 64], capo: 0 };
+    const frets = defaultGuitarShape(C, guitar)!;
+    const expected = guitarVoicingNotes({ frets, tuning: guitar.tuning, capo: 0, source: 'recommended' });
+    expect(expected.length).toBeGreaterThan(3);
+    expect(eventVoicing({ chord: C }, 'guitar', null, guitar)).toEqual(expected);
+    expect(eventVoicing({ chord: C }, 'piano', null, guitar)).toEqual(voiceLeadChord(C, null));
+  });
+
   it('an uncommitted chord voice-leads as before', () => {
     const prev = [48, 52, 55, 60, 64];
     expect(eventVoicing({ chord: C }, 'guitar', prev)).toEqual(voiceLeadChord(C, prev));

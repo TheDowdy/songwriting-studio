@@ -39,7 +39,7 @@ export function buildMidi(song: Song): Midi {
   blockTrack.name = 'Block chords';
   let prevVoicing: number[] | null = null;
   for (const { event, offsetBeats } of flattenDetailed(song)) {
-    const voicing = eventVoicing(event, song.instrument, prevVoicing);
+    const voicing = eventVoicing(event, song.instrument, prevVoicing, song.guitar);
     prevVoicing = voicing;
     const time = offsetBeats * secondsPerBeat;
     const duration = Math.max(0.02, event.beats * secondsPerBeat * 0.97);

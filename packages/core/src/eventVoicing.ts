@@ -40,15 +40,25 @@ export function guitarVoicingNotes(voicing: GuitarVoicing): number[] {
 /**
  * `prev` is the previous event's return value (null for the first chord), so an uncommitted chord
  * following a committed one still voice-leads from what was actually heard.
+ *
+ * On guitar, a chord with no committed shape plays the shape the guitar module would show first for
+ * it (when the song's `guitar` setup is given), so it sounds like a guitar chord rather than a
+ * piano voicing played on guitar samples.
  */
 export function eventVoicing(
   event: Pick<ChordEvent, 'chord' | 'attachments'>,
   instrument: InstrumentId,
   prev: number[] | null,
+  guitar?: GuitarSetup,
 ): number[] {
   const committed = event.attachments?.guitar;
   if (instrument === 'guitar' && committed) {
     const notes = guitarVoicingNotes(committed);
+    if (notes.length > 0) return notes;
+  }
+  if (instrument === 'guitar' && guitar) {
+    const frets = defaultGuitarShape(event.chord, guitar);
+    const notes = frets ? guitarVoicingNotes({ frets, tuning: guitar.tuning, capo: guitar.capo, source: 'recommended' }) : [];
     if (notes.length > 0) return notes;
   }
   return voiceLeadChord(event.chord, prev);

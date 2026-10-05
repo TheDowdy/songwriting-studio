@@ -127,7 +127,7 @@ export const GUIDE: GuideSection[] = [
           'Select **Play** or **Stop** to start or stop playback. On a computer, you can also press the space bar.',
           'Turn on **Loop** to repeat playback. Choose **Whole song** or **This section**.',
           'Set the tempo with the slider, or select **Tap** repeatedly in time.',
-          'Select **More playback settings** to change the time signature, instrument, metronome, and volume.',
+          'Select **More playback settings** to change the time signature, instrument, metronome, and volume. With **Guitar** chosen, each chord plays as a guitar shape: the voicing you saved on it, or else the recommended shape.',
         ],
       },
     ],
