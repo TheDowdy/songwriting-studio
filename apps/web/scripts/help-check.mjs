@@ -129,13 +129,15 @@ await page.getByRole('group', { name: 'Key applies to' }).getByRole('button', { 
 await page.locator('[aria-label="Key"] [aria-pressed]').filter({ hasText: /^G$/ }).first().click();
 await sleep(200);
 await audit('progression: a section with its own key');
-// The strum pattern builder, with a pattern made and a chord selected.
-await page.getByRole('button', { name: 'Strum patterns' }).click();
-await page.getByLabel('New pattern from').selectOption('Folk (D, DU, UDU)');
+// The strum pattern lane: a default block selected, then a block with its editor open.
+await page.getByRole('button', { name: /^Pattern for / }).first().click();
+await sleep(200);
+await audit('progression: song default block');
+await page.getByLabel('Block pattern').selectOption('new:Folk (D, DU, UDU)');
 await page.getByRole('button', { name: /^Step 2 of 8/ }).click();
 await sleep(200);
-await audit('progression: strum pattern builder');
-await page.getByRole('button', { name: 'Strum patterns' }).click();
+await audit('progression: pattern block and editor');
+await page.keyboard.press('Escape');
 await page.getByRole('button', { name: /^Make variant/ }).first().click().catch(() => {});
 await sleep(200);
 await audit('progression: variant dialog');

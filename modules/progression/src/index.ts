@@ -9,7 +9,7 @@ import { PROGRESSION_HELP } from './help';
 import { prefetchSamples } from './audio/engine';
 import { stop as stopPlayback, toNoteStrikes } from './state/playback';
 import { useStore } from './state/store';
-import { voicingStatus } from '@sw/core';
+import { chordStrokes, patternBlocks, voicingStatus } from '@sw/core';
 
 /** Music-note tab icon. */
 const icon = createElement(
@@ -57,5 +57,8 @@ if (
     strikes: () => toNoteStrikes(useStore.getState().song),
     // Whether a committed voicing still fits (Phase 7 check).
     voicingStatus,
+    // The strum pattern lane's blocks, and a chord's strokes at their phase.
+    patternBlocks,
+    chordStrokes,
   };
 }

@@ -96,15 +96,23 @@ for (const theme of ['light', 'dark']) {
   await axe(`${theme} theme, Progression module (circle of fifths)`);
 }
 await page.getByRole('button', { name: 'Suggestions' }).click();
-await page.getByRole('button', { name: 'Strum patterns' }).click();
-await page.getByLabel('New pattern from').selectOption('Folk (D, DU, UDU)');
+await page.getByRole('button', { name: /^Pattern for / }).first().click();
+await page.getByLabel('Block pattern').selectOption('new:Folk (D, DU, UDU)');
 await page.getByRole('button', { name: /^Step 2 of 8/ }).click();
 for (const theme of ['light', 'dark']) {
   await setShellTheme(theme);
   await sleep(150);
-  await axe(`${theme} theme, Progression module (strum pattern builder)`);
+  await axe(`${theme} theme, Progression module (pattern lane, block selected, editor open)`);
 }
-await page.getByRole('button', { name: 'Strum patterns' }).click();
+// Keyboard: the block's handle takes focus (its arrow keys are exercised in check:patterns).
+{
+  const handle = page.getByRole('slider', { name: /^Chords in .+ block$/ });
+  await handle.focus();
+  check('the pattern block handle is keyboard-focusable', await handle.evaluate((el) => el === document.activeElement));
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Shift+Tab');
+}
+await page.keyboard.press('Escape');
 await page.getByRole('tab', { name: 'Guitar' }).click();
 await page.waitForSelector('.fretboard-svg');
 for (const theme of ['light', 'dark']) {

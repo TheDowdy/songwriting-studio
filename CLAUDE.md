@@ -43,7 +43,7 @@ Every module exposes its store (and the guitar module its audio engine) on `wind
 `import.meta.env.DEV` or the URL has `?debug`, for the browser-check scripts and manual poking in
 devtools:
 
-- `window.__songwriting` — the progression module's store, plus `toNoteStrikes`/`voicingStatus`.
+- `window.__songwriting` — the progression module's store, plus `toNoteStrikes`/`voicingStatus`/`patternBlocks`/`chordStrokes`.
 - `window.__fluidfrets` — the guitar module's store and `audioEngine`.
 - `window.__shell` — the shell's settings store (theme, etc).
 

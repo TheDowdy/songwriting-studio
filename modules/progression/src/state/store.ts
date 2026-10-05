@@ -89,9 +89,12 @@ interface AppState {
   patternForChordOnly: (eventId: string) => void;
   patternForSection: (sectionId: string, patternId: PatternId) => void;
   patternForSong: (patternId: PatternId) => void;
-  /** The strum pattern builder is open under the timeline. */
-  patternsOpen: boolean;
-  setPatternsOpen: (open: boolean) => void;
+  /** The chord whose pattern-lane block is selected (its options show under the section). */
+  laneEventId: string | null;
+  setLaneEvent: (id: string | null) => void;
+  /** The selected block's pattern editor is open. */
+  patternEditorOpen: boolean;
+  setPatternEditorOpen: (open: boolean) => void;
   setLoop: (loop: boolean) => void;
   setLoopScope: (scope: 'song' | 'section') => void;
   setMetronome: (on: boolean) => void;
@@ -122,6 +125,7 @@ const clampVolume = (n: number) => Math.max(0, Math.min(1, n));
 
 const resetSelection = {
   selectedEventId: null as string | null,
+  laneEventId: null as string | null,
   playingEventId: null as string | null,
   isPlaying: false,
   replaceTargetId: null as string | null,
@@ -177,12 +181,12 @@ export const useStore = create<AppState>((set, get) => {
       // While playing, the map follows the audio, so new chords continue from what you hear.
       const base = s.isPlaying && s.playingEventId ? s.playingEventId : s.selectedEventId;
       const eventId = songStore.getState().addChord(active.id, base, chord);
-      set({ selectedEventId: eventId, activeSectionId: active.id });
+      set({ selectedEventId: eventId, laneEventId: null, activeSectionId: active.id });
     },
 
     duplicateEvent: (id) => {
       const eventId = songStore.getState().duplicateEvent(id);
-      if (eventId) set({ selectedEventId: eventId });
+      if (eventId) set({ selectedEventId: eventId, laneEventId: null });
     },
 
     removeEvent: (id) => {
@@ -193,7 +197,7 @@ export const useStore = create<AppState>((set, get) => {
       songStore.getState().removeEvent(id);
       const events = section.events.filter((e) => e.id !== id);
       const selected = s.selectedEventId === id ? (events[Math.min(index, events.length - 1)]?.id ?? null) : s.selectedEventId;
-      set({ selectedEventId: selected });
+      set({ selectedEventId: selected, laneEventId: s.laneEventId === id ? null : s.laneEventId });
     },
 
     setEventChord: (id, chord) => songStore.getState().setEventChord(id, chord),
@@ -215,13 +219,13 @@ export const useStore = create<AppState>((set, get) => {
     selectEvent: (id) =>
       set((s) => {
         const found = id ? core.findEvent(s.song, id) : null;
-        return { selectedEventId: id, activeSectionId: found ? found.section.id : s.activeSectionId };
+        return { selectedEventId: id, laneEventId: id ? null : s.laneEventId, activeSectionId: found ? found.section.id : s.activeSectionId };
       }),
 
     replaceTargetId: null,
     chordDetailOpen: false,
     setChordDetailOpen: (chordDetailOpen) => set({ chordDetailOpen }),
-    startReplace: (id) => set({ replaceTargetId: id, selectedEventId: id }),
+    startReplace: (id) => set({ replaceTargetId: id, selectedEventId: id, laneEventId: null }),
     cancelReplace: () => set({ replaceTargetId: null }),
 
     addSection: (name) => {
@@ -269,8 +273,20 @@ export const useStore = create<AppState>((set, get) => {
     patternForChordOnly: (eventId) => songStore.getState().patternForChordOnly(eventId),
     patternForSection: (sectionId, patternId) => songStore.getState().patternForSection(sectionId, patternId),
     patternForSong: (patternId) => songStore.getState().patternForSong(patternId),
-    patternsOpen: false,
-    setPatternsOpen: (patternsOpen) => set({ patternsOpen }),
+    laneEventId: null,
+    setLaneEvent: (id) =>
+      set((s) => {
+        const found = id ? core.findEvent(s.song, id) : null;
+        return {
+          laneEventId: found ? id : null,
+          // Only one set of options shows under a section: the lane's or the chord's.
+          selectedEventId: found ? null : s.selectedEventId,
+          activeSectionId: found ? found.section.id : s.activeSectionId,
+          patternEditorOpen: found && id === s.laneEventId ? s.patternEditorOpen : false,
+        };
+      }),
+    patternEditorOpen: false,
+    setPatternEditorOpen: (patternEditorOpen) => set({ patternEditorOpen }),
     setLoop: (loop) => set({ loop }),
     setLoopScope: (loopScope) => set({ loopScope }),
     setMetronome: (metronome) => set({ metronome }),

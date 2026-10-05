@@ -87,7 +87,6 @@ export const GUIDE: GuideSection[] = [
       { p: 'Select a chord in the timeline, and then use the buttons below it:' },
       {
         ul: [
-          '**Strum pattern** chooses how this chord is played: a built-in pattern or one you made, or the same as the section and song.',
           '**Flavor** changes the chord type, such as 7th or sus4.',
           '**Piano / guitar** shows the chord on a keyboard or as a guitar diagram.',
           '**Replace** swaps the chord for one you choose from the map.',
@@ -99,24 +98,36 @@ export const GUIDE: GuideSection[] = [
       { h3: 'Organize sections' },
       { p: 'A song is made of sections, such as a verse and a chorus. Add a section with the buttons below the timeline, for example **+ Verse**. In the arrangement, add sections in the order you want them played. A section can appear more than once.' },
       { p: 'Use **–** and **+** next to a section’s name to set how many times it repeats. **Duplicate section** copies a section, and **Clear** removes its chords.' },
-      { h3: 'Build your own strum patterns' },
-      { p: 'A strum pattern is a rhythm of down and up strums. To make one, select **Strum patterns** next to **More ▾** in the playback bar. In **New pattern from**, choose **Blank** or a common rhythm to start from.' },
+      { h3: 'Add strum patterns' },
+      { p: 'Under each section’s chords is the pattern lane. It works like a second track: the chord blocks say what is played, and the pattern blocks say how. A chord with no pattern of its own, shown with a dashed outline, plays the song default.' },
+      {
+        ul: [
+          'Select a block in the lane to show its options under the section. Select **×** or press Escape to close them.',
+          'Use **Block pattern** to choose what the block plays: a built-in pattern, one you made, or a new one from **Blank** or a common rhythm. Choosing a pattern for a dashed chord gives it to that chord only.',
+          'Drag the ◆ handle at the end of a block to cover more or fewer chords, or select **+ Longer block** or **− Shorter block**. With the handle focused, use the arrow keys.',
+          'Use **Just this chord**, **Whole section** or **Whole song** to put the same pattern somewhere else. **Whole song** makes it the song default and clears every other block.',
+          'Select **Remove pattern** to send the block’s chords back to the song default.',
+          'Select a dashed block and use **Song default** to change the pattern every chord without its own block plays. The built-in patterns, such as the arpeggios, are in **Song default** and **Block pattern**.',
+          'A chord you add after a chord with a pattern joins its block.',
+        ],
+      },
+      { p: 'A strum pattern is a rhythm of down and up strums. To change a pattern you made, select **Edit pattern**.' },
       {
         ul: [
           'Each box is one step. Select a step to change it: first a down strum (↓), then an up strum (↑), then a rest (·).',
           'With a step selected, choose **All strings**, **Low strings** or **High strings** for a full or partial strum, and select **Accent** to make it louder.',
           'Use **Length in beats** and **Steps in each beat** to change how long the pattern is and how finely it divides each beat. Strokes you’ve already placed stay at the same moment where they still fit. Shortening a pattern removes the steps past its end.',
-          'Select **▶ Preview** to hear it on the selected chord.',
+          'Select **▶ Preview** to hear it on the block’s chord. Select **Duplicate pattern** to make a copy, or **Delete pattern** to remove it; anything that used it goes back to the song default.',
         ],
       },
-      { p: 'A pattern repeats to fill a longer chord, and a chord shorter than the pattern plays the start of it. To use a pattern, select one of **Selected chord**, **Rest of section** (the selected chord and the ones after it), **Whole section** or **Entire song**. A chord’s own choice wins over its section’s, and a section’s wins over the song’s. You can also pick a pattern for one chord with **Strum pattern** under the timeline. A chord with a pattern of your own shows its strokes as arrows in its block, and a small ≋ if it has a choice of its own. Select **Delete pattern** to remove it; anything that used it goes back to the next level up.' },
+      { p: 'A custom pattern repeats from the start of its block and carries on from one chord to the next, so a four-beat pattern across two two-beat chords plays its first half on the first chord and its second half on the second. In songs saved before this change, a chord shorter than its pattern plays differently.' },
       { h3: 'Play the progression' },
       {
         ul: [
           'Select **Play** or **Stop** to start or stop playback. On a computer, you can also press the space bar.',
           'Turn on **Loop** to repeat playback. Choose **Whole song** or **This section**.',
           'Set the tempo with the slider, or select **Tap** repeatedly in time.',
-          'Select **More playback settings** to change the time signature, instrument, pattern, metronome, and volume.',
+          'Select **More playback settings** to change the time signature, instrument, metronome, and volume.',
         ],
       },
     ],

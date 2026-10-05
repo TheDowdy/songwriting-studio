@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   DndContext,
   KeyboardSensor,
@@ -17,17 +17,18 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { canToggleMajorMinor, chordName, chroma, keyLabel, keyOfSection, patternLabel, patternIdFor, chordStrokes, toggleMajorMinor, voicingStatus } from '@sw/core';
-import type { Key } from '@sw/core';
+import { canToggleMajorMinor, chordName, chroma, keyLabel, keyOfSection, patternBlocks, toggleMajorMinor, voicingStatus } from '@sw/core';
+import type { Key, PatternBlock } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { ChordDiagram, NumberField, VariantDialog } from '@sw/ui';
 import type { Navigate } from '../App';
 import { previewChordInSong } from '../state/playback';
 import { BEATS_MAX, useStore } from '../state/store';
 import type { ChordEvent, Section, VariantGeneratorId, VariantOptions } from '@sw/core';
-import { PatternSelect } from '@sw/ui';
 import ChordDetail from './ChordDetail';
 import FlavorPicker from './FlavorPicker';
+import { PatternBlockToolbar, PatternLaneCell } from './PatternLane';
+import { BEAT_PX } from './timelineConstants';
 
 const ORIGIN_COLOR = {
   diatonic: 'var(--c-diatonic)',
@@ -41,12 +42,12 @@ const TOUCH_DRAG = { activationConstraint: { delay: 250, tolerance: 8 } };
 
 const QUICK_ADD = ['Verse', 'Chorus', 'Bridge'];
 
-/** Width of one beat on the timeline; a chord block is `beats × BEAT_PX` wide. */
-const BEAT_PX = 52;
-
 function ChordSlot({
   event,
   sectionId,
+  index,
+  count,
+  block,
   barLength,
   cumulativeBeats,
   active,
@@ -55,6 +56,10 @@ function ChordSlot({
 }: {
   event: ChordEvent;
   sectionId: string;
+  index: number;
+  count: number;
+  /** The pattern block this chord is in, for its lane cell. */
+  block: PatternBlock;
   barLength: number;
   cumulativeBeats: number;
   active: boolean;
@@ -65,8 +70,6 @@ function ChordSlot({
   const selectEvent = useStore((s) => s.selectEvent);
   const setEventBeats = useStore((s) => s.setEventBeats);
   const guitar = useStore((s) => s.song.guitar);
-  const song = useStore((s) => s.song);
-  // The strokes of this chord's own, section's or song's strum pattern, when it has a custom one.
   // A committed guitar voicing shows as a mini diagram, flagged when it no longer fits the chord
   // or the song's tuning/capo (Phase 5 item 1 — the same badge the guitar module's strip shows).
   const voicing = event.attachments?.guitar;
@@ -79,7 +82,6 @@ function ChordSlot({
   const isBarStart = cumulativeBeats % barLength === 0;
   const [resizeBeats, setResizeBeats] = useState<number | null>(null);
   const shownBeats = resizeBeats ?? event.beats;
-  const strokes = chordStrokes(song, event.id, shownBeats);
 
   // When this chord becomes the selected one (just added, or picked), scroll the timeline row
   // sideways so it's in view. Only the row scrolls, never the page, so adding from the map above
@@ -198,24 +200,7 @@ function ChordSlot({
           className="pointer-events-none absolute inset-x-0 bottom-0 flex h-7 items-center"
           style={{ backgroundImage: 'repeating-linear-gradient(to bottom, transparent 0, transparent 5px, var(--line) 5px, var(--line) 6px)' }}
         >
-          {strokes
-            ? strokes.map((hit, i) => (
-                <span
-                  key={i}
-                  className="absolute -translate-x-1/2 font-mono leading-none"
-                  title={`${hit.step.stroke === 'down' ? 'Down' : 'Up'} strum${hit.step.extent === 'full' ? '' : ', ' + hit.step.extent + ' strings'}`}
-                  style={{
-                    left: hit.offsetBeats * BEAT_PX + BEAT_PX / 2,
-                    fontSize: hit.step.extent === 'full' ? 15 : 11,
-                    fontWeight: hit.step.accent ? 800 : 500,
-                    color: playing && i === 0 ? 'var(--play)' : 'var(--fg)',
-                    opacity: hit.step.stroke === 'up' ? 0.7 : 1,
-                  }}
-                >
-                  {hit.step.stroke === 'down' ? '↓' : '↑'}
-                </span>
-              ))
-            : Array.from({ length: shownBeats }, (_, i) => (
+          {Array.from({ length: shownBeats }, (_, i) => (
                 <span key={i} className="flex shrink-0 justify-center" style={{ width: BEAT_PX }}>
                   <span
                     className="block h-4 w-0.5"
@@ -228,11 +213,6 @@ function ChordSlot({
                 </span>
               ))}
         </div>
-        {event.pattern && (
-          <span aria-hidden="true" title={`Own strum pattern: ${patternLabel(song, event.pattern)}`} className="pointer-events-none absolute left-1 top-0.5 font-mono text-[10px] text-muted">
-            ≋
-          </span>
-        )}
         <div
           role="slider"
           tabIndex={0}
@@ -247,6 +227,7 @@ function ChordSlot({
           <span className="h-6 w-0.5 rounded bg-current opacity-60" />
         </div>
       </div>
+      <PatternLaneCell event={event} index={index} count={count} block={block} shownBeats={shownBeats} />
     </li>
   );
 }
@@ -279,10 +260,6 @@ function ChordToolbar({
   const startReplace = useStore((s) => s.startReplace);
   const cancelReplace = useStore((s) => s.cancelReplace);
   const setEventChord = useStore((s) => s.setEventChord);
-  const song = useStore((s) => s.song);
-  const setChordPatterns = useStore((s) => s.setChordPatterns);
-  const sectionId = song.sections.find((s) => s.events.some((e) => e.id === event.id))?.id ?? '';
-  const chordIndex = song.sections.find((s) => s.id === sectionId)?.events.findIndex((e) => e.id === event.id) ?? 0;
   const btn = 'rounded-full border border-fg px-3.5 py-1.5 text-base italic hover:bg-surface-2 aria-pressed:border-accent aria-pressed:text-accent';
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2" aria-label={`Actions for ${chordName(event.chord)}`}>
@@ -305,12 +282,6 @@ function ChordToolbar({
       >
         {event.chord.quality === 'min' ? 'Make major' : 'Make minor'}
       </button>
-      <PatternSelect
-        song={song}
-        value={event.pattern}
-        inheritLabel={`Song default (${patternLabel(song, patternIdFor(song, { pattern: undefined }))})`}
-        onChange={(id) => setChordPatterns(sectionId, chordIndex, chordIndex, id || null)}
-      />
       <button onClick={onFlavor} aria-pressed={flavorOpen} className={btn}>Flavor</button>
       <button onClick={onDetail} aria-pressed={detailOpen} className={btn}>Piano / guitar</button>
       <button onClick={onExplore} className={btn}>Explore guitar voicings</button>
@@ -362,7 +333,10 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
     cumulative += event.beats;
     return { event, offset };
   });
-  const toolbarEvent = section.events.find((e) => e.id === selectedId);
+  const laneEventId = useStore((s) => s.laneEventId);
+  const laneEvent = section.events.find((e) => e.id === laneEventId);
+  const blocks = useMemo(() => patternBlocks(song, section.id), [song, section.id]);
+  const toolbarEvent = laneEvent ? undefined : section.events.find((e) => e.id === selectedId);
   const flavorEvent = section.events.find((e) => e.id === flavorId && e.id === selectedId);
   const detailEvent = detailOpen ? toolbarEvent : undefined;
   const sourceSection = section.variantOf ? song.sections.find((s) => s.id === section.variantOf) : undefined;
@@ -458,11 +432,14 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
       ) : (
         <SortableContext items={section.events.map((e) => e.id)} strategy={horizontalListSortingStrategy}>
           <ol className="timeline-scroll flex snap-x gap-2 overflow-x-auto overscroll-x-contain pb-3">
-            {withOffsets.map(({ event, offset }) => (
+            {withOffsets.map(({ event, offset }, index) => (
               <ChordSlot
                 key={event.id}
                 event={event}
                 sectionId={section.id}
+                index={index}
+                count={section.events.length}
+                block={blocks.find((b) => index >= b.startIndex && index <= b.endIndex)!}
                 barLength={barLength}
                 cumulativeBeats={offset}
                 active={event.id === activeId}
@@ -474,6 +451,7 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
         </SortableContext>
       )}
 
+      {laneEvent && <PatternBlockToolbar section={section} eventId={laneEvent.id} />}
       {toolbarEvent && (
         <ChordToolbar
           event={toolbarEvent}

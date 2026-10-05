@@ -2,8 +2,8 @@ import { useRef, useState } from 'react';
 import { BPM_MAX, BPM_MIN, useStore } from '../state/store';
 import { togglePlay } from '../state/playback';
 import { NumberField } from '@sw/ui';
-import { flattenSong, patternOptions } from '@sw/core';
-import type { InstrumentId, PatternId } from '@sw/core';
+import { flattenSong } from '@sw/core';
+import type { InstrumentId } from '@sw/core';
 
 const INSTRUMENTS: { id: InstrumentId; label: string }[] = [
   { id: 'piano', label: 'Piano' },
@@ -49,10 +49,6 @@ export default function TransportBar() {
   const bpm = useStore((s) => s.song.bpm);
   const timeSig = useStore((s) => s.song.timeSig);
   const instrument = useStore((s) => s.song.instrument);
-  const pattern = useStore((s) => s.song.pattern);
-  const songPatterns = useStore((s) => s.song.patterns);
-  const patternsOpen = useStore((s) => s.patternsOpen);
-  const setPatternsOpen = useStore((s) => s.setPatternsOpen);
   const loop = useStore((s) => s.loop);
   const loopScope = useStore((s) => s.loopScope);
   const metronome = useStore((s) => s.metronome);
@@ -62,7 +58,6 @@ export default function TransportBar() {
   const setBpm = useStore((s) => s.setBpm);
   const setTimeSig = useStore((s) => s.setTimeSig);
   const setInstrument = useStore((s) => s.setInstrument);
-  const setPattern = useStore((s) => s.setPattern);
   const setLoop = useStore((s) => s.setLoop);
   const setLoopScope = useStore((s) => s.setLoopScope);
   const setMetronome = useStore((s) => s.setMetronome);
@@ -146,19 +141,6 @@ export default function TransportBar() {
           <TapTempo />
 
           <button
-            onClick={() => {
-              setPatternsOpen(!patternsOpen);
-              // Below the desktop width this bar is pinned to the bottom of the screen, and left
-              // open it would cover the pattern builder it just opened.
-              setExpanded(false);
-            }}
-            aria-pressed={patternsOpen}
-            className={`h-10 rounded-full border px-4 text-base italic ${patternsOpen ? 'border-accent text-accent' : 'border-fg text-muted hover:bg-surface-2'}`}
-          >
-            Strum patterns
-          </button>
-
-          <button
             onClick={() => setExpanded((v) => !v)}
             aria-pressed={expanded}
             aria-label="More playback settings"
@@ -210,24 +192,6 @@ export default function TransportBar() {
                 {INSTRUMENTS.map((i) => (
                   <option key={i.id} value={i.id}>
                     {i.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="pattern" className="mb-1 block font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted">
-                Pattern
-              </label>
-              <select
-                id="pattern"
-                value={pattern}
-                onChange={(e) => setPattern(e.target.value as PatternId)}
-                className="h-10 rounded-none border-0 border-b border-fg bg-transparent px-2"
-              >
-                {patternOptions({ patterns: songPatterns }).map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.label}
                   </option>
                 ))}
               </select>

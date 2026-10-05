@@ -39,12 +39,20 @@ let s = await song();
 const [a, b] = s.sections[0].events;
 check('start with three chords', s.sections[0].events.length === 3);
 
-// ---------------------------------------------------------------- make a pattern
-await page.getByRole('button', { name: 'Strum patterns' }).click();
-await page.getByLabel('New pattern from').selectOption('Folk (D, DU, UDU)');
+// ---------------------------------------------------------------- the lane, and making a pattern in it
+const lane = (i) => page.getByRole('button', { name: /^Pattern for / }).nth(i);
+const blockSelect = () => page.getByLabel('Block pattern');
+const handle = () => page.getByRole('slider', { name: /^Chords in .+ block$/ });
+const own = async () => (await song()).sections[0].events.map((e) => e.pattern ?? null);
+check('no Strum patterns button in the transport bar', (await page.getByRole('button', { name: 'Strum patterns' }).count()) === 0);
+check('every chord has a lane cell, all on the song default', (await page.getByRole('button', { name: /^Pattern for / }).count()) === 3 && (await lane(0).getAttribute('aria-label')).includes('song default'));
+await lane(0).click();
+check('selecting a lane cell shows the pattern block options', await page.getByRole('group', { name: 'Pattern block' }).isVisible());
+await blockSelect().selectOption('new:Folk (D, DU, UDU)');
 await sleep(300);
 s = await song();
-check('a new pattern from a preset is saved in the song', s.patterns?.length === 1 && s.patterns[0].steps.length === 8, JSON.stringify(s.patterns?.[0]?.steps.map((x) => x && x.stroke[0])));
+check('a new pattern from a preset is saved and given to that chord only', s.patterns?.length === 1 && s.patterns[0].steps.length === 8 && s.sections[0].events[0].pattern === `custom:${s.patterns[0].id}` && !s.sections[0].events[1].pattern && !s.sections[0].events[2].pattern, JSON.stringify(s.patterns?.[0]?.steps.map((x) => x && x.stroke[0])));
+check('the pattern editor opens beside it', (await page.getByLabel('Pattern name').count()) === 1);
 const pid = s.patterns[0].id;
 
 // ---------------------------------------------------------------- edit steps
@@ -79,10 +87,10 @@ await page.getByRole('button', { name: 'Low strings' }).click();
 await sleep(150);
 
 // ---------------------------------------------------------------- use it for the whole song
-await page.getByRole('button', { name: 'Entire song' }).click();
+await page.getByRole('button', { name: 'Whole song', exact: true }).click();
 await sleep(300);
 s = await song();
-check('Entire song makes it the song’s pattern', s.pattern === `custom:${pid}`, s.pattern);
+check('Whole song makes it the song’s pattern and clears every chord’s own', s.pattern === `custom:${pid}` && s.sections[0].events.every((e) => !e.pattern), s.pattern);
 let all = await strikes();
 const first = byChord(all, a.id);
 // Shortening to 3 beats and back dropped the last two steps (beat 4), so 5 strokes are left.
@@ -93,49 +101,125 @@ check('a down stroke sounds low to high and an up stroke high to low', downStrok
 const partial = first.find((x) => x.midi.length < downStroke.midi.length);
 check('the partial strum sounds fewer strings', !!partial);
 
-// strokes are shown in the timeline
-await page.getByRole('button', { name: new RegExp('^Chord: ') }).first().click();
-const arrows = await page.locator('.timeline-scroll li span[title$="strum"], .timeline-scroll li span[title*="strum,"]').count();
-check('each chord block shows the strokes of its pattern', arrows >= 15, String(arrows));
+// strokes are drawn in the lane, not on the chord blocks
+const laneArrows = await page.locator('[data-lane-cell] [data-stroke]').count();
+const blockArrows = await page.locator('.timeline-scroll li > div:not([data-lane-cell]) span[title*="strum"]').count();
+check('the lane shows every chord’s strokes, and the chord blocks show none', laneArrows === 15 && blockArrows === 0, `${laneArrows} in the lane, ${blockArrows} on chord blocks`);
+
+// ---------------------------------------------------------------- a pattern keeps its phase across a block
+await page.evaluate(([x, y]) => {
+  const st = window.__songwriting.store.getState();
+  st.setEventBeats(x, 2);
+  st.setEventBeats(y, 2);
+}, [a.id, b.id]);
+await sleep(250);
+all = await strikes();
+const secondChord = byChord(all, b.id).filter((x) => x.midi.length > 0).map((x) => x.offsetBeats - 2);
+const expectedPhase = await page.evaluate((id) => window.__songwriting.chordStrokes(window.__songwriting.store.getState().song, id).map((h) => h.offsetBeats), b.id);
+check('the second 2-beat chord plays the second half of the pattern, not its start again', JSON.stringify(secondChord) === JSON.stringify(expectedPhase) && expectedPhase[0] === 0.5, `${secondChord} vs ${expectedPhase}`);
+await page.evaluate(([x, y]) => {
+  const st = window.__songwriting.store.getState();
+  st.setEventBeats(x, 4);
+  st.setEventBeats(y, 4);
+}, [a.id, b.id]);
+await sleep(200);
 
 // ---------------------------------------------------------------- one chord with its own pattern
-await page.getByRole('button', { name: new RegExp('^Chord: ') }).nth(1).click();
-await ownPattern().selectOption('strum-down');
+await lane(1).click();
+await blockSelect().selectOption('strum-down');
 await sleep(250);
 s = await song();
 check('one chord can have its own pattern', s.sections[0].events[1].pattern === 'strum-down' && !s.sections[0].events[0].pattern, String(s.sections[0].events[1].pattern));
 all = await strikes();
 check('that chord plays the built-in strum while the others play the custom pattern', byChord(all, b.id).length !== byChord(all, a.id).length || JSON.stringify(byChord(all, b.id).map((x) => x.offsetBeats)) !== JSON.stringify(byChord(all, a.id).map((x) => x.offsetBeats)));
-await ownPattern().selectOption('');
+await blockSelect().selectOption('');
 await sleep(250);
 s = await song();
-check('choosing "Same as song" clears it', !s.sections[0].events[1].pattern);
+check('choosing the song default clears it', !s.sections[0].events[1].pattern);
 
-// a second pattern, used for the selected chord only
-await page.getByLabel('New pattern from').selectOption('Off-beat chops');
+// a second pattern: made from the lane for one chord, then grown, dragged and nudged
+await blockSelect().selectOption('new:Off-beat chops');
 await sleep(300);
 s = await song();
 const second = s.patterns[1];
-check('a second pattern is added and selected for editing', s.patterns.length === 2 && (await page.getByLabel('Pattern name').inputValue()) === second.name);
-await page.getByRole('button', { name: 'Selected chord' }).click();
+const cs = `custom:${second.id}`;
+check('a second pattern is added for that chord and opens for editing', s.patterns.length === 2 && (await page.getByLabel('Pattern name').inputValue()) === second.name && JSON.stringify(await own()) === JSON.stringify([null, cs, null]));
+await page.getByRole('button', { name: '+ Longer block' }).click();
+await sleep(200);
+check('+ Longer block extends the block over the next chord', JSON.stringify(await own()) === JSON.stringify([null, cs, cs]));
+await page.getByRole('button', { name: 'Just this chord' }).click();
+await sleep(200);
+check('Just this chord keeps it on the selected chord only', JSON.stringify(await own()) === JSON.stringify([null, cs, null]));
+// drag the block’s handle across the next chord
+const hb = await handle().boundingBox();
+const target = await lane(2).boundingBox();
+await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
+await page.mouse.down();
+await page.mouse.move(target.x + target.width / 2 + 4, hb.y + hb.height / 2, { steps: 8 });
+await page.mouse.up();
 await sleep(250);
-s = await song();
-check('Selected chord uses it for that chord only', s.sections[0].events[1].pattern === `custom:${second.id}` && !s.sections[0].events[0].pattern && !s.sections[0].events[2].pattern);
-await page.getByRole('button', { name: 'Rest of section' }).click();
-await sleep(250);
-s = await song();
-check('Rest of section uses it for that chord and the ones after', s.sections[0].events[2].pattern === `custom:${second.id}` && !s.sections[0].events[0].pattern);
+check('dragging the handle over the next chord grows the block', JSON.stringify(await own()) === JSON.stringify([null, cs, cs]), JSON.stringify(await own()));
+await handle().focus();
+await page.keyboard.press('ArrowLeft');
+await sleep(150);
+check('the handle’s left arrow shortens the block', JSON.stringify(await own()) === JSON.stringify([null, cs, null]));
+await page.keyboard.press('ArrowRight');
+await sleep(150);
+check('the handle’s right arrow grows it again', JSON.stringify(await own()) === JSON.stringify([null, cs, cs]));
+await page.getByRole('button', { name: '− Shorter block' }).click();
+await page.getByRole('button', { name: '+ Longer block' }).click();
+await sleep(150);
+check('the Shorter and Longer buttons do the same', JSON.stringify(await own()) === JSON.stringify([null, cs, cs]));
 await page.getByRole('button', { name: 'Whole section' }).click();
 await sleep(250);
 s = await song();
-check('Whole section gives every chord in it the pattern', s.sections[0].events.every((e) => e.pattern === `custom:${second.id}`));
+check('Whole section gives every chord in it the pattern', s.sections[0].events.every((e) => e.pattern === cs));
+await page.getByRole('button', { name: 'Remove pattern' }).click();
+await sleep(200);
+check('Remove pattern puts the block back on the song default', (await own()).every((p) => p === null));
+await page.keyboard.press('Escape');
+check('Escape closes the block options', (await page.getByRole('group', { name: 'Pattern block' }).count()) === 0);
+
+// ---------------------------------------------------------------- a new chord continues the block before it
+await lane(0).click();
+await blockSelect().selectOption(cs);
+await page.getByRole('button', { name: 'Whole section' }).click();
+await sleep(200);
+await page.locator('.map-node').nth(1).click();
+await page.getByRole('button', { name: '+ Add' }).click();
+await sleep(250);
+s = await song();
+check('a chord added after a patterned chord continues its block', s.sections[0].events.length === 4 && s.sections[0].events[3].pattern === cs);
+await page.getByRole('button', { name: /^Chord: / }).nth(3).click();
+await page.getByRole('button', { name: 'Remove', exact: true }).click();
+await sleep(250);
+s = await song();
+check('removing it leaves the other three as they were', s.sections[0].events.length === 3 && s.sections[0].events.every((e) => e.pattern === cs));
+
+// ---------------------------------------------------------------- on a phone
+await page.setViewportSize({ width: 390, height: 844 });
+await sleep(300);
+await lane(0).click();
+await sleep(300);
+const bar = await page.getByRole('group', { name: 'Pattern block' }).boundingBox();
+check('on a phone the block options are on screen after selecting a block', !!bar && bar.y >= 0 && bar.y < 844);
+await page.getByRole('button', { name: '− Shorter block' }).click();
+await sleep(150);
+check('Shorter block works by tap', JSON.stringify(await own()) === JSON.stringify([cs, cs, null]));
+await page.getByRole('button', { name: '+ Longer block' }).click();
+await page.setViewportSize({ width: 1280, height: 1100 });
+await sleep(200);
+
+// ---------------------------------------------------------------- the song’s own default is still the first pattern
+await page.keyboard.press('Escape');
+check('the song default is still the first pattern', (await song()).pattern === `custom:${pid}`);
 
 // ---------------------------------------------------------------- it is saved with the song
 await sleep(1200); // the song store autosaves after a short debounce
 await page.reload();
 await page.waitForSelector('.map-node');
 s = await song();
-check('patterns and where they are used survive a reload', s.patterns?.length === 2 && s.sections[0].events.every((e) => e.pattern === `custom:${second.id}`) && s.pattern === `custom:${pid}`);
+check('patterns and where they are used survive a reload', s.schemaVersion === 3 && s.patterns?.length === 2 && s.sections[0].events.every((e) => e.pattern === cs) && s.pattern === `custom:${pid}`);
 
 // ---------------------------------------------------------------- the guitar module
 await page.getByRole('tab', { name: 'Guitar' }).click();
