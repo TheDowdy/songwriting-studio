@@ -28,6 +28,8 @@ interface AppState {
   setMapMode: (mode: MapMode) => void;
   /** The chord slot currently sounding during playback. */
   playingEventId: string | null;
+  /** The beat of the sounding chord (from 0), for the timeline's moving highlight. */
+  playingBeat: number;
   isPlaying: boolean;
   loop: boolean;
   /** Loop the whole song, or just the section the selected/playing chord is in. */
@@ -101,6 +103,7 @@ interface AppState {
   setVolume: (volume: number) => void;
   setPlaying: (isPlaying: boolean) => void;
   setPlayingEvent: (id: string | null) => void;
+  setPlayingBeat: (id: string, beat: number) => void;
 
   setTitle: (title: string) => void;
   /** Replace the whole song (open a saved song, import JSON, or start a new one) and reset the
@@ -127,6 +130,7 @@ const resetSelection = {
   selectedEventId: null as string | null,
   laneEventId: null as string | null,
   playingEventId: null as string | null,
+  playingBeat: 0,
   isPlaying: false,
   replaceTargetId: null as string | null,
 };
@@ -164,6 +168,7 @@ export const useStore = create<AppState>((set, get) => {
       set({ mapMode });
     },
     playingEventId: null,
+    playingBeat: 0,
     isPlaying: false,
     loop: true,
     loopScope: 'song',
@@ -291,8 +296,10 @@ export const useStore = create<AppState>((set, get) => {
     setLoopScope: (loopScope) => set({ loopScope }),
     setMetronome: (metronome) => set({ metronome }),
     setVolume: (volume) => set({ volume: clampVolume(volume) }),
-    setPlaying: (isPlaying) => set(isPlaying ? { isPlaying } : { isPlaying, playingEventId: null }),
-    setPlayingEvent: (id) => set({ playingEventId: id }),
+    setPlaying: (isPlaying) => set(isPlaying ? { isPlaying } : { isPlaying, playingEventId: null, playingBeat: 0 }),
+    // A new chord starts on its first beat, so the old chord's last beat never flashes on it.
+    setPlayingEvent: (id) => set((s) => (s.playingEventId === id ? s : { playingEventId: id, playingBeat: 0 })),
+    setPlayingBeat: (id, beat) => set({ playingEventId: id, playingBeat: beat }),
 
     setTitle: (title) => songStore.getState().setTitle(title),
     loadSong: (song) => {

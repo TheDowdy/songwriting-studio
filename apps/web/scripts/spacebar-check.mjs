@@ -89,6 +89,27 @@ check('Space does not scroll the page', (await scrollY()) === y0, `${y0} → ${a
 await page.keyboard.press('Space');
 await sleep(250);
 
+// ---------------------------------------------------------------- the timeline follows each beat
+// At a fast tempo, play and record which beat of which chord is lit. Headless Chrome may not be able to
+// start audio, so this only asserts when playback produced beats at all.
+await page.evaluate(() => {
+  const st = window.__songwriting.store;
+  st.getState().setBpm(240);
+  window.__beats = [];
+  st.subscribe((s, p) => (s.playingBeat !== p.playingBeat || s.playingEventId !== p.playingEventId) && window.__beats.push([s.playingEventId, s.playingBeat]));
+});
+await page.keyboard.press('Space');
+await sleep(2200);
+await page.keyboard.press('Space');
+await sleep(250);
+const beats = await page.evaluate(() => window.__beats.filter((b) => b[0] !== null));
+const steps = beats.map((b) => b[1]);
+check(
+  'playing lights each beat of a chord in turn, from the first, never repeating the last beat of the chord before',
+  beats.length === 0 || (steps[0] === 0 && steps.every((b, i) => i === 0 || b === (steps[i - 1] + 1) % 4 || (beats[i][0] !== beats[i - 1][0] && b === 0))),
+  steps.join(','),
+);
+
 // ---------------------------------------------------------------- Space keeps its other meanings
 // Typing a space in the song title.
 const titleInput = page.getByPlaceholder('Song title');

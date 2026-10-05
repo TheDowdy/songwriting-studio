@@ -70,6 +70,8 @@ function ChordSlot({
   const selectEvent = useStore((s) => s.selectEvent);
   const setEventBeats = useStore((s) => s.setEventBeats);
   const guitar = useStore((s) => s.song.guitar);
+  // Which slash is sounding: it moves through the chord's beats while playing.
+  const playingBeat = useStore((s) => (playing ? s.playingBeat : -1));
   // A committed guitar voicing shows as a mini diagram, flagged when it no longer fits the chord
   // or the song's tuning/capo (Phase 5 item 1 — the same badge the guitar module's strip shows).
   const voicing = event.attachments?.guitar;
@@ -193,7 +195,7 @@ function ChordSlot({
           ) : null}
         </button>
         {/* One slash per beat on a little staff, as in a lead sheet: the length reads at a glance. The
-            first slash turns red pencil while the block sounds. (The exact count is in the button's
+            slash for the beat that is sounding turns red pencil, and the red moves along as the chord plays. (The exact count is in the button's
             label and the length slider.) */}
         <div
           aria-hidden="true"
@@ -206,8 +208,8 @@ function ChordSlot({
                     className="block h-4 w-0.5"
                     style={{
                       transform: 'skewX(-28deg)',
-                      background: playing && i === 0 ? 'var(--play)' : 'var(--fg)',
-                      opacity: playing && i === 0 ? 1 : 0.7,
+                      background: i === playingBeat ? 'var(--play)' : 'var(--fg)',
+                      opacity: i === playingBeat ? 1 : 0.7,
                     }}
                   />
                 </span>

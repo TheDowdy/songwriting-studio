@@ -75,7 +75,7 @@ export function previewStrumPattern(pattern: StrumPattern, chord: ChordRef, atta
   return previewStrikes(strikes, song.instrument, song.bpm);
 }
 
-function playbackOptions(): Omit<PlaybackOptions, 'onEvent'> {
+function playbackOptions(): Omit<PlaybackOptions, 'onEvent' | 'onBeat'> {
   const s = useStore.getState();
   const bounds =
     s.loopScope === 'section' ? sectionLoopBounds(s.song, s.activeSectionId) : null;
@@ -88,6 +88,7 @@ function playbackOptions(): Omit<PlaybackOptions, 'onEvent'> {
     metronome: s.metronome,
     barBeats: s.song.timeSig.beats,
     volume: s.volume,
+    chords: flattenDetailed(s.song).map(({ event, offsetBeats }) => ({ id: event.id, startBeat: offsetBeats, beats: event.beats })),
   };
 }
 
@@ -100,6 +101,7 @@ export async function play(): Promise<void> {
   await startPlayback(strikes, {
     ...playbackOptions(),
     onEvent: (id) => (id === null ? setPlaying(false) : setPlayingEvent(id)),
+    onBeat: (id, beat) => useStore.getState().setPlayingBeat(id, beat),
   });
 }
 

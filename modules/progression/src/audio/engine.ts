@@ -38,6 +38,10 @@ export interface PlaybackOptions {
   volume: number;
   /** Called (in sync with the audio) when a chord starts; null when playback ends. */
   onEvent: (id: string | null) => void;
+  /** Every chord's place in the song, so `onBeat` can follow playback beat by beat. */
+  chords?: { id: string; startBeat: number; beats: number }[];
+  /** Called (in sync with the audio) on each beat of each chord: `beat` counts from 0 within the chord. */
+  onBeat?: (id: string, beat: number) => void;
 }
 
 /**
@@ -177,6 +181,7 @@ const voices = new Map<InstrumentId, Voice>();
 let loadingPiano: Promise<void> | null = null;
 let metronomeSynth: Tone.MembraneSynth | null = null;
 let onEvent: PlaybackOptions['onEvent'] = () => {};
+let onBeat: PlaybackOptions['onBeat'];
 
 const noteNames = (midi: number[]) => midi.map((m) => Tone.Frequency(m, 'midi').toNote());
 
@@ -370,6 +375,14 @@ function scheduleEvents(strikes: NoteStrike[], options: PlaybackOptions): number
     }, `${startTick}i`);
   }
 
+  for (const chord of options.chords ?? []) {
+    for (let beat = 0; beat < chord.beats; beat++) {
+      transport.schedule((time) => {
+        Tone.getDraw().schedule(() => onBeat?.(chord.id, beat), time);
+      }, `${beatTicks(chord.startBeat + beat)}i`);
+    }
+  }
+
   if (options.metronome) {
     const click = ensureMetronome();
     for (let b = 0; b < Math.ceil(totalBeats); b++) {
@@ -389,6 +402,7 @@ export async function startPlayback(strikes: NoteStrike[], options: PlaybackOpti
   const transport = Tone.getTransport();
   transport.stop();
   onEvent = options.onEvent;
+  onBeat = options.onBeat;
   Tone.getDestination().volume.value = options.volume <= 0 ? -Infinity : Tone.gainToDb(options.volume);
   transport.bpm.value = options.bpm;
   transport.timeSignature = options.barBeats;
