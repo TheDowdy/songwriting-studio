@@ -431,7 +431,13 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
         <EmptyDropZone sectionId={section.id} />
       ) : (
         <SortableContext items={section.events.map((e) => e.id)} strategy={horizontalListSortingStrategy}>
-          <ol className="timeline-scroll flex snap-x gap-2 overflow-x-auto overscroll-x-contain pb-3">
+          <div className="flex gap-2">
+          {/* Row labels, lined up with the chord blocks (h-28) and the pattern lane under them (mt-1 h-9). */}
+          <div aria-hidden="true" className="w-12 shrink-0 font-mono text-[10px] uppercase leading-tight tracking-[0.12em] text-muted">
+            <div className="flex h-28 items-center">Chords</div>
+            <div className="mt-1 flex h-9 items-center" data-testid="pattern-lane-label">Strum pattern</div>
+          </div>
+          <ol className="timeline-scroll flex min-w-0 flex-1 snap-x gap-2 overflow-x-auto overscroll-x-contain pb-3">
             {withOffsets.map(({ event, offset }, index) => (
               <ChordSlot
                 key={event.id}
@@ -448,6 +454,7 @@ function SectionBlock({ section, isOnly, navigate }: { section: Section; isOnly:
               />
             ))}
           </ol>
+          </div>
         </SortableContext>
       )}
 
