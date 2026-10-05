@@ -16,6 +16,7 @@ import {
 } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { ChordDiagram } from './ChordDiagram';
+import { NumberField } from './NumberField';
 
 export interface VariantDialogProps {
   sectionName: string;
@@ -71,13 +72,7 @@ export function VariantDialog({ sectionName, chords, tuning, capo, onCreate, onC
       {generator === 'up-the-neck' && (
         <label className="field variant-dialog-option">
           <span>From fret</span>
-          <input
-            type="number"
-            min={0}
-            max={20}
-            value={fromFret}
-            onChange={(e) => setFromFret(Math.max(0, Math.min(20, Number(e.target.value) || 0)))}
-          />
+          <NumberField min={0} max={20} value={fromFret} onCommit={setFromFret} />
         </label>
       )}
       {generator === 'stay-in-position' && (

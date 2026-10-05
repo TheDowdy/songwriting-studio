@@ -7,6 +7,7 @@ export {
   type ChordBuilderChipsProps,
   type ChordBuilderGroup,
 } from './ChordBuilder';
+export { NumberField, type NumberFieldProps } from './NumberField';
 export { VariantDialog, type VariantDialogProps } from './VariantDialog';
 export { type HelpEntry } from './help';
 export { UI_HELP } from './uiHelp';

@@ -20,7 +20,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { canToggleMajorMinor, chordName, chroma, keyLabel, keyOfSection, patternLabel, patternIdFor, resolvePattern, strumEvents, toggleMajorMinor, voicingStatus } from '@sw/core';
 import type { Key } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
-import { ChordDiagram, VariantDialog } from '@sw/ui';
+import { ChordDiagram, NumberField, VariantDialog } from '@sw/ui';
 import type { Navigate } from '../App';
 import { previewChordInSong } from '../state/playback';
 import { BEATS_MAX, useStore } from '../state/store';
@@ -290,12 +290,11 @@ function ChordToolbar({
       <span className="text-lg font-medium">{chordName(event.chord)}</span>
       <label className="flex items-center gap-1 text-sm text-muted">
         Beats
-        <input
-          type="number"
+        <NumberField
           min={1}
           max={BEATS_MAX}
           value={event.beats}
-          onChange={(e) => setEventBeats(event.id, Number(e.target.value))}
+          onCommit={(n) => setEventBeats(event.id, n)}
           aria-label="Beats for selected chord"
           className="w-16 rounded-none border-0 border-b border-fg bg-transparent px-2 py-1.5 text-base text-fg"
         />

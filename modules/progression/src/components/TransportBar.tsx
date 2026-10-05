@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { BPM_MAX, BPM_MIN, useStore } from '../state/store';
 import { togglePlay } from '../state/playback';
+import { NumberField } from '@sw/ui';
 import { flattenSong, patternOptions } from '@sw/core';
 import type { InstrumentId, PatternId } from '@sw/core';
 
@@ -131,14 +132,13 @@ export default function TransportBar() {
               onChange={(e) => setBpm(Number(e.target.value))}
               className="h-8 min-w-0 flex-1 accent-[var(--accent)]"
             />
-            <input
+            <NumberField
               id="bpm"
-              type="number"
               inputMode="numeric"
               min={BPM_MIN}
               max={BPM_MAX}
               value={bpm}
-              onChange={(e) => setBpm(Number(e.target.value))}
+              onCommit={setBpm}
               className="h-10 w-16 rounded-none border-0 border-b border-fg bg-transparent px-2 text-center"
             />
             <span className="text-base italic text-muted">BPM</span>
@@ -173,12 +173,11 @@ export default function TransportBar() {
             <div>
               <label className="mb-1 block font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Time signature</label>
               <div className="flex items-center gap-1">
-                <input
-                  type="number"
+                <NumberField
                   min={1}
                   max={32}
                   value={timeSig.beats}
-                  onChange={(e) => setTimeSig({ ...timeSig, beats: Math.max(1, Math.min(32, Math.round(Number(e.target.value)) || timeSig.beats)) })}
+                  onCommit={(n) => setTimeSig({ ...timeSig, beats: n })}
                   aria-label="Beats per bar"
                   className="h-10 w-14 rounded-none border-0 border-b border-fg bg-transparent px-2 text-center"
                 />
