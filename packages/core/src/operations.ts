@@ -11,7 +11,7 @@ import { relabel, transposeChord } from './theory/chords';
 import type { ChordRef, Key } from './theory/types';
 import { findEvent, newEvent, newId, newSection, withSection } from './song';
 import { customPatternId, isCustomPatternId, type StrumPattern } from './strumPattern';
-import { findStrumPattern, type PatternTarget } from './patterns';
+import { blockOf, findStrumPattern, usable, type PatternTarget } from './patterns';
 import { generateVariantShapes, variantLabelFor, type VariantGeneratorId, type VariantOptions } from './variants';
 import type { ChordAttachments, ChordEvent, GuitarSetup, GuitarVoicing, InstrumentId, PatternId, Section, Song, TimeSig } from './schema';
 
@@ -386,6 +386,97 @@ export function clearOwnPattern(song: Song, target: { sectionId: string } | { ev
   const { pattern: _p, ...rest } = section;
   void _p;
   return withSection(song, section.id, rest);
+}
+
+// ---- pattern lane operations: a chord's own pattern is the only stored level; blocks are derived
+
+/**
+ * Sets (or with null clears) the own pattern of the chords `fromIndex`..`toIndex` of a section,
+ * clamped to the section. A custom pattern that does not exist is ignored.
+ */
+export function setChordPatterns(song: Song, sectionId: string, fromIndex: number, toIndex: number, patternId: PatternId | null): Song {
+  const section = song.sections.find((s) => s.id === sectionId);
+  if (!section || section.events.length === 0) return song;
+  if (patternId !== null && !usable(song, patternId)) return song;
+  const from = Math.max(0, Math.min(fromIndex, toIndex));
+  const to = Math.min(section.events.length - 1, Math.max(fromIndex, toIndex));
+  let changed = false;
+  const events = section.events.map((e, i) => {
+    if (i < from || i > to) return e;
+    if (patternId === null) {
+      if (e.pattern === undefined) return e;
+      changed = true;
+      const { pattern: _p, ...rest } = e;
+      void _p;
+      return rest;
+    }
+    if (e.pattern === patternId) return e;
+    changed = true;
+    return { ...e, pattern: patternId };
+  });
+  return changed ? withSection(song, sectionId, { ...section, events }) : song;
+}
+
+/**
+ * Sets the pattern of the block `eventId` is in. A block that has a pattern changes as a whole; a
+ * default run changes only that chord (it becomes a one-chord block). null clears the whole block.
+ */
+export function setBlockPattern(song: Song, eventId: string, patternId: PatternId | null): Song {
+  const found = findEvent(song, eventId);
+  const block = blockOf(song, eventId);
+  if (!found || !block) return song;
+  if (patternId === null) return setChordPatterns(song, found.section.id, block.startIndex, block.endIndex, null);
+  return block.own === undefined
+    ? setChordPatterns(song, found.section.id, found.index, found.index, patternId)
+    : setChordPatterns(song, found.section.id, block.startIndex, block.endIndex, patternId);
+}
+
+/**
+ * Makes the block `eventId` is in cover `chords` chords from its start (at least 1, at most to the
+ * section's end). Growing paints over the following chords; shrinking returns the freed chords to
+ * the default. Does nothing for a default run.
+ */
+export function setBlockLength(song: Song, eventId: string, chords: number): Song {
+  const found = findEvent(song, eventId);
+  const block = blockOf(song, eventId);
+  if (!found || !block || block.own === undefined) return song;
+  const last = found.section.events.length - 1;
+  const end = block.startIndex + Math.max(1, Math.min(Math.round(chords) || 1, last - block.startIndex + 1)) - 1;
+  if (end === block.endIndex) return song;
+  if (end > block.endIndex) return setChordPatterns(song, found.section.id, block.endIndex + 1, end, block.own);
+  return setChordPatterns(song, found.section.id, end + 1, block.endIndex, null);
+}
+
+/** Keeps the pattern on this chord only; the rest of its block goes back to the default. */
+export function patternForChordOnly(song: Song, eventId: string): Song {
+  const found = findEvent(song, eventId);
+  const block = blockOf(song, eventId);
+  if (!found || !block || block.own === undefined) return song;
+  const rest = block.eventIds.filter((id) => id !== eventId);
+  return rest.reduce((acc, id) => setChordPatterns(acc, found.section.id, found.section.events.findIndex((e) => e.id === id), found.section.events.findIndex((e) => e.id === id), null), song);
+}
+
+/** Every chord in the section gets the pattern. */
+export function patternForSection(song: Song, sectionId: string, patternId: PatternId): Song {
+  const section = song.sections.find((s) => s.id === sectionId);
+  return section ? setChordPatterns(song, sectionId, 0, section.events.length - 1, patternId) : song;
+}
+
+/** The pattern becomes the song's default and every chord's own choice is cleared. */
+export function patternForSong(song: Song, patternId: PatternId): Song {
+  if (!usable(song, patternId)) return song;
+  return touch({
+    ...song,
+    pattern: patternId,
+    sections: song.sections.map((s) => ({
+      ...s,
+      events: s.events.map((e) => {
+        const { pattern: _p, ...rest } = e;
+        void _p;
+        return rest;
+      }),
+    })),
+  });
 }
 
 export function setTitle(song: Song, title: string): Song {

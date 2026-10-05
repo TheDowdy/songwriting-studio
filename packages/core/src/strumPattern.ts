@@ -103,19 +103,21 @@ export interface StrumEvent {
 }
 
 /**
- * The strokes of `pattern` laid over a chord `chordBeats` long: the pattern repeats from the chord's
- * start, and whatever falls after the chord ends is cut off (a chord shorter than the pattern plays
- * only its first part).
+ * The strokes of `pattern` laid over a chord `chordBeats` long: the pattern repeats and whatever
+ * falls outside the chord is cut off. `phaseBeats` is how far into the pattern the chord starts (a
+ * chord that continues a block starts part-way through the pattern); offsets are relative to the
+ * chord's own start.
  */
-export function strumEvents(pattern: StrumPattern, chordBeats: number): StrumEvent[] {
+export function strumEvents(pattern: StrumPattern, chordBeats: number, phaseBeats = 0): StrumEvent[] {
   const per = pattern.stepsPerBeat;
   const length = pattern.steps.length;
   if (length === 0 || chordBeats <= 0) return [];
   const hits: { offsetBeats: number; step: StrumStep }[] = [];
-  for (let cycle = 0; cycle * pattern.beats < chordBeats; cycle++) {
+  const firstCycle = Math.floor(phaseBeats / pattern.beats);
+  for (let cycle = firstCycle; cycle * pattern.beats < phaseBeats + chordBeats; cycle++) {
     pattern.steps.forEach((step, i) => {
-      const offsetBeats = cycle * pattern.beats + i / per;
-      if (step && offsetBeats < chordBeats) hits.push({ offsetBeats, step });
+      const t = cycle * pattern.beats + i / per;
+      if (step && t >= phaseBeats && t < phaseBeats + chordBeats) hits.push({ offsetBeats: t - phaseBeats, step });
     });
   }
   return hits.map((h, i) => ({ ...h, durationBeats: (hits[i + 1]?.offsetBeats ?? chordBeats) - h.offsetBeats }));
