@@ -21,3 +21,9 @@ export function blockWidth(beats: number, density: Density): number {
   const { beatPx, minPx } = DENSITIES[density];
   return Math.max(minPx, Math.round(Math.max(0, beats) * beatPx));
 }
+
+/** Pixels per beat inside a block: its width shared out evenly, so a block held at the minimum
+ *  width still spreads its beats across it. */
+export function unitPx(beats: number, density: Density): number {
+  return blockWidth(beats, density) / Math.max(1, beats);
+}

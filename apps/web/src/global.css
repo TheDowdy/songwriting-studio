@@ -4,6 +4,8 @@
 /* Tailwind only scans apps/web by default, so point it at the modules that use Tailwind. Not the
    guitar module: it has its own CSS, and its class names (e.g. `hidden`) would pick up utilities. */
 @source '../../../modules/progression/src';
+/* The shared song strip (@sw/timeline) is styled with the same utilities. */
+@source '../../../packages/timeline/src';
 
 @theme inline {
   --color-bg: var(--bg);

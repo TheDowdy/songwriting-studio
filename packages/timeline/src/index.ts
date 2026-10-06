@@ -4,3 +4,8 @@ export { advancePlayhead, clearPlayhead, nextCursor, playhead, type PlayheadStat
 export { chipLabel, SongOrderRow } from './SongOrderRow';
 export { ActionBar, ActionButton, BeatsStepper, ChordTitle, MAX_BEATS } from './ChordActions';
 export { setLoop, setScope, transportSettings, type PlaybackAdapter, type PlayScope, type TransportSettings } from './transport';
+export { StripHostProvider, useStripHost, type StripHost } from './strip/host';
+export { PatternBlockToolbar } from './strip/PatternLane';
+export { EmptySectionDrop } from './strip/SectionLane';
+export { SongStrip } from './strip/SongStrip';
+export { unitPx } from './layout';

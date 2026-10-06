@@ -14,9 +14,8 @@ import {
 } from '@sw/core';
 import type { ChordEvent, PatternBlock, Section } from '@sw/core';
 import { PatternEditor, PatternSelect } from '@sw/ui';
-import { previewStrumPattern } from '../state/playback';
-import { useStore } from '../state/store';
-import { BEAT_PX } from './timelineConstants';
+import { unitPx } from '../layout';
+import { useStripHost } from './host';
 
 /** A keyboard resize moves the handle to another chord's cell; the new handle takes focus back. */
 let refocusHandle = false;
@@ -42,11 +41,10 @@ export function PatternLaneCell({
   block: PatternBlock;
   shownBeats: number;
 }) {
-  const song = useStore((s) => s.song);
-  const selectedBlock = useStore((s) => s.laneEventId !== null && block.eventIds.includes(s.laneEventId));
-  const setLaneEvent = useStore((s) => s.setLaneEvent);
-  const setBlockLength = useStore((s) => s.setBlockLength);
-  const setBlockPattern = useStore((s) => s.setBlockPattern);
+  const host = useStripHost();
+  const { song, setLaneEvent, setBlockLength, setBlockPattern } = host;
+  const selectedBlock = host.laneEventId !== null && block.eventIds.includes(host.laneEventId);
+  const unit = unitPx(shownBeats, host.density);
 
   const own = block.own;
   const first = index === block.startIndex;
@@ -59,7 +57,7 @@ export function PatternLaneCell({
   const setLength = (chords: number) => {
     setBlockLength(anchor, chords);
     // Shrinking can free the chord that was selected; keep the toolbar on this block.
-    useStore.setState({ laneEventId: anchor });
+    setLaneEvent(anchor);
   };
 
   // Drag the diamond: the block ends at the last chord whose middle is left of the pointer.
@@ -69,7 +67,7 @@ export function PatternLaneCell({
     const row = e.currentTarget.closest<HTMLElement>('.timeline-scroll');
     if (!row) return;
     let current = blockChords;
-    useStore.setState({ laneEventId: anchor });
+    setLaneEvent(anchor);
     const move = (ev: PointerEvent) => {
       const cells = Array.from(row.querySelectorAll<HTMLElement>('[data-lane-cell]'));
       let end = block.startIndex;
@@ -120,7 +118,7 @@ export function PatternLaneCell({
       data-block-start={first || undefined}
       data-block-end={last || undefined}
       className="relative mt-1 h-9"
-      style={{ width: shownBeats * BEAT_PX + (last ? 0 : GAP_PX), marginRight: last ? 0 : -GAP_PX }}
+      style={{ width: unit * shownBeats + (last ? 0 : GAP_PX), marginRight: last ? 0 : -GAP_PX }}
     >
       <button
         type="button"
@@ -154,7 +152,7 @@ export function PatternLaneCell({
             className="absolute bottom-0.5 -translate-x-1/2 font-mono leading-none"
             title={`${hit.step.stroke === 'down' ? 'Down' : 'Up'} strum${hit.step.extent === 'full' ? '' : ', ' + hit.step.extent + ' strings'}`}
             style={{
-              left: hit.offsetBeats * BEAT_PX + BEAT_PX / 2,
+              left: hit.offsetBeats * unit + unit / 2,
               fontSize: hit.step.extent === 'full' ? 15 : 11,
               fontWeight: hit.step.accent ? 800 : 500,
               color: 'var(--fg)',
@@ -187,18 +185,8 @@ export function PatternLaneCell({
 
 /** Options for the selected pattern block, shown under its section in place of the chord's options. */
 export function PatternBlockToolbar({ section, eventId }: { section: Section; eventId: string }) {
-  const song = useStore((s) => s.song);
-  const patternEditorOpen = useStore((s) => s.patternEditorOpen);
-  const setPatternEditorOpen = useStore((s) => s.setPatternEditorOpen);
-  const setLaneEvent = useStore((s) => s.setLaneEvent);
-  const setBlockPattern = useStore((s) => s.setBlockPattern);
-  const setBlockLength = useStore((s) => s.setBlockLength);
-  const patternForChordOnly = useStore((s) => s.patternForChordOnly);
-  const patternForSection = useStore((s) => s.patternForSection);
-  const patternForSong = useStore((s) => s.patternForSong);
-  const setPattern = useStore((s) => s.setPattern);
-  const saveStrumPattern = useStore((s) => s.saveStrumPattern);
-  const deleteStrumPattern = useStore((s) => s.deleteStrumPattern);
+  const host = useStripHost();
+  const { song, patternEditorOpen, setPatternEditorOpen, setLaneEvent, setBlockPattern, setBlockLength, patternForChordOnly, patternForSection, patternForSong, saveStrumPattern, deleteStrumPattern } = host;
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -230,7 +218,7 @@ export function PatternBlockToolbar({ section, eventId }: { section: Section; ev
   const anchor = block.eventIds[0]!;
   const resize = (n: number) => {
     setBlockLength(anchor, n);
-    useStore.setState({ laneEventId: anchor });
+    setLaneEvent(anchor);
   };
 
   const create = (start: string) => {
@@ -271,7 +259,7 @@ export function PatternBlockToolbar({ section, eventId }: { section: Section; ev
         {!own && (
           <label className="pb-field">
             <span>Song default</span>
-            <select value={song.pattern} onChange={(e) => setPattern(e.target.value as typeof song.pattern)}>
+            <select value={song.pattern} onChange={(e) => host.setSongPattern(e.target.value as typeof song.pattern)}>
               {patternOptions(song).map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.label}
@@ -324,7 +312,7 @@ export function PatternBlockToolbar({ section, eventId }: { section: Section; ev
             saveStrumPattern(copy);
             setBlockPattern(eventId, customPatternId(copy.id));
           }}
-          onPreview={(p) => void previewStrumPattern(p, event.chord, event.attachments)}
+          onPreview={(p) => host.previewPattern(p, event.chord, event.attachments)}
         />
       )}
     </div>
