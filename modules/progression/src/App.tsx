@@ -7,9 +7,7 @@ import CircleOfFifths from './components/CircleOfFifths';
 import NodeMap from './components/NodeMap';
 import SongPanel from './components/SongPanel';
 import Timeline from './components/Timeline';
-import TransportBar from './components/TransportBar';
-import { useSpaceBarToggle } from '@sw/ui';
-import { previewChordInSong, togglePlay, useLivePlaybackSync } from './state/playback';
+import { previewChordInSong, useLivePlaybackSync } from './state/playback';
 import { selectCenter, useStore } from './state/store';
 import { findEvent, keyOfSection, startChords, suggestNext } from '@sw/core';
 import type { Key } from '@sw/core';
@@ -47,8 +45,6 @@ export default function ProgressionModule({ navigate, focus }: Props) {
     const current = songStore.getState().currentSong();
     if (wanted && current && findEvent(current, wanted)) selectEvent(wanted);
   }, [focus?.eventId, selectEvent]);
-  // Space starts and stops playback (not while there is nothing to play).
-  useSpaceBarToggle(togglePlay, song.sections.some((sec) => sec.events.length > 0));
   const selectedEventId = useStore((s) => s.selectedEventId);
   const playingEventId = useStore((s) => s.playingEventId);
   const isPlaying = useStore((s) => s.isPlaying);
@@ -75,11 +71,10 @@ export default function ProgressionModule({ navigate, focus }: Props) {
   const preview = (chord: ChordRef) => void previewChordInSong(chord);
 
   return (
-    <div className="mod-progression min-h-dvh pb-44 lg:pb-10">
+    <div className="mod-progression min-h-dvh pb-10">
       <div className="mx-auto max-w-3xl space-y-4 px-4 pt-5">
         <SongPanel onOpenSheet={() => setSheetOpen(true)} navigate={navigate} />
         <KeyPicker />
-        <TransportBar />
         <div role="group" aria-label="Chord map type" className="flex gap-4 border-b border-fg">
           {([['suggest', 'Suggestions'], ['circle', 'Circle of fifths']] as const).map(([mode, label]) => (
             <button

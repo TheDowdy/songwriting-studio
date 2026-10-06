@@ -3,11 +3,11 @@
  * through the guitar synth — its committed voicing, or the shape the neck would suggest for it —
  * at the song's tempo, optionally looping, with the neck following the chord you hear.
  */
-import { findEvent, flattenSong, chordStrokes, playbackRange, strumNotes, strumVelocity, toChordSpec, type ChordEvent, type Song } from '@sw/core';
+import { findEvent, chordStrokes, playbackRange, strumNotes, strumVelocity, toChordSpec, type ChordEvent, type Song } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { shapeNotes } from '@sw/core/fret/voicings';
 import { songStore } from '@sw/song-store';
-import { advancePlayhead, clearPlayhead } from '@sw/timeline';
+import { advancePlayhead, clearPlayhead, transportSettings, type PlayScope } from '@sw/timeline';
 import { ProgressionPlayer, type BeatMark, type ProgressionStrike } from '../audio/progressionPlayer';
 import { defaultBassMode } from './bassMode';
 import { chordContextFor, stopChordPlayback } from './chordActions';
@@ -91,7 +91,7 @@ export function progressionBeatMarks(song: Song, sectionId: string | null): Beat
 }
 
 /** Plays the whole song, or the section of the focused chord (the first section if none is). */
-export function playProgression(scope: 'song' | 'section'): void {
+export function playProgression(scope: PlayScope = transportSettings.getState().scope): void {
   const song = songStore.getState().currentSong();
   if (!song) return;
   const state = useStore.getState();
@@ -103,7 +103,7 @@ export function playProgression(scope: 'song' | 'section'): void {
   const { strikes, lengthSeconds } = progressionStrikes(song, sectionId);
   stopChordPlayback();
   state.setProgressionPlaying(true);
-  player.start(strikes, lengthSeconds, state.chordPlay.speedMs / 1000, state.progressionLoop, {
+  player.start(strikes, lengthSeconds, state.chordPlay.speedMs / 1000, transportSettings.getState().loop, {
     onChord: (eventId) => {
       advancePlayhead(song, eventId);
       selectProgressionEvent(eventId);
@@ -121,14 +121,4 @@ export function stopProgression(): void {
   player.stop();
   clearPlayhead();
   useStore.getState().setProgressionPlaying(false);
-}
-
-/** Starts the whole progression, or stops it if it is playing (the space bar). Nothing without a song with chords. */
-export function toggleProgressionPlayback(): void {
-  if (useStore.getState().progressionPlaying) {
-    stopProgression();
-    return;
-  }
-  const song = songStore.getState().currentSong();
-  if (song && flattenSong(song).length > 0) playProgression('song');
 }

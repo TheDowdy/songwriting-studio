@@ -1,5 +1,7 @@
 import type { HelpEntry } from '@sw/ui';
 
+const PLAYBACK = '[aria-label="Playback"]';
+
 /** Help for the shell's own controls: the header, the library, settings and the guide. */
 export const SHELL_HELP: HelpEntry[] = [
   { name: 'Back to library', text: 'Go back to your list of songs. Your song is saved automatically.' },
@@ -24,4 +26,14 @@ export const SHELL_HELP: HelpEntry[] = [
   { name: 'Tap to enable sound', text: 'Your browser keeps sound off until you interact with the page. Select this to turn it on.' },
   { selector: 'main ul li > button:first-child', text: 'Open this song.' },
   { name: 'Guitar', text: 'Open the guitar neck without a song, to explore scales, chords and tunings.' },
+
+  { selector: '.sw-order-chip', text: 'Scroll to this section. Playback highlights the section that is playing.' },
+
+  // The transport, shared by every workspace in a song.
+  { name: /^(Play|Stop)$/, scope: PLAYBACK, text: 'Play the song from the start, or stop it. The space bar does the same.' },
+  { name: 'Loop', scope: PLAYBACK, text: 'Repeat playback until you stop it.' },
+  { selector: '[aria-label="What to play"] button', scope: PLAYBACK, text: 'Choose what to play and repeat: the whole song, or just the section of the selected chord.' },
+  { name: 'Tempo', scope: PLAYBACK, text: 'Set the tempo in beats per minute.' },
+  { name: 'Tempo slider', scope: PLAYBACK, text: 'Set the tempo in beats per minute.' },
+  { name: 'Tap tempo', scope: PLAYBACK, text: 'Tap this repeatedly in time to set the tempo.' },
 ];

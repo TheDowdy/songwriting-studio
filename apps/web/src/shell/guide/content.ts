@@ -124,7 +124,7 @@ export const GUIDE: GuideSection[] = [
       { h3: 'Play the progression' },
       {
         ul: [
-          'Select **Play** or **Stop** to start or stop playback. On a computer, you can also press the space bar.',
+          'Select **Play** or **Stop** at the top of the screen to start or stop playback. The playback bar stays in place when you switch between the **Chords** and **Guitar** tabs. On a computer, you can also press the space bar.',
           'Turn on **Loop** to repeat playback. Choose **Whole song** or **This section**.',
           'Set the tempo with the slider, or select **Tap** repeatedly in time.',
           'Select **More playback settings** to change the time signature, instrument, metronome, and volume. With **Guitar** chosen, each chord plays as a guitar shape: the voicing you saved on it, or else the recommended shape.',
@@ -153,9 +153,9 @@ export const GUIDE: GuideSection[] = [
       { h3: 'Edit chords from the guitar tab' },
       { p: 'With a chord selected, the toolbar below the strip lets you change it without leaving the Guitar tab: **Flavour**, **Inversion**, **Replace**, **Beats**, **Duplicate**, **Remove**, and **+ Add after**.' },
       { h3: 'Strum patterns on guitar' },
-      { p: 'Build and place your own strum patterns in the Chords tab’s pattern lane. With a pattern, **▶ Play song** strums each chord as the pattern says: down strums go from the low strings to the high ones, up strums from high to low, and partial strums use only the low or high strings. A chord with no custom pattern is strummed once at the start of each bar. The **Strum pattern** list in the toolbar below the strip sets the pattern for the selected chord, or leaves it on the song default.' },
+      { p: 'Build and place your own strum patterns in the Chords tab’s pattern lane. With a pattern, **Play** strums each chord as the pattern says: down strums go from the low strings to the high ones, up strums from high to low, and partial strums use only the low or high strings. A chord with no custom pattern is strummed once at the start of each bar. The **Strum pattern** list in the toolbar below the strip sets the pattern for the selected chord, or leaves it on the song default.' },
       { h3: 'Play the song' },
-      { p: 'Select **▶ Play song** to hear every chord, or **▶ Play section** to hear the section of the selected chord. The neck and strip follow the chord that’s playing. On a computer, press the space bar to start or stop playback. Select **↶ Undo** to reverse your last change.' },
+      { p: 'Select **Play** to hear every chord, or choose **This section** first to hear only the section of the selected chord. On the Guitar tab, each chord is strummed on the guitar. The neck and strip follow the chord that’s playing, with the playing section highlighted in the **Song order** row and the beat that’s sounding marked in the chord. On a computer, press the space bar to start or stop playback. Select **↶ Undo** to reverse your last change.' },
       { h3: 'Change the tuning or capo' },
       {
         ol: [

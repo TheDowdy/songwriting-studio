@@ -6,6 +6,7 @@
  */
 import type { ComponentType, ReactNode } from 'react';
 import type { HelpEntry } from '@sw/ui';
+import type { PlaybackAdapter } from '@sw/timeline';
 import guitarModule from '@sw/module-guitar';
 import progressionModule from '@sw/module-progression';
 
@@ -31,6 +32,14 @@ export interface ModuleDefinition {
   /** Called when the user leaves this module (switches tabs, or navigates away): stop audio,
    *  cancel gestures, so nothing keeps playing from a module that's no longer on screen. */
   onDeactivate?: () => void;
+  /** How the shell's transport plays this module's workspace. Without it, the module has nothing
+   *  to play and the transport is hidden. */
+  playback?: PlaybackAdapter;
+  /** Module-specific controls shown in the shell's transport row (e.g. instrument, re-voice). */
+  TransportExtras?: ComponentType;
+  /** True when the module already shows and edits the song's playing order, so the shell's own
+   *  read-only Song order row would only repeat it. */
+  hasOwnSongOrder?: boolean;
   /** What each control in this module does, for hover tips and help mode (see `HelpEntry`).
    *  Scope each entry to the module's root class so its names can't collide with another module's. */
   help?: HelpEntry[];

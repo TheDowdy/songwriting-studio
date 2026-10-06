@@ -74,6 +74,9 @@ export interface ModuleDefinition {
   scope: 'song' | 'song-or-tool'; // 'song-or-tool' also works with no song open, at #/tools/:id
   Component: ComponentType<ModuleProps>;
   onDeactivate?: () => void;   // stop audio/gestures when the user leaves this module
+  playback?: PlaybackAdapter;  // how the shell's one transport plays this module (@sw/timeline)
+  TransportExtras?: ComponentType; // module-specific controls shown in that transport row
+  hasOwnSongOrder?: boolean;   // true if the module already shows/edits the song's playing order
 }
 
 export interface ModuleProps {

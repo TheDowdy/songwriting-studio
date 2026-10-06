@@ -3,7 +3,7 @@ import { renderPattern, renderStrumPattern } from '../audio/patterns';
 import { previewStrikes, startPlayback, stopPlayback, updatePlayback, type NoteStrike, type PlaybackOptions } from '../audio/engine';
 import { eventVoicing, findStrumPattern, chordPattern, flattenDetailed, sectionLoopBounds } from '@sw/core';
 import type { ChordEvent, ChordRef, Song, StrumPattern } from '@sw/core';
-import { advancePlayhead, clearPlayhead } from '@sw/timeline';
+import { advancePlayhead, clearPlayhead, transportSettings } from '@sw/timeline';
 import { useStore } from './store';
 
 /** The full note-strike list for the song: each chord voice-led from the one before it — or, on
@@ -78,11 +78,11 @@ export function previewStrumPattern(pattern: StrumPattern, chord: ChordRef, atta
 
 function playbackOptions(): Omit<PlaybackOptions, 'onEvent' | 'onBeat'> {
   const s = useStore.getState();
-  const bounds =
-    s.loopScope === 'section' ? sectionLoopBounds(s.song, s.activeSectionId) : null;
+  const { loop, scope } = transportSettings.getState();
+  const bounds = scope === 'section' ? sectionLoopBounds(s.song, s.activeSectionId) : null;
   return {
     bpm: s.song.bpm,
-    loop: s.loop,
+    loop,
     loopStartBeats: bounds?.start,
     loopEndBeats: bounds?.end,
     instrument: s.song.instrument,
@@ -127,6 +127,15 @@ export function togglePlay(): void {
 
 /** While playing, push edits, tempo, loop, instrument and pattern changes into the running transport. */
 export function useLivePlaybackSync(): void {
+  // The shell's loop and scope controls change what is playing too.
+  useEffect(
+    () =>
+      transportSettings.subscribe(() => {
+        const s = useStore.getState();
+        if (s.isPlaying) updatePlayback(toNoteStrikes(s.song), { ...playbackOptions(), onEvent: () => {} });
+      }),
+    [],
+  );
   useEffect(
     () =>
       useStore.subscribe((s, prev) => {
@@ -139,8 +148,6 @@ export function useLivePlaybackSync(): void {
           s.song.instrument !== prev.song.instrument ||
           s.song.pattern !== prev.song.pattern ||
           s.song.patterns !== prev.song.patterns ||
-          s.loop !== prev.loop ||
-          s.loopScope !== prev.loopScope ||
           s.metronome !== prev.metronome ||
           s.volume !== prev.volume;
         if (!relevant) return;

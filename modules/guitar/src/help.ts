@@ -11,19 +11,12 @@ const sel = (selector: string, text: string): HelpEntry => ({ selector, scope: S
 
 export const GUITAR_HELP: HelpEntry[] = [
   // The song strip: the progression across the top, with playback and editing.
-  g('▶ Play song', 'Play every chord in the song, in order, at the song’s tempo.'),
-  g('▶ Play section', 'Play the section that contains the selected chord.'),
-  g('■ Stop', 'Stop playback.'),
-  g('Loop', 'Repeat playback until you stop it.'),
-  g(/^↶ Undo/, 'Undo your last change in this module.'),
-  g(/^⚠ Re-voice/, 'Open the re-voicing panel to fix voicings that no longer fit the tuning or capo.'),
   g(/^Chord: /, 'Select this chord to show it on the neck and hear it. Its width shows how many beats it lasts. Press and hold, then drag, to reorder it within its section.'),
   g('Section name', 'Type a new name for this section, then press Enter.'),
   sel('.strip-section-name', 'Select to rename this section.'),
   g(/^Duplicate .+/, 'Copy this section and place the copy after it.'),
   g(/^Make a variant of /, 'Create a copy of this section with the chords voiced in a different position on the neck.'),
   sel('.strip-variant-link', 'Scroll to the section this variant was made from.'),
-  sel('.sw-order-chip', 'Scroll to this section. Playback highlights the section that is playing.'),
   g('+ Add chord', 'Choose the first chord for this empty section.'),
   g('+ Section', 'Add a new, empty section to the end of the song.'),
 
@@ -140,4 +133,10 @@ export const GUITAR_HELP: HelpEntry[] = [
   g('Close', 'Close the re-voicing panel.'),
   g(/^Use [\dx-]+ for /, 'Save this shape as the chord’s voicing.'),
   sel('.banner', 'Sound is off until you tap. Select this to turn it on.'),
+];
+
+/** The guitar workspace's own buttons in the shell's transport row. */
+export const GUITAR_TRANSPORT_HELP: HelpEntry[] = [
+  { name: /^↶ Undo/, scope: '[aria-label="Playback"]', text: 'Undo your last change in this module.' },
+  { name: /^⚠ Re-voice/, scope: '[aria-label="Playback"]', text: 'Open the re-voicing panel to fix voicings that no longer fit the tuning or capo.' },
 ];

@@ -86,11 +86,20 @@ await page.setViewportSize({ width: 1280, height: 600 });
 const pageY = () => page.evaluate(() => document.scrollingElement.scrollTop);
 await page.evaluate(() => (document.scrollingElement.scrollTop = 150));
 const yBefore = await pageY();
+// What the user sees must not jump either: the first chord block keeps its place on screen, even if
+// something above it (the shell's transport row, wrapping to fit Re-voice and Undo) grows and the
+// browser's scroll anchoring moves the scroll position to compensate.
+const blockTop = () => page.evaluate(() => Math.round(document.querySelector('.strip-chord').getBoundingClientRect().top));
+const blockBefore = await blockTop();
 await tuningSelect().selectOption('dadgad');
 await sleep(200);
 await page.getByRole('button', { name: 'Change tuning' }).click();
 await sleep(400);
-check('confirming a tuning change leaves the page scroll where it was', yBefore > 0 && (await pageY()) === yBefore, `${yBefore} → ${await pageY()}`);
+check(
+  'confirming a tuning change leaves the page where it was on screen',
+  yBefore > 0 && Math.abs((await blockTop()) - blockBefore) <= 2,
+  `scroll ${yBefore} → ${await pageY()}, first chord ${blockBefore} → ${await blockTop()}`,
+);
 await page.setViewportSize({ width: 1280, height: 1000 });
 check('confirming switches the song to DADGAD', JSON.stringify((await song()).guitar.tuning) === JSON.stringify(DADGAD));
 check('every chord is flagged', JSON.stringify(await statuses()) === '["tuning-changed","tuning-changed","tuning-changed","tuning-changed"]', JSON.stringify(await statuses()));

@@ -5,9 +5,10 @@
  */
 import { createElement } from 'react';
 import ProgressionModule from './App';
-import { PROGRESSION_HELP } from './help';
+import { PROGRESSION_HELP, PROGRESSION_TRANSPORT_HELP } from './help';
 import { prefetchSamples } from './audio/engine';
-import { stop as stopPlayback, toNoteStrikes } from './state/playback';
+import PlaybackExtras from './components/PlaybackExtras';
+import { play, stop as stopPlayback, toNoteStrikes } from './state/playback';
 import { useStore } from './state/store';
 import { chordStrokes, patternBlocks, voicingStatus } from '@sw/core';
 
@@ -30,7 +31,18 @@ export const progressionModule = {
   icon,
   scope: 'song' as const,
   Component: ProgressionModule,
-  help: PROGRESSION_HELP,
+  help: [...PROGRESSION_HELP, ...PROGRESSION_TRANSPORT_HELP],
+  /** How the shell's transport plays this workspace: the song's instrument, through its sample engine. */
+  playback: {
+    subscribe: (listener: () => void) => useStore.subscribe((s, prev) => s.isPlaying !== prev.isPlaying && listener()),
+    isPlaying: () => useStore.getState().isPlaying,
+    play: () => void play(),
+    stop: stopPlayback,
+  },
+  /** Time signature, instrument, metronome and volume, in the shell's transport row. */
+  TransportExtras: PlaybackExtras,
+  /** Its Arrangement row is the (editable) song order. */
+  hasOwnSongOrder: true,
   /** Stop the transport (and any preview) when the user switches to another module (§5). */
   onDeactivate: stopPlayback,
 };

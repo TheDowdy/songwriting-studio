@@ -6,11 +6,12 @@
  */
 import { createElement } from 'react';
 import GuitarModule from './App';
-import { GUITAR_HELP } from './help';
+import { GUITAR_HELP, GUITAR_TRANSPORT_HELP } from './help';
 import { audioEngine } from './audio/engine';
 import { applyCapo } from './state/capoActions';
 import { stopChordPlayback } from './state/chordActions';
-import { progressionStrikes, stopProgression } from './state/progressionPlayback';
+import TransportExtras from './components/TransportExtras';
+import { playProgression, progressionStrikes, stopProgression } from './state/progressionPlayback';
 import { stopScale } from './state/scalePlayback';
 import { useStore } from './state/store';
 import { applyTuning } from './state/tuningActions';
@@ -28,7 +29,16 @@ export const guitarModule = {
   icon,
   scope: 'song-or-tool' as const,
   Component: GuitarModule,
-  help: GUITAR_HELP,
+  help: [...GUITAR_HELP, ...GUITAR_TRANSPORT_HELP],
+  /** How the shell's transport plays this workspace: each chord strummed through the guitar synth. */
+  playback: {
+    subscribe: (listener: () => void) => useStore.subscribe((s, prev) => s.progressionPlaying !== prev.progressionPlaying && listener()),
+    isPlaying: () => useStore.getState().progressionPlaying,
+    play: () => playProgression(),
+    stop: stopProgression,
+  },
+  /** Re-voice and Undo, in the shell's transport row. */
+  TransportExtras,
   /** Stops any scale playback or strummed chord loop when the user switches to another module
    *  (§5) — plucked/strummed strings themselves decay naturally, like releasing them by hand. */
   onDeactivate: () => {

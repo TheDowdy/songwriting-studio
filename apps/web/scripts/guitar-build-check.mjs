@@ -146,14 +146,15 @@ await page.evaluate(() => {
     if (s.progressionPlaying && s.progressionEventId !== prev.progressionEventId) window.__heard.push(s.progressionEventId);
   });
 });
-await page.getByLabel('Loop').uncheck();
+if ((await page.getByRole('switch', { name: 'Loop' }).getAttribute('aria-checked')) === 'true') await page.getByRole('switch', { name: 'Loop' }).click();
 await block('F').click(); // in the Verse; playback starts on C/E, so every chord change is seen
 await sleep(400);
 await page.evaluate(() => {
   window.__plucks = [];
   window.__heard = [];
 });
-await page.getByRole('button', { name: '▶ Play section' }).click();
+await page.getByRole('radio', { name: 'This section' }).click();
+await page.getByRole('button', { name: 'Play', exact: true }).click();
 await page.waitForFunction(() => !window.__fluidfrets.store.getState().progressionPlaying, null, { timeout: 15000 });
 const played = await page.evaluate(() => window.__plucks.map((p) => `${p.string}:${p.midi}`));
 const expected = await page.evaluate(() => {

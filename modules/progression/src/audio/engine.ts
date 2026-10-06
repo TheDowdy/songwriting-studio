@@ -414,11 +414,12 @@ export async function startPlayback(strikes: NoteStrike[], options: PlaybackOpti
   transport.loopStart = `${Math.round(loopStart * ppq)}i`;
   transport.loopEnd = `${Math.round(loopEnd * ppq)}i`;
   if (!options.loop) {
+    // Plays once through: the whole song, or just the bounded section.
     transport.schedule((time) => {
       Tone.getDraw().schedule(() => stopPlayback(), time);
-    }, `${Math.round(totalBeats * ppq)}i`);
+    }, `${Math.round(loopEnd * ppq)}i`);
   }
-  transport.start('+0.05', options.loop ? `${Math.round(loopStart * ppq)}i` : 0);
+  transport.start('+0.05', `${Math.round(loopStart * ppq)}i`);
 }
 
 /** Change what is playing without stopping (edits, tempo, loop, instrument). Timing stays on the transport. */

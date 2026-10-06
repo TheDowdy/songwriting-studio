@@ -77,7 +77,6 @@ export const PROGRESSION_HELP: HelpEntry[] = [
   p('Just this chord', 'Keep this pattern on the selected chord only. The rest of the block goes back to the song default.'),
   p('Whole section', 'Use this pattern for every chord in the section.'),
   { name: 'Whole song', selector: '[aria-label="Use this pattern for"] button', scope: S, text: 'Make this the song’s default pattern and clear every other block.' },
-  { name: 'Whole song', selector: '[role="radio"]', scope: S, text: 'Loop the whole song.' },
   p('Remove pattern', 'Remove this block. Its chords go back to the song default.'),
   p('Song default', 'Choose the pattern for every chord that has no block of its own.'),
   p('Close pattern block', 'Close the block’s options.'),
@@ -95,7 +94,6 @@ export const PROGRESSION_HELP: HelpEntry[] = [
   p('Make variant', 'Create a copy of this section with the chords voiced in a different position on the neck.'),
   p('Clear', 'Remove every chord from this section.'),
   p(/^Delete .+/, 'Delete this section and its chords.'),
-  sel('.sw-order-chip', 'Scroll to this section. Playback highlights the section that is playing.'),
   p(/^Remove .+ from arrangement/, 'Take this section out of the arrangement. The section itself stays.'),
   p(/^\+ .+ section$|^\+ (Verse|Chorus|Bridge|Intro|Outro|Pre-chorus)$/, 'Add a new section with this name.'),
   sel('[aria-label="Arrangement"] button', 'Add this section to the song’s order. Select it again to repeat it later in the song.'),
@@ -103,20 +101,17 @@ export const PROGRESSION_HELP: HelpEntry[] = [
   sel('.block-stale', 'The guitar voicing saved for this chord no longer fits. Open the Guitar tab to re-fit it.'),
   sel('.timeline-block-source, .variant-source', 'Scroll to the section this variant was made from.'),
 
-  // Transport.
-  p('Tap tempo', 'Tap this repeatedly in time to set the tempo.'),
-  p(/^(Play|Stop)$|^(▶ Play|■ Stop)$/, 'Play or stop the progression.'),
-  p('This section', 'Loop only the section you’re editing.'),
-  p('Loop', 'Repeat playback until you stop it.'),
-  sel('[aria-label="What to loop"] button', 'Choose what to repeat: the whole song or one section.'),
-  p('Tempo', 'Set the tempo in beats per minute.'),
-  p('Tempo slider', 'Set the tempo in beats per minute.'),
-  p('More playback settings', 'Show the time signature, instrument, metronome and volume.'),
-  p('Beats per bar', 'Set how many beats are in each bar.'),
-  p('Beat unit', 'Set which note length counts as one beat.'),
-  p('Time signature', 'Set the number of beats in a bar and the note length of a beat.'),
-  p('Instrument', 'Choose the instrument sound used for playback.'),
-  p(/Metronome/, 'Play a click on every beat during playback.'),
-  p('Volume', 'Set the volume of playback.'),
+];
 
+/** The chords workspace's own playback settings, which the shell shows in its transport row. */
+const T = '[aria-label="Playback"]';
+const t = (name: string | RegExp, text: string): HelpEntry => ({ name, scope: T, text });
+export const PROGRESSION_TRANSPORT_HELP: HelpEntry[] = [
+  t('More playback settings', 'Show the time signature, instrument, metronome and volume.'),
+  t('Beats per bar', 'Set how many beats are in each bar.'),
+  t('Beat unit', 'Set which note length counts as one beat.'),
+  t('Time signature', 'Set the number of beats in a bar and the note length of a beat.'),
+  t('Instrument', 'Choose the instrument sound used for playback.'),
+  t(/Metronome/, 'Play a click on every beat during playback.'),
+  t('Volume', 'Set the volume of playback.'),
 ];

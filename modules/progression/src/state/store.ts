@@ -31,9 +31,6 @@ interface AppState {
   /** The beat of the sounding chord (from 0), for the timeline's moving highlight. */
   playingBeat: number;
   isPlaying: boolean;
-  loop: boolean;
-  /** Loop the whole song, or just the section the selected/playing chord is in. */
-  loopScope: 'song' | 'section';
   metronome: boolean;
   /** 0–1. */
   volume: number;
@@ -97,8 +94,6 @@ interface AppState {
   /** The selected block's pattern editor is open. */
   patternEditorOpen: boolean;
   setPatternEditorOpen: (open: boolean) => void;
-  setLoop: (loop: boolean) => void;
-  setLoopScope: (scope: 'song' | 'section') => void;
   setMetronome: (on: boolean) => void;
   setVolume: (volume: number) => void;
   setPlaying: (isPlaying: boolean) => void;
@@ -170,8 +165,6 @@ export const useStore = create<AppState>((set, get) => {
     playingEventId: null,
     playingBeat: 0,
     isPlaying: false,
-    loop: true,
-    loopScope: 'song',
     metronome: false,
     volume: 0.85,
 
@@ -292,8 +285,6 @@ export const useStore = create<AppState>((set, get) => {
       }),
     patternEditorOpen: false,
     setPatternEditorOpen: (patternEditorOpen) => set({ patternEditorOpen }),
-    setLoop: (loop) => set({ loop }),
-    setLoopScope: (loopScope) => set({ loopScope }),
     setMetronome: (metronome) => set({ metronome }),
     setVolume: (volume) => set({ volume: clampVolume(volume) }),
     setPlaying: (isPlaying) => set(isPlaying ? { isPlaying } : { isPlaying, playingEventId: null, playingBeat: 0 }),

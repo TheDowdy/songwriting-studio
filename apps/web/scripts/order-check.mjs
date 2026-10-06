@@ -49,7 +49,7 @@ await page.evaluate(({ a, b, c }) => {
 const chipNames = () => page.evaluate(() => [...document.querySelectorAll('[aria-label="Arrangement"] li')].map((li) => li.textContent.replace('×', '').trim()));
 check('the arrangement row lists every slot in order', JSON.stringify(await chipNames()) === JSON.stringify(['Verse', 'Chorus', 'Verse']), JSON.stringify(await chipNames()));
 check('nothing is highlighted before playback', (await page.locator('[data-playing]').count()) === 0);
-await page.getByRole('button', { name: /^▶ Play|^Play/ }).first().click();
+await page.getByRole('button', { name: 'Play', exact: true }).click();
 await sleep(1200);
 check('a chip is highlighted while playing', (await page.locator('[data-playing]').count()) === 1, await page.locator('[data-playing]').allTextContents().then((t) => t.join()));
 check('…as the current step', (await page.locator('[aria-current="step"]').count()) === 1);
@@ -68,11 +68,11 @@ const widths = await page.evaluate(() =>
 );
 const w = Object.fromEntries(widths);
 check('a longer chord is drawn wider', w['8'] > w['4'], JSON.stringify(widths));
-await page.getByRole('button', { name: '▶ Play song' }).click();
+await page.getByRole('button', { name: 'Play', exact: true }).click();
 await sleep(1500);
 check('the playing section is highlighted', (await chips()).filter((c) => c.endsWith('*')).length === 1, JSON.stringify(await chips()));
 check('the sounding beat of the playing chord is marked', (await page.locator('.strip-slash.now').count()) === 1, String(await page.locator('.strip-slash.now').count()));
-await page.getByRole('button', { name: '■ Stop' }).click();
+await page.getByRole('button', { name: 'Stop', exact: true }).click();
 await sleep(300);
 check('…and clears on stop', (await chips()).every((c) => !c.endsWith('*')));
 

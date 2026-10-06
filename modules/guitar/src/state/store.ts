@@ -95,7 +95,6 @@ export interface AppState {
   /** The beat of the sounding chord that is being heard (0-based), for the strip's moving beat. */
   progressionBeat: number;
   /** Loop the song or section while playing it here. Not persisted. */
-  progressionLoop: boolean;
   /** The song as it was before the last change made in the guitar module (Phase 7 item 3: a single
    *  level of undo), and what that change was. Not persisted. */
   guitarUndo: { songId: string; label: string; song: Song } | null;
@@ -187,7 +186,6 @@ export interface AppState {
   setStripAddSectionId: (sectionId: string | null) => void;
   setProgressionPlaying: (playing: boolean) => void;
   setProgressionBeat: (beat: number) => void;
-  setProgressionLoop: (loop: boolean) => void;
   setGuitarUndo: (undo: AppState['guitarUndo']) => void;
   setPendingGuitarChange: (pending: AppState['pendingGuitarChange']) => void;
   setRevoiceOpen: (open: boolean) => void;
@@ -280,7 +278,6 @@ export const useStore = create<AppState>()(
       stripAddSectionId: null,
       progressionPlaying: false,
       progressionBeat: 0,
-      progressionLoop: true,
       guitarUndo: null,
       pendingGuitarChange: null,
       revoiceOpen: false,
@@ -336,7 +333,6 @@ export const useStore = create<AppState>()(
       setStripAddSectionId: (stripAddSectionId) => set({ stripAddSectionId }),
       setProgressionPlaying: (progressionPlaying) => set({ progressionPlaying, progressionBeat: 0 }),
       setProgressionBeat: (progressionBeat) => set({ progressionBeat }),
-      setProgressionLoop: (progressionLoop) => set({ progressionLoop }),
       setGuitarUndo: (guitarUndo) => set({ guitarUndo }),
       setPendingGuitarChange: (pendingGuitarChange) => set({ pendingGuitarChange }),
       setRevoiceOpen: (revoiceOpen) => set({ revoiceOpen }),
