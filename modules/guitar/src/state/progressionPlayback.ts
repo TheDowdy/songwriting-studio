@@ -8,7 +8,7 @@ import { capoedTuning } from '@sw/core/fret/capo';
 import { shapeNotes } from '@sw/core/fret/voicings';
 import { songStore } from '@sw/song-store';
 import { advancePlayhead, clearPlayhead } from '@sw/timeline';
-import { ProgressionPlayer, type ProgressionStrike } from '../audio/progressionPlayer';
+import { ProgressionPlayer, type BeatMark, type ProgressionStrike } from '../audio/progressionPlayer';
 import { defaultBassMode } from './bassMode';
 import { chordContextFor, stopChordPlayback } from './chordActions';
 import { emitPluck } from './pluckEvents';
@@ -78,6 +78,18 @@ export function progressionStrikes(song: Song, sectionId: string | null): { stri
   return { strikes, lengthSeconds: lengthBeats * secondsPerBeat };
 }
 
+/** The start of every beat of every chord in the range, for the strip's moving beat. */
+export function progressionBeatMarks(song: Song, sectionId: string | null): BeatMark[] {
+  const secondsPerBeat = 60 / song.bpm;
+  const marks: BeatMark[] = [];
+  for (const { event, startBeats } of playbackRange(song, sectionId).events) {
+    for (let beat = 0; beat < event.beats; beat++) {
+      marks.push({ atSeconds: (startBeats + beat) * secondsPerBeat, eventId: event.id, beat });
+    }
+  }
+  return marks;
+}
+
 /** Plays the whole song, or the section of the focused chord (the first section if none is). */
 export function playProgression(scope: 'song' | 'section'): void {
   const song = songStore.getState().currentSong();
@@ -97,11 +109,12 @@ export function playProgression(scope: 'song' | 'section'): void {
       selectProgressionEvent(eventId);
     },
     onNote: (n) => emitPluck(n),
+    onBeat: (_eventId, beat) => useStore.getState().setProgressionBeat(beat),
     onEnd: () => {
       clearPlayhead();
       useStore.getState().setProgressionPlaying(false);
     },
-  });
+  }, progressionBeatMarks(song, sectionId));
 }
 
 export function stopProgression(): void {

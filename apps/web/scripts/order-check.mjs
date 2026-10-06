@@ -71,6 +71,7 @@ check('a longer chord is drawn wider', w['8'] > w['4'], JSON.stringify(widths));
 await page.getByRole('button', { name: '▶ Play song' }).click();
 await sleep(1500);
 check('the playing section is highlighted', (await chips()).filter((c) => c.endsWith('*')).length === 1, JSON.stringify(await chips()));
+check('the sounding beat of the playing chord is marked', (await page.locator('.strip-slash.now').count()) === 1, String(await page.locator('.strip-slash.now').count()));
 await page.getByRole('button', { name: '■ Stop' }).click();
 await sleep(300);
 check('…and clears on stop', (await chips()).every((c) => !c.endsWith('*')));

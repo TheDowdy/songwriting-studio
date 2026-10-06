@@ -868,6 +868,11 @@
   background: currentColor;
   transform: skewX(-28deg);
 }
+.mod-guitar .strip-slash.now {
+  /* The beat being heard turns red pencil, like the progression timeline's. */
+  background: var(--play);
+  width: 3px;
+}
 .mod-guitar .strip-stroke {
   font-size: 0.85rem;
   font-weight: 500;

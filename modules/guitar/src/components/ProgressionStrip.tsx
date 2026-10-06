@@ -50,6 +50,7 @@ const blockId = (sectionId: string, eventId: string) => `${sectionId}:${eventId}
  */
 function StripChord({ sectionId, event, song, selected }: { sectionId: string; event: ChordEvent; song: Song; selected: boolean }) {
   const playing = useStore((s) => s.progressionPlaying && s.progressionEventId === event.id);
+  const playingBeat = useStore((s) => (playing ? s.progressionBeat : -1));
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: blockId(sectionId, event.id),
   });
@@ -119,7 +120,7 @@ function StripChord({ sectionId, event, song, selected }: { sectionId: string; e
               `${strokes.length} strokes`
             )
           ) : (
-            Array.from({ length: Math.min(event.beats, 16) }, (_, i) => <i key={i} className="strip-slash" />)
+            Array.from({ length: Math.min(event.beats, 16) }, (_, i) => <i key={i} className={`strip-slash${i === playingBeat ? ' now' : ''}`} />)
           )}
         </span>
       </button>

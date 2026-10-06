@@ -9,11 +9,21 @@ export interface ProgressionStrike {
   velocity: number;
 }
 
+/** The start of one beat of a chord (seconds into the range), for the strip's moving beat. */
+export interface BeatMark {
+  atSeconds: number;
+  eventId: string;
+  /** 0-based beat within the chord. */
+  beat: number;
+}
+
 export interface ProgressionHooks {
   /** Called as each chord becomes audible (latency-compensated) — the neck then shows it. */
   onChord: (eventId: string) => void;
   /** Called as each note of a strum is heard, for the string animation. */
   onNote: (note: { string: number; fret: number; velocity: number }) => void;
+  /** Called as each beat of a chord is heard (see `BeatMark`). */
+  onBeat?: (eventId: string, beat: number) => void;
   /** Called once when a non-looping range has finished, or playback is stopped. */
   onEnd: () => void;
 }
@@ -46,6 +56,7 @@ export class ProgressionPlayer {
     strumSeconds: number,
     loop: boolean,
     hooks: ProgressionHooks,
+    beatMarks: readonly BeatMark[] = [],
   ): void {
     this.stop(false);
     audioEngine.unlock();
@@ -63,6 +74,8 @@ export class ProgressionPlayer {
     let showCycle = 0;
     let showIndex = 0;
     let lastChord: string | null = null;
+    let beatCycle = 0;
+    let beatIndex = 0;
     // Notes waiting to be shown as heard, in order.
     const pendingNotes: { at: number; string: number; fret: number; velocity: number }[] = [];
     const strikeTime = (cycle: number, index: number) =>
@@ -104,6 +117,17 @@ export class ProgressionPlayer {
           hooks.onChord(id);
         }
         showIndex++;
+      }
+      for (;;) {
+        if (beatIndex >= beatMarks.length) {
+          if (!loop || beatMarks.length === 0) break;
+          beatIndex = 0;
+          beatCycle++;
+        }
+        const mark = beatMarks[beatIndex] as BeatMark;
+        if (t0 + beatCycle * lengthSeconds + mark.atSeconds > heard) break;
+        hooks.onBeat?.(mark.eventId, mark.beat);
+        beatIndex++;
       }
       while (pendingNotes.length > 0 && (pendingNotes[0] as { at: number }).at <= heard) {
         const n = pendingNotes.shift() as { string: number; fret: number; velocity: number };
