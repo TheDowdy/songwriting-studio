@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import './index.css';
+import '@sw/timeline/timeline.css';
 import SheetView from './sheet/SheetView';
 import KeyPicker from './components/KeyPicker';
 import CircleOfFifths from './components/CircleOfFifths';

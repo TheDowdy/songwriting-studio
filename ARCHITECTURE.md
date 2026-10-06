@@ -16,7 +16,7 @@ songwriting-studio/
     guitar/               the guitar fretboard/voicing UI
 ```
 
-Package names use the scope `@sw/` (`@sw/core`, `@sw/song-store`, `@sw/audio`, `@sw/ui`). Modules
+Package names use the scope `@sw/` (`@sw/core`, `@sw/song-store`, `@sw/audio`, `@sw/ui`, `@sw/timeline`). Modules
 are plain workspaces too but are not published packages — they're only ever imported by
 `apps/web`.
 

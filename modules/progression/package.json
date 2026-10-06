@@ -19,6 +19,7 @@
     "@sw/audio": "*",
     "@sw/core": "*",
     "@sw/song-store": "*",
+    "@sw/timeline": "*",
     "@sw/ui": "*",
     "@tonejs/midi": "^2.0.28",
     "react": "^19.3.0",

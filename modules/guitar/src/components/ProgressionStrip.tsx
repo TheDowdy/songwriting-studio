@@ -14,6 +14,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { chordName, chordStrokes, chroma, voicingStatus, type ChordEvent, type Section, type Song, type VariantGeneratorId, type VariantOptions } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { useSong } from '@sw/song-store/react';
+import { blockWidth, sectionsInOrder, SongOrderRow } from '@sw/timeline';
 import { ChordDiagram, VariantDialog } from '@sw/ui';
 import { addSection, duplicateSection, focusAndPlay, makeSectionVariant, renameSection, reorderChord } from '../state/progressionEdits';
 import { playProgression, stopProgression } from '../state/progressionPlayback';
@@ -38,8 +39,8 @@ const TOUCH_DRAG = { activationConstraint: { delay: 250, tolerance: 8 } };
 /** With a mouse, a click stays a click until the pointer has moved a few pixels. */
 const MOUSE_DRAG = { activationConstraint: { distance: 6 } };
 
-/** A block's sortable id: the same chord shows once per arrangement slot its section fills. */
-const blockId = (slot: number, eventId: string) => `${slot}:${eventId}`;
+/** A block's sortable id: sections show once each, so the section id keeps ids unique. */
+const blockId = (sectionId: string, eventId: string) => `${sectionId}:${eventId}`;
 
 /**
  * One chord block. A committed voicing (§3.2) shows its mini diagram, or a warning in its place if
@@ -47,10 +48,10 @@ const blockId = (slot: number, eventId: string) => `${slot}:${eventId}`;
  * shape and says so (Phase 6 item 2). Clicking focuses and sounds exactly what the neck then
  * shows; press-and-hold (or drag with a mouse) reorders it within its section (Phase 6 item 1).
  */
-function StripChord({ slot, event, song, selected }: { slot: number; event: ChordEvent; song: Song; selected: boolean }) {
+function StripChord({ sectionId, event, song, selected }: { sectionId: string; event: ChordEvent; song: Song; selected: boolean }) {
   const playing = useStore((s) => s.progressionPlaying && s.progressionEventId === event.id);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: blockId(slot, event.id),
+    id: blockId(sectionId, event.id),
   });
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   // Follow playback: keep the sounding chord centred in the strip (the strip only — the page stays put).
@@ -77,6 +78,8 @@ function StripChord({ slot, event, song, selected }: { slot: number; event: Chor
           voicing ? (stale ? ', voicing needs a re-fit' : ', voicing committed') : ', no voicing committed (plays the suggested shape)'
         }`}
         style={{
+          // Width follows the chord's length in beats (compact density), with a readable minimum.
+          width: blockWidth(event.beats, 'compact'),
           backgroundColor: ORIGIN_TINT[event.chord.origin],
           borderColor: ORIGIN_COLOR[event.chord.origin],
         }}
@@ -115,10 +118,8 @@ function StripChord({ slot, event, song, selected }: { slot: number; event: Chor
             ) : (
               `${strokes.length} strokes`
             )
-          ) : event.beats <= 8 ? (
-            Array.from({ length: event.beats }, (_, i) => <i key={i} className="strip-slash" />)
           ) : (
-            `${event.beats} beats`
+            Array.from({ length: Math.min(event.beats, 16) }, (_, i) => <i key={i} className="strip-slash" />)
           )}
         </span>
       </button>
@@ -248,8 +249,9 @@ function Transport({ song, hasChords }: { song: Song; hasChords: boolean }) {
 }
 
 /**
- * The progression strip (§7 Phase 3 item 2, editable since Phase 6): each arrangement slot's
- * section in order, its chords shown once (a repeat count on the name), with rename/duplicate on
+ * The progression strip (§7 Phase 3 item 2, editable since Phase 6): each section once, in the
+ * order the song first plays it (a repeat count on the name; the Song order row above shows the
+ * playing order, with the section being played highlighted), with rename/duplicate on
  * each section, "+ Section" at the end, and "+ Add chord" in an empty section. The arrangement
  * itself stays editable only in the progression module. Horizontally scrollable so a long song
  * stays compact.
@@ -266,16 +268,15 @@ export function ProgressionStrip() {
   );
 
   if (!song) return null;
-  const slots = song.arrangement
-    .map((sectionId, slot) => ({ slot, section: song.sections.find((s) => s.id === sectionId) }))
-    .filter((x): x is { slot: number; section: Section } => !!x.section);
+  // Each section once, in the order the song first plays it, a variant right after its source.
+  const sections = sectionsInOrder(song);
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id) return;
-    const [fromSlot, fromId] = String(active.id).split(':');
-    const [toSlot, toId] = String(over.id).split(':');
-    if (fromSlot !== toSlot) return; // reorder within a section only
-    const section = slots.find((x) => String(x.slot) === fromSlot)?.section;
+    const [fromSection, fromId] = String(active.id).split(':');
+    const [toSection, toId] = String(over.id).split(':');
+    if (fromSection !== toSection) return; // reorder within a section only
+    const section = sections.find((x) => x.id === fromSection);
     if (!section) return;
     const from = section.events.findIndex((e) => e.id === fromId);
     const to = section.events.findIndex((e) => e.id === toId);
@@ -287,13 +288,14 @@ export function ProgressionStrip() {
   return (
     <section className="progression-strip" aria-label="Progression">
       <Transport song={song} hasChords={hasChords} />
+      <SongOrderRow song={song} onSelect={(id) => document.getElementById(`strip-section-${id}`)?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })} />
       {!hasChords && <p className="muted">This song has no chords yet — pick one below to start.</p>}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <ol className="strip-scroll">
-          {slots.map(({ slot, section }) => {
+          {sections.map((section) => {
             const sourceSection = section.variantOf ? song.sections.find((s) => s.id === section.variantOf) : undefined;
             return (
-            <li key={slot} className="strip-group" id={`strip-section-${section.id}`}>
+            <li key={section.id} className="strip-group" id={`strip-section-${section.id}`}>
               <span className="strip-group-head">
                 <SectionName section={section} />
                 <button
@@ -319,14 +321,14 @@ export function ProgressionStrip() {
               </span>
               {sourceSection && <VariantOf section={section} sourceName={sourceSection.name} />}
               <SortableContext
-                items={section.events.map((e) => blockId(slot, e.id))}
+                items={section.events.map((e) => blockId(section.id, e.id))}
                 strategy={horizontalListSortingStrategy}
               >
                 <ol className="strip-chords">
                   {section.events.map((event) => (
                     <StripChord
-                      key={blockId(slot, event.id)}
-                      slot={slot}
+                      key={blockId(section.id, event.id)}
+                      sectionId={section.id}
                       event={event}
                       song={song}
                       selected={event.id === progressionEventId}
@@ -358,8 +360,8 @@ export function ProgressionStrip() {
       </DndContext>
       {variantSectionId && (
         <VariantDialog
-          sectionName={slots.find((x) => x.section.id === variantSectionId)?.section.name ?? ''}
-          chords={(slots.find((x) => x.section.id === variantSectionId)?.section.events ?? []).map((e) => e.chord)}
+          sectionName={sections.find((x) => x.id === variantSectionId)?.name ?? ''}
+          chords={(sections.find((x) => x.id === variantSectionId)?.events ?? []).map((e) => e.chord)}
           tuning={song.guitar.tuning}
           capo={song.guitar.capo}
           onClose={() => setVariantSectionId(null)}

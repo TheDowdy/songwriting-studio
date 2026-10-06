@@ -93,6 +93,7 @@ export const PROGRESSION_HELP: HelpEntry[] = [
   p('Make variant', 'Create a copy of this section with the chords voiced in a different position on the neck.'),
   p('Clear', 'Remove every chord from this section.'),
   p(/^Delete .+/, 'Delete this section and its chords.'),
+  sel('.sw-order-chip', 'Scroll to this section. Playback highlights the section that is playing.'),
   p(/^Remove .+ from arrangement/, 'Take this section out of the arrangement. The section itself stays.'),
   p(/^\+ .+ section$|^\+ (Verse|Chorus|Bridge|Intro|Outro|Pre-chorus)$/, 'Add a new section with this name.'),
   sel('[aria-label="Arrangement"] button', 'Add this section to the song’s order. Select it again to repeat it later in the song.'),

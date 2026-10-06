@@ -20,6 +20,7 @@
     "@sw/audio": "*",
     "@sw/core": "*",
     "@sw/song-store": "*",
+    "@sw/timeline": "*",
     "@sw/ui": "*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

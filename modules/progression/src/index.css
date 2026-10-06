@@ -351,3 +351,12 @@
   background: var(--accent);
   border-color: var(--accent);
 }
+
+/* The arrangement chip for the section being played (@sw/timeline's playhead). */
+[data-playing] {
+  color: var(--play-fg);
+  background: var(--play);
+  border-radius: 999px;
+  padding-left: 0.5rem;
+  padding-right: 0.25rem;
+}

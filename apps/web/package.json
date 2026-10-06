@@ -33,6 +33,7 @@
     "check:revoice": "node scripts/revoice-check.mjs",
     "check:variant": "node scripts/variant-check.mjs",
     "check:chord-header": "node scripts/chord-header-check.mjs",
+    "check:order": "node scripts/order-check.mjs",
     "check:spacebar": "node scripts/spacebar-check.mjs",
     "check:addchord": "node scripts/addchord-check.mjs",
     "check:circle": "node scripts/circle-check.mjs",

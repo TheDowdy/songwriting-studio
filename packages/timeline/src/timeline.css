@@ -1,0 +1,65 @@
+/* The song order row, shared by every module's strip (@sw/timeline). Colours are theme tokens. */
+.sw-order {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.sw-order-title {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sw-order-list {
+  display: flex;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0 0 2px;
+  list-style: none;
+  overflow-x: auto;
+}
+.sw-order-chip {
+  min-height: 32px;
+  padding: 0 0.75rem;
+  white-space: nowrap;
+  font: inherit;
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--fg);
+  background: var(--t-diatonic);
+  border: 1px solid var(--c-diatonic);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.sw-order-chip[data-family='1'] {
+  background: var(--t-borrowed);
+  border-color: var(--c-borrowed);
+}
+.sw-order-chip[data-family='2'] {
+  background: var(--t-secondary);
+  border-color: var(--c-secondary);
+}
+.sw-order-chip[data-family='3'] {
+  background: var(--surface-2);
+  border-color: var(--muted);
+}
+/* A variant keeps its source's tint and is told apart by a dashed edge. */
+.sw-order-chip.variant {
+  border-style: dashed;
+}
+/* The section being played, like the red slash on the sounding beat. */
+.sw-order-chip.playing {
+  color: var(--play-fg);
+  background: var(--play);
+  border-color: var(--play);
+  border-style: solid;
+  font-weight: 700;
+  font-style: normal;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--play);
+}
+.sw-order-repeat {
+  opacity: 0.75;
+}

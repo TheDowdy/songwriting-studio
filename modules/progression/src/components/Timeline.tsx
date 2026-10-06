@@ -21,6 +21,8 @@ import { canToggleMajorMinor, chordName, chroma, keyLabel, keyOfSection, pattern
 import type { Key, PatternBlock } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { ChordDiagram, NumberField, VariantDialog } from '@sw/ui';
+import { chipLabel, playhead } from '@sw/timeline';
+import { useStore as useZustand } from 'zustand';
 import type { Navigate } from '../App';
 import { previewChordInSong } from '../state/playback';
 import { BEATS_MAX, useStore } from '../state/store';
@@ -540,7 +542,10 @@ function ArrangementRow() {
     reorderArrangement(from, to);
   };
 
-  const nameFor = (id: string) => sections.find((s) => s.id === id)?.name ?? '?';
+  const song = useStore((s) => s.song);
+  const playingSlot = useZustand(playhead, (s) => s.slot);
+  const nameFor = (id: string) => chipLabel(song, id);
+  const isVariant = (id: string) => !!sections.find((s) => s.id === id)?.variantOf;
 
   return (
     <section aria-label="Arrangement" className="rounded-none border-t border-fg pt-3">
@@ -549,7 +554,7 @@ function ArrangementRow() {
         <SortableContext items={ids} strategy={horizontalListSortingStrategy}>
           <ol className="flex flex-wrap items-center gap-1.5">
             {arrangement.map((sectionId, i) => (
-              <ArrangementChip key={ids[i]} id={ids[i]} name={nameFor(sectionId)} onRemove={() => removeArrangementSlot(i)} />
+              <ArrangementChip key={ids[i]} id={ids[i]} name={nameFor(sectionId)} playing={playingSlot === i} variant={isVariant(sectionId)} onRemove={() => removeArrangementSlot(i)} />
             ))}
           </ol>
         </SortableContext>
@@ -574,7 +579,7 @@ function ArrangementRow() {
   );
 }
 
-function ArrangementChip({ id, name, onRemove }: { id: string; name: string; onRemove: () => void }) {
+function ArrangementChip({ id, name, playing, variant, onRemove }: { id: string; name: string; playing: boolean; variant: boolean; onRemove: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   return (
     <li
@@ -586,7 +591,10 @@ function ArrangementChip({ id, name, onRemove }: { id: string; name: string; onR
       // keyboard drag handle); this li also contains the real "Remove" button below, and a button
       // nested inside another interactive role is inaccessible — `listitem` is accurate anyway.
       role="listitem"
-      className="flex items-center gap-1 rounded-none border-b border-fg py-0.5 pl-1 pr-1 text-base italic"
+      className={`flex items-center gap-1 rounded-none border-b py-0.5 pl-1 pr-1 text-base ${playing ? 'font-bold' : 'italic'} ${variant ? 'border-dashed' : ''} border-fg`}
+      aria-current={playing ? 'step' : undefined}
+      // The section being played is filled in the play colour, like the red slash on the sounding beat.
+      data-playing={playing || undefined}
     >
       {name}
       <button

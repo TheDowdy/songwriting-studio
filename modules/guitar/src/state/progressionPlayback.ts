@@ -7,6 +7,7 @@ import { findEvent, flattenSong, chordStrokes, playbackRange, strumNotes, strumV
 import { capoedTuning } from '@sw/core/fret/capo';
 import { shapeNotes } from '@sw/core/fret/voicings';
 import { songStore } from '@sw/song-store';
+import { advancePlayhead, clearPlayhead } from '@sw/timeline';
 import { ProgressionPlayer, type ProgressionStrike } from '../audio/progressionPlayer';
 import { defaultBassMode } from './bassMode';
 import { chordContextFor, stopChordPlayback } from './chordActions';
@@ -91,14 +92,21 @@ export function playProgression(scope: 'song' | 'section'): void {
   stopChordPlayback();
   state.setProgressionPlaying(true);
   player.start(strikes, lengthSeconds, state.chordPlay.speedMs / 1000, state.progressionLoop, {
-    onChord: (eventId) => selectProgressionEvent(eventId),
+    onChord: (eventId) => {
+      advancePlayhead(song, eventId);
+      selectProgressionEvent(eventId);
+    },
     onNote: (n) => emitPluck(n),
-    onEnd: () => useStore.getState().setProgressionPlaying(false),
+    onEnd: () => {
+      clearPlayhead();
+      useStore.getState().setProgressionPlaying(false);
+    },
   });
 }
 
 export function stopProgression(): void {
   player.stop();
+  clearPlayhead();
   useStore.getState().setProgressionPlaying(false);
 }
 

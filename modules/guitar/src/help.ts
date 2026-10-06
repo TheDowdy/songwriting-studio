@@ -23,6 +23,7 @@ export const GUITAR_HELP: HelpEntry[] = [
   g(/^Duplicate .+/, 'Copy this section and place the copy after it.'),
   g(/^Make a variant of /, 'Create a copy of this section with the chords voiced in a different position on the neck.'),
   sel('.strip-variant-link', 'Scroll to the section this variant was made from.'),
+  sel('.sw-order-chip', 'Scroll to this section. Playback highlights the section that is playing.'),
   g('+ Add chord', 'Choose the first chord for this empty section.'),
   g('+ Section', 'Add a new, empty section to the end of the song.'),
 

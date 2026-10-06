@@ -1,0 +1,25 @@
+{
+  "name": "@sw/timeline",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": "./src/index.ts",
+    "./timeline.css": "./src/timeline.css"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sw/core": "*",
+    "react": "^19.3.0",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}

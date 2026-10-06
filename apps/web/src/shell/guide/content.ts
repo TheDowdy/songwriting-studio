@@ -96,7 +96,7 @@ export const GUIDE: GuideSection[] = [
       },
       { p: 'To reorder chords, press and hold a chord, and then drag it to a new position.' },
       { h3: 'Organize sections' },
-      { p: 'A song is made of sections, such as a verse and a chorus. Add a section with the buttons below the timeline, for example **+ Verse**. In the arrangement, add sections in the order you want them played. A section can appear more than once.' },
+      { p: 'A song is made of sections, such as a verse and a chorus. Add a section with the buttons below the timeline, for example **+ Verse**. In the arrangement, add sections in the order you want them played. A section can appear more than once. While the song plays, the section that is playing is highlighted in the arrangement, and in the **Song order** row above the chords on the Guitar tab.' },
       { p: 'Use **–** and **+** next to a section’s name to set how many times it repeats. **Duplicate section** copies a section, and **Clear** removes its chords.' },
       { h3: 'Add strum patterns' },
       { p: 'Under each section’s chords is the pattern lane. It works like a second track: the chord blocks say what is played, and the pattern blocks say how. A chord with no pattern of its own, shown with a dashed outline, plays the song default.' },
