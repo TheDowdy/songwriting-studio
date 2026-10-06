@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import './index.css';
 import '@sw/timeline/timeline.css';
 import SheetView from './sheet/SheetView';
+import KeyChip from './components/KeyChip';
 import KeyPicker from './components/KeyPicker';
 import CircleOfFifths from './components/CircleOfFifths';
 import NodeMap from './components/NodeMap';
@@ -70,14 +71,16 @@ export default function ProgressionModule({ navigate, focus }: Props) {
   const useAsKey = (next: Key) => (song.sections.length > 1 ? changeSectionKey(activeSectionId, next, 'relabel') : changeKey(next, 'relabel'));
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  // The key is the first thing to choose in a new song; once there are chords it folds to a chip.
+  const [keyOpen, setKeyOpen] = useState(() => !song.sections.some((sec) => sec.events.length > 0));
   const preview = (chord: ChordRef) => void previewChordInSong(chord);
 
   return (
     <div className="mod-progression min-h-dvh pb-10">
       <div className="mx-auto max-w-3xl space-y-4 px-4 pt-5">
         <ChordInspector navigate={navigate} />
-        <SongPanel onOpenSheet={() => setSheetOpen(true)} navigate={navigate} />
-        <KeyPicker />
+        <SongPanel onOpenSheet={() => setSheetOpen(true)} navigate={navigate} leading={<KeyChip open={keyOpen} onToggle={() => setKeyOpen((v) => !v)} />} />
+        {keyOpen && <KeyPicker />}
         <div role="group" aria-label="Chord map type" className="flex gap-4 border-b border-fg">
           {([['suggest', 'Suggestions'], ['circle', 'Circle of fifths']] as const).map(([mode, label]) => (
             <button

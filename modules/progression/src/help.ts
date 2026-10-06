@@ -39,6 +39,7 @@ export const PROGRESSION_HELP: HelpEntry[] = [
 
   // Chord map.
   p(/^Current chord /, 'The chord you’re building from. Select it to hear it; the chords around it are good places to go next.'),
+  p(/^Key: /, 'Show or hide the key controls: the root note, the scale or mode, and whether the key applies to the whole song or one section.'),
   p(/^Key /, 'The key of the song. Select it to hear the tonic chord.'),
   p(/^Add another .+ to the progression/, 'Add another copy of this chord to the end of the progression.'),
   p(/^Add .+ to progression$/, 'Add this chord to the end of the progression.'),

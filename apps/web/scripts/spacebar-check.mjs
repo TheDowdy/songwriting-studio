@@ -112,7 +112,8 @@ check(
 
 // ---------------------------------------------------------------- Space keeps its other meanings
 // Typing a space in the song title.
-const titleInput = page.getByPlaceholder('Song title');
+await page.getByTitle('Rename song').click();
+const titleInput = page.getByLabel('Song title');
 await clearPlays();
 await titleInput.fill('a');
 await page.keyboard.press('Space');

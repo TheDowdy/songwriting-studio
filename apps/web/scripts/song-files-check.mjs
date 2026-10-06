@@ -58,7 +58,7 @@ const check = (name, ok, detail = '') => {
 
 const chordCount = () => page.locator('.sw-strip li button[aria-label^="Chord:"]').count();
 const urlSongId = () => page.evaluate(() => location.hash.split('/')[2]);
-const title = () => page.getByLabel('Song title').inputValue();
+const title = () => page.evaluate(() => window.__songwriting.store.getState().song.title);
 const openFilePanel = async () => {
   const toggle = page.getByRole('button', { name: 'Save, load and export' });
   if ((await toggle.getAttribute('aria-pressed')) !== 'true') await toggle.click();
@@ -76,7 +76,10 @@ await page.reload();
 // Song A: three chords.
 await page.getByRole('button', { name: 'New song' }).click();
 await page.waitForSelector('[aria-label="Chord map"]');
+// The title lives in the shell's header: select it to rename.
+await page.getByTitle('Rename song').click();
 await page.getByLabel('Song title').fill('Song A');
+await page.keyboard.press('Enter');
 for (let i = 0; i < 3; i++) {
   await page.locator('.map-node').nth(1 + i).click();
   await page.getByRole('button', { name: '+ Add' }).click();

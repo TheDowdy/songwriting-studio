@@ -39,7 +39,7 @@ export const GUIDE: GuideSection[] = [
       {
         ol: [
           'On the home screen, select **New song**.',
-          'In the **Chords** tab, choose the key of your song.',
+          'In the **Chords** tab, choose the key of your song. In a new song the key controls are open; later, select the **Key** button to show them again.',
           'In the chord map, select a chord to hear it.',
           'Select **+ Add** to add the chord to your progression.',
           'Repeat steps 3 and 4 to build the progression. The map suggests chords that usually follow the one you selected.',

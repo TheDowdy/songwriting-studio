@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { downloadMidi } from '../export/midi';
 import { downloadSongJson, parseSongJson } from '../export/json';
 import {
@@ -115,19 +115,16 @@ function SavedRow({
 
 /** Section 10: save/load (autosave already runs in the background via useAutosave), JSON
  *  import/export as a backup, and MIDI export. */
-export default function SongPanel({ onOpenSheet, navigate }: { onOpenSheet: () => void; navigate: Navigate }) {
+export default function SongPanel({ onOpenSheet, navigate, leading }: { onOpenSheet: () => void; navigate: Navigate; /** Shown at the left of the File row (the song's title lives in the shell's header). */ leading?: ReactNode }) {
   const [expanded, setExpanded] = useState(false);
   const [, setVersion] = useState(0);
   const [importError, setImportError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const song = useStore((s) => s.song);
-  const setTitle = useStore((s) => s.setTitle);
   const loadSong = useStore((s) => s.loadSong);
   const newSongAction = useStore((s) => s.newSong);
   const hasChords = useStore((s) => flattenSong(s.song).length > 0);
-
-  const titleInput = useRef<HTMLInputElement>(null);
 
   const refresh = () => setVersion((v) => v + 1);
   // The saved library plus the open song as it is right now (its autosave lags edits by a moment),
@@ -146,13 +143,11 @@ export default function SongPanel({ onOpenSheet, navigate }: { onOpenSheet: () =
     refresh();
   };
 
-  // Nothing is lost by starting a new song: the current one has already autosaved. The new one
-  // opens with its title selected, so typing names it and Enter/Tab finishes.
+  // Nothing is lost by starting a new song: the current one has already autosaved.
   const startNewSong = () => {
     saveSongToStorage(song);
     const id = newSongAction();
     navigate({ module: 'progression', songId: id });
-    setTimeout(() => titleInput.current?.select(), 0);
   };
 
   const importFile = async (file: File) => {
@@ -172,15 +167,8 @@ export default function SongPanel({ onOpenSheet, navigate }: { onOpenSheet: () =
   return (
     <div className={expanded ? 'rounded-xl border border-line bg-surface p-3' : ''}>
       <div className="flex items-center gap-2">
-        <input
-          ref={titleInput}
-          value={song.title}
-          onChange={(e) => setTitle(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
-          placeholder="Song title"
-          aria-label="Song title"
-          className="h-11 min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 text-xl font-semibold tracking-tight hover:border-line focus:border-line"
-        />
+        {leading}
+        <span className="min-w-0 flex-1" />
         <button
           onClick={toggle}
           aria-pressed={expanded}
