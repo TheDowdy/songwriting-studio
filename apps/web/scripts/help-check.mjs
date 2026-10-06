@@ -175,7 +175,7 @@ await page.getByRole('tab', { name: 'Scales' }).click();
 await audit('guitar: scales tab');
 await page.getByRole('tab', { name: 'Identify' }).click();
 await audit('guitar: identify tab');
-await page.getByRole('tab', { name: 'Chords' }).click();
+await page.getByRole('tab', { name: 'Voicings' }).click();
 await page.getByRole('button', { name: 'Settings', exact: true }).click();
 await audit('guitar: settings dialog');
 await page.getByRole('button', { name: 'Done', exact: true }).last().click();

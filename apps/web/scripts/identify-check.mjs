@@ -294,7 +294,7 @@ await page.getByRole('button', { name: /Send to Chord mode/ }).click();
 await sleep(300);
 check(
   'Send to Chord mode opens the Chords tab with the identified chord',
-  (await page.getByRole('tab', { name: 'Chords' }).getAttribute('aria-selected')) === 'true' &&
+  (await page.getByRole('tab', { name: 'Voicings' }).getAttribute('aria-selected')) === 'true' &&
     (await text('chord-name')) === 'E/B',
   await text('chord-name'),
 );

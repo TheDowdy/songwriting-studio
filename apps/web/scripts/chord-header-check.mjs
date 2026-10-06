@@ -111,7 +111,7 @@ await store(() => {
 });
 
 // ---------------------------------------------------------------- Chords tab (tool mode)
-await page.getByRole('tab', { name: 'Chords' }).click();
+await page.getByRole('tab', { name: 'Voicings' }).click();
 await settle();
 check('Chords tab (tool mode): the header shows the builder’s chord', (await headerCount()) === 1);
 const builderName = await name();
@@ -218,7 +218,7 @@ await narrowPage.goto(toolUrl);
 await narrowPage.waitForTimeout(200);
 const baseline390 = await narrowPage.evaluate(() => document.documentElement.scrollWidth);
 
-await narrowPage.getByRole('tab', { name: 'Chords' }).click();
+await narrowPage.getByRole('tab', { name: 'Voicings' }).click();
 await narrowPage.waitForTimeout(200);
 const chordsWidth390 = await narrowPage.evaluate(() => document.documentElement.scrollWidth);
 check(

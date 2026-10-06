@@ -70,7 +70,7 @@ export const GUITAR_HELP: HelpEntry[] = [
 
   // Mode tabs and panel.
   g('Scales', 'Show a scale on the neck and play it back.'),
-  g('Chords', 'Pick a chord, browse its voicings and play them.'),
+  g('Voicings', 'Pick a chord, browse its voicings and play them.'),
   g('Identify', 'Select notes on the neck to find out which chord they make.'),
   g(/^(▲ Show panel|▼ Hide panel)$/, 'Show or hide the panel below the neck to give the neck more room.'),
 
@@ -84,7 +84,7 @@ export const GUITAR_HELP: HelpEntry[] = [
   g('◀ Prev', 'Go to the previous voicing.'),
   g('Next ▶', 'Go to the next voicing.'),
   g('Best voicing', 'Go back to the voicing the app recommends for this chord.'),
-  g('Add to progression', 'Add this chord to your song, after the chord in focus, with this shape as its voicing. Then switch to Progression to see what could come next.'),
+  g('Add to progression', 'Add this chord to your song, after the chord in focus, with this shape as its voicing. Then switch to Chords to see what could come next.'),
   g('Use this voicing', 'Save this voicing on the chord in your song, so it plays this exact shape.'),
   g('Remove voicing', 'Forget the saved voicing. The chord goes back to the recommended shape.'),
   g('Re-fit', 'Find the nearest shape that fits the current chord, tuning and capo.'),
@@ -114,7 +114,7 @@ export const GUITAR_HELP: HelpEntry[] = [
 
   // Identify panel.
   g('▶ Find chord', 'Play the notes you selected together.'),
-  g('Send to Chord mode', 'Open the identified chord in Chords mode, with this shape as its voicing.'),
+  g('Send to Chord mode', 'Open the identified chord in Voicings mode, with this shape as its voicing.'),
   g('Clear', 'Deselect every note.'),
 
   // Guitar settings dialog.

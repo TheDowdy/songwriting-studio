@@ -25,7 +25,7 @@ export const GUIDE: GuideSection[] = [
       { p: 'Songwriting Studio helps you write a chord progression and work out how to play it on guitar. The app has two parts, which share the same song:' },
       {
         ul: [
-          '**Progression** suggests chords that fit your key, and lets you arrange them into sections and play them back.',
+          '**Chords** suggests chords that fit your key, and lets you arrange them into sections and play them back.',
           '**Guitar** shows your chords on a guitar neck, recommends voicings, and lets you change the tuning or capo.',
         ],
       },
@@ -39,7 +39,7 @@ export const GUIDE: GuideSection[] = [
       {
         ol: [
           'On the home screen, select **New song**.',
-          'In the **Progression** tab, choose the key of your song.',
+          'In the **Chords** tab, choose the key of your song.',
           'In the chord map, select a chord to hear it.',
           'Select **+ Add** to add the chord to your progression.',
           'Repeat steps 3 and 4 to build the progression. The map suggests chords that usually follow the one you selected.',
@@ -144,7 +144,7 @@ export const GUIDE: GuideSection[] = [
       {
         ol: [
           'Select a chord in the strip.',
-          'In the **Chords** panel below the neck, select **Next ▶** or **◀ Prev** to browse voicings. You can also select any voicing in the list.',
+          'In the **Voicings** tab below the neck, select **Next ▶** or **◀ Prev** to browse voicings. You can also select any voicing in the list.',
           'Select **Use this voicing** to save it on the chord.',
         ],
       },
@@ -153,7 +153,7 @@ export const GUIDE: GuideSection[] = [
       { h3: 'Edit chords from the guitar tab' },
       { p: 'With a chord selected, the toolbar below the strip lets you change it without leaving the Guitar tab: **Flavour**, **Inversion**, **Replace**, **Beats**, **Duplicate**, **Remove**, and **+ Add after**.' },
       { h3: 'Strum patterns on guitar' },
-      { p: 'Build and place your own strum patterns in the Progression tab’s pattern lane. With a pattern, **▶ Play song** strums each chord as the pattern says: down strums go from the low strings to the high ones, up strums from high to low, and partial strums use only the low or high strings. A chord with no custom pattern is strummed once at the start of each bar. The **Strum pattern** list in the toolbar below the strip sets the pattern for the selected chord, or leaves it on the song default.' },
+      { p: 'Build and place your own strum patterns in the Chords tab’s pattern lane. With a pattern, **▶ Play song** strums each chord as the pattern says: down strums go from the low strings to the high ones, up strums from high to low, and partial strums use only the low or high strings. A chord with no custom pattern is strummed once at the start of each bar. The **Strum pattern** list in the toolbar below the strip sets the pattern for the selected chord, or leaves it on the song default.' },
       { h3: 'Play the song' },
       { p: 'Select **▶ Play song** to hear every chord, or **▶ Play section** to hear the section of the selected chord. The neck and strip follow the chord that’s playing. On a computer, press the space bar to start or stop playback. Select **↶ Undo** to reverse your last change.' },
       { h3: 'Change the tuning or capo' },
@@ -170,13 +170,13 @@ export const GUIDE: GuideSection[] = [
       { p: 'A variant is a copy of a section with the chords voiced in a different place on the neck.' },
       {
         ol: [
-          'Select **Make a variant of** on the section. In the **Progression** tab, the button is **Make variant**.',
+          'Select **Make a variant of** on the section. In the **Chords** tab, the button is **Make variant**.',
           'Choose how to voice the chords, such as **Open position** or **Smoothest movement**. The preview shows the result.',
           'Select the button that creates the variant.',
         ],
       },
       { h3: 'Add a chord you built on the neck' },
-      { p: 'You can add any chord you build or identify on the neck to your song. In the **Chords** tab, build the chord and choose a voicing, then select **Add to progression**. In the **Identify** tab, select the notes, then select **Add to progression** once the chord is named. The chord goes after the chord that’s selected in the strip, or at the end of the song if none is, and it keeps the shape you chose as its voicing. Select **Progression** to see suggestions for what could come next.' },
+      { p: 'You can add any chord you build or identify on the neck to your song. In the **Voicings** tab, build the chord and choose a voicing, then select **Add to progression**. In the **Identify** tab, select the notes, then select **Add to progression** once the chord is named. The chord goes after the chord that’s selected in the strip, or at the end of the song if none is, and it keeps the shape you chose as its voicing. Select **Chords** to see suggestions for what could come next.' },
       { h3: 'Explore scales and identify chords' },
       {
         ul: [
@@ -193,7 +193,7 @@ export const GUIDE: GuideSection[] = [
       { p: 'The app saves your song automatically. To back it up, or to move it to another device:' },
       {
         ol: [
-          'In the **Progression** tab, select **Save, load and export**.',
+          'In the **Chords** tab, select **Save, load and export**.',
           'Select **Export JSON** to download a file, **Export MIDI** to use the chords in other music software, or **Sheet music** to open a printable chord sheet.',
         ],
       },

@@ -26,7 +26,7 @@ const icon = createElement(
 
 export const progressionModule = {
   id: 'progression',
-  title: 'Progression',
+  title: 'Chords',
   icon,
   scope: 'song' as const,
   Component: ProgressionModule,

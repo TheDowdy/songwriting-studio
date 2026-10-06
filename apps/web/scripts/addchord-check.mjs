@@ -66,7 +66,7 @@ check('it carries the picked shape as its voicing', JSON.stringify(am?.frets) ==
 check('an in-key chord keeps its diatonic numeral', am?.numeral === 'vi' && am?.origin === 'diatonic', `${am?.numeral} ${am?.origin}`);
 
 // ---------------------------------------------------------------- the hand-off
-await page.getByRole('tab', { name: 'Progression' }).click();
+await page.getByRole('tab', { name: 'Chords' }).click();
 await page.waitForSelector('[aria-label="Chord map"]');
 await sleep(400);
 const selected = await page.evaluate(() => window.__songwriting.store.getState().selectedEventId);

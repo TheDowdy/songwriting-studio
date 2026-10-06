@@ -127,7 +127,7 @@ await page.goto(url);
 await page.evaluate(() => window.__fluidfrets.store.getState().setStrumOnTuningChange(false));
 await page.addScriptTag({ content: axeSource });
 
-const tabs = ['Scales', 'Chords', 'Identify'];
+const tabs = ['Scales', 'Voicings', 'Identify'];
 for (const theme of ['dark', 'light']) {
   await page.evaluate((t) => window.__fluidfrets.store.getState().setTheme(t), theme);
   await sleep(150);
@@ -268,7 +268,7 @@ check(
 await page.evaluate(() => window.__fluidfrets.store.getState().setLeftHanded(false));
 
 // Chord mode: Enter edits the shape like a tap.
-await page.getByRole('tab', { name: 'Chords' }).click();
+await page.getByRole('tab', { name: 'Voicings' }).click();
 await page.evaluate(() => document.querySelector('.fretboard-svg').focus());
 await page.keyboard.press('Tab'); // out of the board and back for focus-visible
 await page.keyboard.press('Shift+Tab');
@@ -309,7 +309,7 @@ await page.getByRole('tab', { name: 'Scales' }).focus();
 await page.keyboard.press('ArrowRight');
 check(
   'the tab list: → selects the next tab',
-  (await page.getByRole('tab', { name: 'Chords' }).getAttribute('aria-selected')) === 'true',
+  (await page.getByRole('tab', { name: 'Voicings' }).getAttribute('aria-selected')) === 'true',
 );
 check('there is no Explore tab', (await page.getByRole('tab', { name: 'Explore' }).count()) === 0);
 // Visible focus.
@@ -320,7 +320,7 @@ const outline = await page
 check('focused controls show a visible focus outline', outline !== 'none', outline);
 
 // Touch targets: every button, chip and select is at least 40 px tall.
-await page.getByRole('tab', { name: 'Chords' }).click();
+await page.getByRole('tab', { name: 'Voicings' }).click();
 await sleep(150);
 const small = await page.evaluate(() =>
   [...document.querySelectorAll('button, select, [role="tab"], label.check, summary')]

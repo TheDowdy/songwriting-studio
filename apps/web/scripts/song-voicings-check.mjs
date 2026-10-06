@@ -61,7 +61,7 @@ const cVoicing = (await eventOf(cId)).attachments?.guitar;
 const g7Voicing = (await eventOf(g7Id)).attachments?.guitar;
 check('voicings committed for C and G7 in the guitar module', !!cVoicing && !!g7Voicing);
 
-await page.getByRole('tab', { name: 'Progression' }).click();
+await page.getByRole('tab', { name: 'Chords' }).click();
 await page.waitForSelector('[aria-label="Chord map"]');
 
 // ---------------------------------------------------------------- item 1: timeline mini diagrams

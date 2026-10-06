@@ -28,7 +28,7 @@ export function chordTabHeaderChord(
 
 /**
  * The Scales tab's header chord: only when the overlay names one — a diatonic triad/seventh on a
- * scale degree, or "Chord from the Chords tab" — null for no overlay or a scale-on-scale overlay
+ * scale degree, or "Chord from the Voicings tab" — null for no overlay or a scale-on-scale overlay
  * (§10's other overlay kind, which isn't a chord).
  */
 export function scaleTabHeaderChord(

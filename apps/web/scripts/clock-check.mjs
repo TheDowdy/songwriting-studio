@@ -55,7 +55,7 @@ await page.getByRole('tab', { name: 'Guitar' }).click();
 await page.waitForSelector('.fretboard-svg');
 await page.locator('[data-string][data-fret]').first().click();
 await page.waitForTimeout(800);
-await page.getByRole('tab', { name: 'Progression' }).click();
+await page.getByRole('tab', { name: 'Chords' }).click();
 await page.getByRole('button', { name: /^Chord: / }).first().click();
 await page.waitForTimeout(800);
 o = await offsets();

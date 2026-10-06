@@ -79,7 +79,7 @@ const pluckedMidis = async () =>
 
 // ---------------------------------------------------------------- opening the tab
 await marker(1, 0).click(); // unlock audio
-await page.getByRole('tab', { name: 'Chords' }).click();
+await page.getByRole('tab', { name: 'Voicings' }).click();
 await settle();
 check(
   'default chord is E major with the open shape 0-2-2-1-0-0',
@@ -636,7 +636,7 @@ check(
   'and the strum shape is released outside chord mode',
   (await store(() => window.__fluidfrets.store.getState().strumShape)) === null,
 );
-await page.getByRole('tab', { name: 'Chords' }).click();
+await page.getByRole('tab', { name: 'Voicings' }).click();
 await store(() =>
   window.__fluidfrets.store.getState().setChordSpec({
     rootPc: 9,

@@ -111,7 +111,7 @@ export function ScalePanel() {
           >
             <option value="none">None</option>
             <option value="chord">
-              Chord from the Chords tab{chordName ? ` (${chordName})` : ''}
+              Chord from the Voicings tab{chordName ? ` (${chordName})` : ''}
             </option>
             {chordsOk && triads && sevenths ? (
               <>

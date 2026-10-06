@@ -171,7 +171,7 @@ check('…including G7’s committed (re-fitted) shape, note for note', g7Notes.
 
 // ---------------------------------------------------------------- identical in the progression module
 const guitarView = { names: await stripNames(), sections: await page.locator('.strip-section-name').allTextContents() };
-await page.getByRole('tab', { name: 'Progression' }).click();
+await page.getByRole('tab', { name: 'Chords' }).click();
 await page.waitForSelector('[aria-label="Chord map"]');
 await sleep(200);
 const timelineNames = await page.locator('.timeline-scroll > li button[aria-label^="Chord:"] > span:first-child').allTextContents();

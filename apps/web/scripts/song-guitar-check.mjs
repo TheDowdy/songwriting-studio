@@ -132,7 +132,7 @@ check(
 );
 check(
   'the guitar module opens on the Chords tab by default (song context, Explore removed)',
-  (await page.getByRole('tab', { name: 'Chords' }).getAttribute('aria-selected')) === 'true',
+  (await page.getByRole('tab', { name: 'Voicings' }).getAttribute('aria-selected')) === 'true',
 );
 await sleep(200);
 const focusedId = await page.evaluate(() => window.__fluidfrets.store.getState().progressionEventId);
@@ -277,7 +277,7 @@ check('no capo bar in tool mode by default', (await page.evaluate(() => document
   await fallbackPage.waitForSelector('.fretboard-svg');
   check(
     "a stored 'explore' tab falls back to Chords in song context, even with no chords yet",
-    (await fallbackPage.getByRole('tab', { name: 'Chords' }).getAttribute('aria-selected')) === 'true',
+    (await fallbackPage.getByRole('tab', { name: 'Voicings' }).getAttribute('aria-selected')) === 'true',
   );
   await fallbackPage.close();
 }

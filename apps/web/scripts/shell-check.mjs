@@ -76,7 +76,7 @@ check('audio starts after one tap in the guitar module', true);
 
 // Switch back to the progression module (this also proves switching stops the guitar's own
 // gesture listeners from interfering — see each module's `onDeactivate`).
-await page.getByRole('tab', { name: 'Progression' }).click();
+await page.getByRole('tab', { name: 'Chords' }).click();
 await page.waitForSelector('[aria-label="Chord map"]');
 check('switching back shows the progression module', await page.locator('[aria-label="Chord map"]').isVisible());
 

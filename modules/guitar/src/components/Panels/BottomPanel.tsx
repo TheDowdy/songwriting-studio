@@ -7,7 +7,7 @@ import { ScalePanel } from './ScalePanel';
 
 const TABS: { mode: AppMode; label: string }[] = [
   { mode: 'scale', label: 'Scales' },
-  { mode: 'chord', label: 'Chords' },
+  { mode: 'chord', label: 'Voicings' },
   { mode: 'identify', label: 'Identify' },
 ];
 

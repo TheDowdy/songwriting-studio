@@ -5,7 +5,7 @@ export const SHELL_HELP: HelpEntry[] = [
   { name: 'Back to library', text: 'Go back to your list of songs. Your song is saved automatically.' },
   { name: 'Song title', text: 'Type a new name for the song, then press Enter.' },
   { name: 'Rename song', text: 'Select to rename the song.' },
-  { name: 'Progression', selector: '[role="tab"]', text: 'Build the chord progression: pick chords, arrange sections and play them.' },
+  { name: 'Chords', selector: '[role="tab"]', text: 'Build the chord progression: pick chords, arrange sections and play them.' },
   { name: 'Guitar', selector: '[role="tab"]', text: 'See the chords on a guitar neck, choose voicings and change the tuning or capo.' },
   { name: 'Help', text: 'Turn on help mode. Then select any part of the screen to see what it does, instead of using it.' },
   { name: 'Preferences', text: 'Open settings for the theme and volume, and the user guide.' },

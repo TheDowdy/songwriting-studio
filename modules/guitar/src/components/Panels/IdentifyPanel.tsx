@@ -97,7 +97,7 @@ export function IdentifyPanel() {
           disabled={!sendable}
           title={
             sendable
-              ? 'Open this chord in the Chords tab with this shape as its voicing'
+              ? 'Open this chord in the Voicings tab with this shape as its voicing'
               : 'Only a chord (three or more notes, or a power chord) can be sent'
           }
         >

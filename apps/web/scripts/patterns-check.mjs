@@ -245,7 +245,7 @@ await sleep(250);
 s = await song();
 check('the chord toolbar in the guitar module sets a chord’s own pattern', s.sections[0].events[1].pattern === `custom:${pid}`);
 // ---------------------------------------------------------------- delete (from the progression's editor)
-await page.getByRole('tab', { name: 'Progression' }).click();
+await page.getByRole('tab', { name: 'Chords' }).click();
 await page.waitForSelector('.map-node');
 await lane(1).click();
 await blockSelect().selectOption(`custom:${pid}`);
