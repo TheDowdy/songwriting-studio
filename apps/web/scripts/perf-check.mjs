@@ -157,7 +157,7 @@ check(
   fmt(scalePlay),
 );
 
-// The neck in song context (PLAN.md §7 Phase 9): a progression strip renders above the fretboard,
+// The neck in song context (PLAN.md §7 Phase 9): a progression strip renders below the fretboard,
 // so re-run the peg-drag workload there to catch any regression the strip's own re-renders cause.
 const baseUrl = url.split('#')[0]; // already carries ?debug
 await page.goto(baseUrl + '#/');

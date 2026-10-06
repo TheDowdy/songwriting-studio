@@ -17,7 +17,7 @@ export const GUITAR_HELP: HelpEntry[] = [
   g('Loop', 'Repeat playback until you stop it.'),
   g(/^↶ Undo/, 'Undo your last change in this module.'),
   g(/^⚠ Re-voice/, 'Open the re-voicing panel to fix voicings that no longer fit the tuning or capo.'),
-  g(/^Chord: /, 'Select this chord to show it on the neck and hear it. The number with the clock is how many beats it lasts. Press and hold, then drag, to reorder it within its section.'),
+  g(/^Chord: /, 'Select this chord to show it on the neck and hear it. Its width shows how many beats it lasts. Press and hold, then drag, to reorder it within its section.'),
   g('Section name', 'Type a new name for this section, then press Enter.'),
   sel('.strip-section-name', 'Select to rename this section.'),
   g(/^Duplicate .+/, 'Copy this section and place the copy after it.'),
@@ -41,7 +41,8 @@ export const GUITAR_HELP: HelpEntry[] = [
   g(/^Use .+/, 'Use the chord you built.'),
   g('Cancel', 'Close this without changing anything.'),
 
-  // Toolbar above the neck.
+  // Tuning, capo and the options disclosure above the neck.
+  g('Guitar tuning and options', 'Show or hide the less-used neck settings: saving tunings, frets, spacing, accidentals, guitar look, sound and left-handed.'),
   g('Tuning', 'Choose how the strings are tuned. Changing it in a song asks first, because voicings you saved for the old tuning need re-voicing.'),
   g('Save tuning', 'Save the current tuning, including any peg changes, to your list of tunings.'),
   g('Frets', 'Choose how many frets the neck shows.'),

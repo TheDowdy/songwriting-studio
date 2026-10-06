@@ -110,7 +110,7 @@ await page.getByRole('button', { name: 'Save, load and export' }).click();
 
 // ---------------------------------------------------------------- item 4: rich chords from "More…"
 await block('C').click();
-await page.getByRole('button', { name: 'Flavor', exact: true }).click();
+await page.getByRole('button', { name: 'Flavour', exact: true }).click();
 await page.getByRole('button', { name: 'More…' }).click();
 const chip = (t) => page.locator('[data-testid=rich-builder] .chip', { hasText: new RegExp(`^${t}$`) });
 await chip('7 \\(♭7\\)').click();

@@ -41,12 +41,43 @@
   background: var(--bg);
   border-bottom: 1px solid var(--fg);
 }
-.mod-guitar .toolbar-title {
-  font-size: 1.6rem;
-  margin: 0 0.5rem 0 0;
-  align-self: center;
-  font-style: italic;
-  font-weight: 500;
+.mod-guitar .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* Everything but tuning and capo, behind the "Guitar tuning and options" disclosure. */
+.mod-guitar .options-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.mod-guitar .options-button::before {
+  content: '▸';
+  margin-right: 0.4em;
+}
+.mod-guitar .options-button[aria-expanded='true']::before {
+  content: '▾';
+}
+.mod-guitar .options-summary {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.mod-guitar .toolbar-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem 1rem;
+  flex-basis: 100%;
+}
+.mod-guitar .toolbar-options[hidden] {
+  display: none;
 }
 .mod-guitar .field {
   min-width: 0;
@@ -138,9 +169,6 @@
   .mod-guitar .toolbar {
     gap: 0.25rem 0.5rem;
     padding: 0.25rem 0.75rem;
-  }
-  .mod-guitar .toolbar-title {
-    font-size: 1rem;
   }
   /* Labels stay available to screen readers but stop costing a row of height. */
   .mod-guitar .toolbar .field > span {
@@ -425,6 +453,7 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.25rem 1rem 0;
+  border-bottom: 1px solid var(--fg);
 }
 .mod-guitar .tablist {
   display: flex;

@@ -224,7 +224,7 @@ function ChordSlot({
           aria-valuemax={BEATS_MAX}
           onPointerDown={onResizeDown}
           onKeyDown={onResizeKey}
-          className="absolute right-0 top-0 flex h-full w-5 cursor-ew-resize touch-none items-center justify-center hover:bg-surface-2"
+          className="absolute right-0 top-0 flex h-full w-6 cursor-ew-resize touch-none items-center justify-center hover:bg-surface-2"
         >
           <span className="h-6 w-0.5 rounded bg-current opacity-60" />
         </div>
@@ -284,7 +284,7 @@ function ChordToolbar({
       >
         {event.chord.quality === 'min' ? 'Make major' : 'Make minor'}
       </button>
-      <button onClick={onFlavor} aria-pressed={flavorOpen} className={btn}>Flavor</button>
+      <button onClick={onFlavor} aria-pressed={flavorOpen} className={btn}>Flavour</button>
       <button onClick={onDetail} aria-pressed={detailOpen} className={btn}>Piano / guitar</button>
       <button onClick={onExplore} className={btn}>Explore guitar voicings</button>
       <button onClick={() => (replacing ? cancelReplace() : startReplace(event.id))} aria-pressed={replacing} className={btn}>

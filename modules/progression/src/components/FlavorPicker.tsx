@@ -55,8 +55,8 @@ export default function FlavorPicker({ chord, musicKey, onPreview, onChoose, onC
       </div>
 
       <div>
-        <p className="mb-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Flavor</p>
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Flavor">
+        <p className="mb-1.5 font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted">Flavour</p>
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Flavour">
           {FLAVORS.map((f) => {
             const active = chord.flavor === f;
             return (

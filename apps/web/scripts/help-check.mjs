@@ -111,7 +111,7 @@ await page.getByRole('button', { name: 'Save, load and export' }).click();
 await audit('progression: save panel');
 await page.getByRole('button', { name: 'Save, load and export' }).click();
 await page.getByRole('button', { name: /^Chord: C,/ }).first().click();
-await page.getByRole('button', { name: 'Flavor', exact: true }).click();
+await page.getByRole('button', { name: 'Flavour', exact: true }).click();
 await audit('progression: flavor picker');
 await page.getByRole('button', { name: 'More…' }).click();
 await audit('progression: flavor picker, more');
@@ -165,6 +165,9 @@ await audit('guitar: variant dialog');
 await page.getByRole('button', { name: 'Close', exact: true }).click();
 await page.getByText('Voicing rules & filters').click();
 await audit('guitar: voicing rules');
+// The less-used neck settings sit behind a disclosure, closed by default in a song.
+await page.getByRole('button', { name: 'Guitar tuning and options' }).click();
+await audit('guitar: options open');
 await page.getByRole('button', { name: 'Customise' }).click();
 await audit('guitar: customise popover');
 await page.getByRole('button', { name: 'Done', exact: true }).click();

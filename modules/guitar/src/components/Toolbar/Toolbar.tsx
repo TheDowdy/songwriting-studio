@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { MAX_FRETS, MIN_FRETS, useStore, type FretSpacing } from '../../state/store';
 import { applyCapo } from '../../state/capoActions';
 import { chooseFretCount } from '../../state/guitarActions';
@@ -7,6 +7,7 @@ import { MAX_CAPO } from '@sw/core/fret/capo';
 import { midiToName } from '@sw/core/fret/notes';
 import { CUSTOM_ID } from '@sw/core/fret/savedTunings';
 import { getPreset, PRESET_GROUPS } from '@sw/core/fret/tunings';
+import { getGuitarModel } from '../Fretboard/guitarSkins';
 import { GuitarControls } from './GuitarControls';
 import { SaveTuningDialog } from './SaveTuningDialog';
 import { SettingsDialog } from './SettingsDialog';
@@ -15,7 +16,24 @@ import { SoundControls } from './SoundControls';
 const fretOptions = Array.from({ length: MAX_FRETS - MIN_FRETS + 1 }, (_, i) => MIN_FRETS + i);
 const capoOptions = Array.from({ length: MAX_CAPO + 1 }, (_, i) => i);
 
-export function Toolbar() {
+const OPEN_KEY = 'sw:guitar-options-open';
+
+/** The viewer's last choice for the options disclosure, if they've made one (storage can throw). */
+function storedOpen(): boolean | null {
+  try {
+    const v = localStorage.getItem(OPEN_KEY);
+    return v === null ? null : v === '1';
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Tuning and capo stay on show — they change with the song. Everything else lives behind the
+ * "Guitar tuning and options" disclosure, closed by default in a song (where the neck and strip
+ * need the room) and open when the guitar is opened as a stand-alone tool.
+ */
+export function Toolbar({ inSong = false }: { inSong?: boolean }) {
   const tuning = useStore((s) => s.tuning);
   const saved = useStore((s) => s.savedTunings);
   const fretCount = useStore((s) => s.fretCount);
@@ -26,6 +44,18 @@ export function Toolbar() {
   const { setAccidentalPref, setLeftHanded, setFretSpacing } = useStore.getState();
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState(false);
+  const [open, setOpen] = useState(() => storedOpen() ?? !inSong);
+  const modelId = useStore((s) => s.guitarModel);
+  const optionsId = useId();
+  const toggleOptions = () => {
+    const next = !open;
+    setOpen(next);
+    try {
+      localStorage.setItem(OPEN_KEY, next ? '1' : '0');
+    } catch {
+      /* storage unavailable: the choice just doesn't persist */
+    }
+  };
 
   const isPreset = getPreset(tuning.id) !== undefined;
   const isSaved = saved.some((t) => t.id === tuning.id);
@@ -39,7 +69,7 @@ export function Toolbar() {
     <section className="toolbar" aria-label="Guitar toolbar">
       {/* The app-level identity ("Songwriting Studio") and navigation live in the shell header
           above this one; this just names the module itself (was "Fluid Frets" pre-Phase-2). */}
-      <h1 className="toolbar-title">Guitar</h1>
+      <h1 className="visually-hidden">Guitar</h1>
 
       <label className="field">
         <span>Tuning</span>
@@ -74,6 +104,37 @@ export function Toolbar() {
         </select>
       </label>
 
+      <label className="field">
+        <span>Capo</span>
+        <select value={capo} onChange={(e) => applyCapo(Number(e.target.value))}>
+          {capoOptions.map((n) => (
+            <option key={n} value={n}>
+              {n === 0 ? 'None' : n}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <div className="options-toggle">
+        <button
+          type="button"
+          className="button options-button"
+          aria-expanded={open}
+          aria-controls={optionsId}
+          onClick={toggleOptions}
+        >
+          Guitar tuning and options
+        </button>
+        {!open && (
+          <span className="options-summary">
+            {[getGuitarModel(modelId).name, `${fretCount} frets`, leftHanded ? 'Left-handed' : null]
+              .filter(Boolean)
+              .join(' · ')}
+          </span>
+        )}
+      </div>
+
+      <div id={optionsId} className="toolbar-options" hidden={!open}>
       <button type="button" className="button" onClick={() => setSaving(true)}>
         Save tuning
       </button>
@@ -84,17 +145,6 @@ export function Toolbar() {
           {fretOptions.map((n) => (
             <option key={n} value={n}>
               {n}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label className="field">
-        <span>Capo</span>
-        <select value={capo} onChange={(e) => applyCapo(Number(e.target.value))}>
-          {capoOptions.map((n) => (
-            <option key={n} value={n}>
-              {n === 0 ? 'None' : n}
             </option>
           ))}
         </select>
@@ -136,6 +186,7 @@ export function Toolbar() {
       <button type="button" className="button" onClick={() => setSettings(true)}>
         Settings
       </button>
+      </div>
 
       <SaveTuningDialog open={saving} onClose={() => setSaving(false)} />
       <SettingsDialog open={settings} onClose={() => setSettings(false)} />

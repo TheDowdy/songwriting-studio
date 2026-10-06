@@ -56,9 +56,9 @@ export const PROGRESSION_HELP: HelpEntry[] = [
   p('Cancel replace', 'Stop replacing and keep the original chord.'),
   sel('[aria-label="Legend"]', 'What the colours mean: chords in the key, borrowed from another key, or secondary chords.'),
 
-  // Flavor picker and chord detail.
+  // Flavour picker and chord detail.
   p('Close flavor picker', 'Close this panel.'),
-  sel('[aria-label="Flavor"] button', 'Change the type of the chord, such as major, 7th or sus4.'),
+  sel('[aria-label="Flavour"] button', 'Change the type of the chord, such as major, 7th or sus4.'),
   sel('[aria-label="Inversion"] button', 'Choose which note of the chord is in the bass.'),
   p('More…', 'Show more chord types, such as 6, 9, 11, 13, added notes and altered notes.'),
   p('Close chord detail', 'Close this panel.'),
@@ -82,7 +82,7 @@ export const PROGRESSION_HELP: HelpEntry[] = [
   p('Song default', 'Choose the pattern for every chord that has no block of its own.'),
   p('Close pattern block', 'Close the block’s options.'),
   p('Beats for selected chord', 'How many beats the selected chord lasts.'),
-  p('Flavor', 'Change the type of the selected chord, such as 7th or sus4.'),
+  p('Flavour', 'Change the type of the selected chord, such as 7th or sus4.'),
   p('Piano / guitar', 'Show the selected chord on a piano keyboard or as a guitar diagram.'),
   p('Explore guitar voicings', 'Open the selected chord in the Guitar tab to browse shapes and save one.'),
   p('Remove', 'Delete the selected chord.'),

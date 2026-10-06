@@ -87,7 +87,7 @@ export const GUIDE: GuideSection[] = [
       { p: 'Select a chord in the timeline, and then use the buttons below it:' },
       {
         ul: [
-          '**Flavor** changes the chord type, such as 7th or sus4.',
+          '**Flavour** changes the chord type, such as 7th or sus4.',
           '**Piano / guitar** shows the chord on a keyboard or as a guitar diagram.',
           '**Replace** swaps the chord for one you choose from the map.',
           '**Duplicate** copies the chord. **Remove** deletes it.',
@@ -136,7 +136,7 @@ export const GUIDE: GuideSection[] = [
     id: 'guitar',
     title: 'Play the progression on guitar',
     blocks: [
-      { p: 'Select the **Guitar** tab to see your song on a guitar neck. Your chords appear in a strip above the neck.' },
+      { p: 'Select the **Guitar** tab to see your song on a guitar neck. Your chords appear in a strip below the neck.' },
       { h3: 'Show a chord on the neck' },
       { p: 'Select a chord in the strip. The neck shows the recommended shape for it, and you hear it play. Each chord shows one slash for every beat it lasts, as on a lead sheet.' },
       { h3: 'Choose a voicing' },
@@ -151,21 +151,21 @@ export const GUIDE: GuideSection[] = [
       { p: 'A chord with a saved voicing shows a small diagram in the strip. A chord without one has a dashed border, and plays the recommended shape. To go back to the recommended shape, select **Remove voicing**.' },
       { p: 'Use **Root in bass only**, **Max stretch (frets)**, and the other rules under **Voicing rules & filters** to narrow the voicings that the app offers.' },
       { h3: 'Edit chords from the guitar tab' },
-      { p: 'With a chord selected, the toolbar above the neck lets you change it without leaving the Guitar tab: **Flavour**, **Inversion**, **Replace**, **Beats**, **Duplicate**, **Remove**, and **+ Add after**.' },
+      { p: 'With a chord selected, the toolbar below the strip lets you change it without leaving the Guitar tab: **Flavour**, **Inversion**, **Replace**, **Beats**, **Duplicate**, **Remove**, and **+ Add after**.' },
       { h3: 'Strum patterns on guitar' },
-      { p: 'Build and place your own strum patterns in the Progression tab’s pattern lane. With a pattern, **▶ Play song** strums each chord as the pattern says: down strums go from the low strings to the high ones, up strums from high to low, and partial strums use only the low or high strings. A chord with no custom pattern is strummed once at the start of each bar. The **Strum pattern** list in the toolbar above the neck sets the pattern for the selected chord, or leaves it on the song default.' },
+      { p: 'Build and place your own strum patterns in the Progression tab’s pattern lane. With a pattern, **▶ Play song** strums each chord as the pattern says: down strums go from the low strings to the high ones, up strums from high to low, and partial strums use only the low or high strings. A chord with no custom pattern is strummed once at the start of each bar. The **Strum pattern** list in the toolbar below the strip sets the pattern for the selected chord, or leaves it on the song default.' },
       { h3: 'Play the song' },
       { p: 'Select **▶ Play song** to hear every chord, or **▶ Play section** to hear the section of the selected chord. The neck and strip follow the chord that’s playing. On a computer, press the space bar to start or stop playback. Select **↶ Undo** to reverse your last change.' },
       { h3: 'Change the tuning or capo' },
       {
         ol: [
-          'Choose a tuning from **Tuning**, or a capo position from **Capo**.',
+          'Choose a tuning from **Tuning**, or a capo position from **Capo**. Both are always on show above the neck.',
           'If chords have saved voicings, the app asks you to confirm. Select **Change tuning** or **Change capo**. Select **Cancel** to keep things as they were.',
           'The affected chords show a warning. Select **⚠ Re-voice** to open the re-voicing panel.',
           'For each chord, select one of the suggested shapes, or select **Re-voice all** to let the app choose the smoothest set.',
         ],
       },
-      { p: 'To make your own tuning, drag a string’s peg up or down on the neck, and then select **Save tuning**.' },
+      { p: 'To make your own tuning, drag a string’s peg up or down on the neck, and then select **Guitar tuning and options** and **Save tuning**.' },
       { h3: 'Make a variant of a section' },
       { p: 'A variant is a copy of a section with the chords voiced in a different place on the neck.' },
       {
@@ -226,7 +226,7 @@ export const GUIDE: GuideSection[] = [
           '**Open the user guide** opens this guide.',
         ],
       },
-      { p: 'The Guitar tab has its own **Settings** button for saved tunings, a larger neck for touch screens, and colors for color-blind users.' },
+      { p: 'Select **Guitar tuning and options** above the neck to show the less-used neck settings (frets, spacing, accidentals, the look and sound of the guitar, and left-handed). In a song it starts closed, and the app remembers whether you open it. Inside it, the **Settings** button opens saved tunings, a larger neck for touch screens, and colors for color-blind users.' },
     ],
   },
   {
