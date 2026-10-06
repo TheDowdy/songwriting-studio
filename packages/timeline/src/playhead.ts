@@ -12,9 +12,14 @@ export interface PlayheadState {
   /** Index into `song.arrangement` of the slot now playing, or null when stopped. */
   slot: number | null;
   sectionId: string | null;
+  /** The chord now sounding (null when stopped), and the beat of it being heard (from 0). */
+  eventId: string | null;
+  beat: number;
 }
 
-export const playhead = createStore<PlayheadState>(() => ({ cursor: null, slot: null, sectionId: null }));
+export const playhead = createStore<PlayheadState>(() => ({ cursor: null, slot: null, sectionId: null, eventId: null, beat: 0 }));
+
+const STOPPED: PlayheadState = { cursor: null, slot: null, sectionId: null, eventId: null, beat: 0 };
 
 /** The next place after `cursor` (wrapping round, for a loop) where chord `eventId` plays. */
 export function nextCursor(flatIds: readonly string[], cursor: number | null, eventId: string): number {
@@ -35,10 +40,16 @@ export function advancePlayhead(song: Song, eventId: string): void {
   const sameAgain = prev !== null && flat[prev]?.event.id === eventId && flat.filter((f) => f.event.id === eventId).length === 1;
   const at = sameAgain ? prev : nextCursor(flat.map((f) => f.event.id), prev, eventId);
   const hit = at >= 0 ? flat[at] : undefined;
-  playhead.setState(hit ? { cursor: at, slot: hit.arrangementIndex, sectionId: hit.sectionId } : { cursor: null, slot: null, sectionId: null });
+  // A new chord starts on its first beat, so the old chord's last beat never flashes on it.
+  playhead.setState(hit ? { cursor: at, slot: hit.arrangementIndex, sectionId: hit.sectionId, eventId, beat: 0 } : STOPPED);
+}
+
+/** Call as each beat of the sounding chord is heard. */
+export function setPlayheadBeat(eventId: string, beat: number): void {
+  playhead.setState({ eventId, beat });
 }
 
 /** Call when playback stops or ends. */
 export function clearPlayhead(): void {
-  playhead.setState({ cursor: null, slot: null, sectionId: null });
+  playhead.setState(STOPPED);
 }

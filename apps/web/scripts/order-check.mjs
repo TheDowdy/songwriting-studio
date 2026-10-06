@@ -46,25 +46,25 @@ await page.evaluate(({ a, b, c }) => {
 }, { a: mk('G', 'maj', 'I'), b: mk('C', 'maj', 'IV'), c: mk('D', 'maj', 'V') });
 
 // ---------------------------------------------------------------- progression module
-const chipNames = () => page.evaluate(() => [...document.querySelectorAll('[aria-label="Arrangement"] li')].map((li) => li.textContent.replace('×', '').trim()));
+const chipNames = () => page.evaluate(() => [...document.querySelectorAll('[aria-label="Song order"] li')].map((li) => li.textContent.replace('×', '').trim()));
 check('the arrangement row lists every slot in order', JSON.stringify(await chipNames()) === JSON.stringify(['Verse', 'Chorus', 'Verse']), JSON.stringify(await chipNames()));
-check('nothing is highlighted before playback', (await page.locator('[data-playing]').count()) === 0);
+check('nothing is highlighted before playback', (await page.locator('.sw-order-chip.playing').count()) === 0);
 await page.getByRole('button', { name: 'Play', exact: true }).click();
 await sleep(1200);
-check('a chip is highlighted while playing', (await page.locator('[data-playing]').count()) === 1, await page.locator('[data-playing]').allTextContents().then((t) => t.join()));
+check('a chip is highlighted while playing', (await page.locator('.sw-order-chip.playing').count()) === 1, await page.locator('.sw-order-chip.playing').allTextContents().then((t) => t.join()));
 check('…as the current step', (await page.locator('[aria-current="step"]').count()) === 1);
 await page.keyboard.press('Space');
 await sleep(300);
-check('the highlight clears when playback stops', (await page.locator('[data-playing]').count()) === 0);
+check('the highlight clears when playback stops', (await page.locator('.sw-order-chip.playing').count()) === 0);
 
 // ---------------------------------------------------------------- guitar module
 await page.evaluate((id) => (location.hash = `#/song/${id}/guitar`), songId);
-await page.waitForSelector('.progression-strip button[aria-label^="Chord:"]');
+await page.waitForSelector('.sw-strip button[aria-label^="Chord:"]');
 const chips = () => page.evaluate(() => [...document.querySelectorAll('.sw-order-chip')].map((c) => c.textContent.trim() + (c.classList.contains('playing') ? '*' : '')));
 check('the Song order row shows the arrangement', JSON.stringify(await chips()) === JSON.stringify(['Verse', 'Chorus', 'Verse']), JSON.stringify(await chips()));
-check('each section is drawn once in the strip', (await page.locator('.progression-strip section[id^="section-"]').count()) === 2);
+check('each section is drawn once in the strip', (await page.locator('.sw-strip section[id^="section-"]').count()) === 2);
 const widths = await page.evaluate(() =>
-  [...document.querySelectorAll('.progression-strip button[aria-label^="Chord:"]')].map((b) => [b.getAttribute('aria-label').match(/(\d+) beats?/)[1], Math.round(b.getBoundingClientRect().width)]),
+  [...document.querySelectorAll('.sw-strip button[aria-label^="Chord:"]')].map((b) => [b.getAttribute('aria-label').match(/(\d+) beats?/)[1], Math.round(b.getBoundingClientRect().width)]),
 );
 const w = Object.fromEntries(widths);
 check('a longer chord is drawn wider', w['8'] > w['4'], JSON.stringify(widths));
@@ -77,7 +77,7 @@ await sleep(300);
 check('…and clears on stop', (await chips()).every((c) => !c.endsWith('*')));
 
 // ---------------------------------------------------------------- the strip folds away to give the neck room
-const chordButtons = () => page.locator('.progression-strip button[aria-label^="Chord:"]').count();
+const chordButtons = () => page.locator('.sw-strip button[aria-label^="Chord:"]').count();
 await page.getByRole('button', { name: 'Hide the song strip' }).click();
 check('the strip folds to one line', (await chordButtons()) === 0 && (await page.getByRole('button', { name: /^Show the song strip/ }).count()) === 1);
 await page.reload();
@@ -85,6 +85,20 @@ await page.waitForSelector('.fretboard-svg');
 check('…and stays folded after a reload', (await page.getByRole('button', { name: /^Show the song strip/ }).count()) === 1);
 await page.getByRole('button', { name: /^Show the song strip/ }).click();
 check('…and unfolds again', (await chordButtons()) > 0);
+
+// ---------------------------------------------------------------- one strip, kept as the workspaces switch
+await page.getByRole('button', { name: /^Show the song strip/ }).count().then(async (n) => n && (await page.getByRole('button', { name: /^Show the song strip/ }).click()));
+await page.evaluate(() => {
+  document.querySelector('.sw-strip').setAttribute('data-marked', 'yes');
+  document.querySelector('.sw-strip .timeline-scroll').scrollLeft = 40;
+});
+await page.getByRole('tab', { name: 'Chords' }).click();
+await page.waitForSelector('[aria-label="Chord map"]');
+const kept = await page.evaluate(() => ({ marked: document.querySelector('.sw-strip')?.getAttribute('data-marked'), left: document.querySelector('.sw-strip .timeline-scroll')?.scrollLeft }));
+check('the strip is the same element after switching to Chords', kept.marked === 'yes', JSON.stringify(kept));
+await page.getByRole('tab', { name: 'Guitar' }).click();
+await page.waitForSelector('.fretboard-svg');
+check('…and back to Guitar', (await page.evaluate(() => document.querySelector('.sw-strip')?.getAttribute('data-marked'))) === 'yes');
 
 check('no page errors', errors.length === 0, errors.join(' | '));
 await browser.close();

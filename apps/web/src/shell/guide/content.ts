@@ -84,7 +84,7 @@ export const GUIDE: GuideSection[] = [
       { h3: 'Use the circle of fifths' },
       { p: 'Above the map, select **Circle of fifths** to see every chord at once instead of suggestions. Major chords are on the outside, their relative minor chords in the middle, and the diminished chord of each key inside. The shading shows each chord’s place in your key: the key chord is solid, the other chords of the key are tinted, chords borrowed from the parallel key are amber, and the rest are plain. You can pick any of them, so it’s a way to reach unusual or discordant chords. Select a chord to hear it, and then select **+ Add**. Select **Use as key** to shift the key of the section you’re editing to that chord. Select **Suggestions** to go back to the map.' },
       { h3: 'Edit a chord' },
-      { p: 'Select a chord in the timeline, and then use the buttons below it:' },
+      { p: 'Select a chord in the song strip at the top of the screen, and then use the buttons below the strip:' },
       {
         ul: [
           '**Flavour** changes the chord type, such as 7th or sus4.',
@@ -96,10 +96,10 @@ export const GUIDE: GuideSection[] = [
       },
       { p: 'To reorder chords, press and hold a chord, and then drag it to a new position.' },
       { h3: 'Organize sections' },
-      { p: 'A song is made of sections, such as a verse and a chorus. Add a section with the buttons below the timeline, for example **+ Verse**. In the arrangement, add sections in the order you want them played. A section can appear more than once. While the song plays, the section that is playing is highlighted in the arrangement, and in the **Song order** row above the chords on the Guitar tab.' },
-      { p: 'Use **–** and **+** next to a section’s name to set how many times it repeats. **Duplicate section** copies a section, and **Clear** removes its chords.' },
+      { p: 'A song is made of sections, such as a verse and a chorus. Add a section with the buttons at the end of the strip, for example **+ Verse**. In the **Song order** row, add sections in the order you want them played, drag a section to move it, and select **×** to take it out. A section can appear more than once. While the song plays, the section that is playing is highlighted in the arrangement, and in the **Song order** row above the chords on the Guitar tab.' },
+      { p: 'Use **–** and **+** next to a section’s name to set how many times it repeats. Select **Section actions** (the **⋯** button) for **Duplicate section**, **Make variant**, **Clear** (which removes its chords) and **Delete**. Use **Compact** to draw the chords narrower, and **Strum lane** to show or hide the pattern lane.' },
       { h3: 'Add strum patterns' },
-      { p: 'Under each section’s chords is the pattern lane. It works like a second track: the chord blocks say what is played, and the pattern blocks say how. A chord with no pattern of its own, shown with a dashed outline, plays the song default.' },
+      { p: 'When **Strum lane** is on, the pattern lane is under each section’s chords. It works like a second track: the chord blocks say what is played, and the pattern blocks say how. A chord with no pattern of its own, shown with a dashed outline, plays the song default.' },
       {
         ul: [
           'Select a block in the lane to show its options under the section. Select **×** or press Escape to close them.',
@@ -138,7 +138,7 @@ export const GUIDE: GuideSection[] = [
     blocks: [
       { p: 'Select the **Guitar** tab to see your song on a guitar neck. Your chords appear in a strip above the neck, drawn the same way as on the Chords tab but more compactly.' },
       { h3: 'Show a chord on the neck' },
-      { p: 'Select a chord in the strip. The neck shows the recommended shape for it, and you hear it play. Select **▾** at the top right of the strip to fold it away and give the neck more room; on a short screen it starts folded. A chord’s width shows how long it lasts, and it shows one slash for every beat, as on a lead sheet. Drag a chord’s right edge to change its length.' },
+      { p: 'Select a chord in the strip. The neck shows the recommended shape for it, and you hear it play. Select **▾** at the top right of the strip, on either tab, to fold it away and give the neck more room; on a short screen it starts folded. A chord’s width shows how long it lasts, and it shows one slash for every beat, as on a lead sheet. Drag a chord’s right edge to change its length.' },
       { h3: 'Choose a voicing' },
       { p: 'A voicing is one way to play a chord on the neck. To choose one:' },
       {
@@ -170,7 +170,7 @@ export const GUIDE: GuideSection[] = [
       { p: 'A variant is a copy of a section with the chords voiced in a different place on the neck.' },
       {
         ol: [
-          'Select **Section actions** (the **⋯** button) on the section, and then select **Make variant**. In the **Chords** tab, the actions are always on show.',
+          'Select **Section actions** (the **⋯** button) on the section, and then select **Make variant**.',
           'Choose how to voice the chords, such as **Open position** or **Smoothest movement**. The preview shows the result.',
           'Select the button that creates the variant.',
         ],

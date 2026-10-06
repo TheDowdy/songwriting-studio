@@ -119,7 +119,7 @@ await page.getByRole('button', { name: '+ Add' }).click();
 await page.waitForTimeout(700);
 const follow = await page.evaluate(() => {
   const row = document.querySelector('.timeline-scroll');
-  const last = [...row.querySelectorAll(':scope > li')].pop().getBoundingClientRect();
+  const last = [...row.querySelectorAll('li')].filter((li) => li.querySelector('button[aria-label^="Chord:"]')).pop().getBoundingClientRect();
   const r = row.getBoundingClientRect();
   return { inView: last.left >= r.left - 1 && last.right <= r.right + 1, scrollLeft: row.scrollLeft, pageY: scrollY };
 });

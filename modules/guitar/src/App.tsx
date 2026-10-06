@@ -6,7 +6,6 @@ import { Fretboard } from './components/Fretboard/Fretboard';
 import { useState } from 'react';
 import { BottomPanel, ModeTabs, startsCollapsed } from './components/Panels/BottomPanel';
 import { Legend } from './components/Panels/Legend';
-import { ProgressionStrip } from './components/ProgressionStrip';
 import { StripToolbar } from './components/StripToolbar';
 import { ConfirmGuitarChange } from './components/ConfirmGuitarChange';
 import { RevoicePanel } from './components/RevoicePanel';
@@ -16,6 +15,7 @@ import { useChordSelection } from './hooks/useChordSelection';
 import { useIdentifySync } from './hooks/useIdentifySync';
 import { useAudioUnlock } from './hooks/useAudioUnlock';
 import { useSongContext } from './hooks/useSongContext';
+import { useGuitarStrip } from './state/stripBehavior';
 import { useStore } from './state/store';
 
 interface Props {
@@ -37,6 +37,7 @@ export default function GuitarModule({ songId = null, focus = {} }: Props) {
   useIdentifySync();
   useAudioUnlock();
   useSongContext(songId, focus.eventId);
+  useGuitarStrip();
   const [panelCollapsed, setPanelCollapsed] = useState(startsCollapsed);
   const revoiceOpen = useStore((s) => s.revoiceOpen);
   return (
@@ -45,7 +46,6 @@ export default function GuitarModule({ songId = null, focus = {} }: Props) {
       <AudioBanner />
       {/* Not a landmark: the shell already wraps the active module in one `<main>` per page
           (PLAN.md §7 Phase 9) — a nested one is a duplicate/non-top-level landmark. */}
-      {songId && <ProgressionStrip />}
       {songId && revoiceOpen && <RevoicePanel />}
       {songId && <StripToolbar />}
       <ModeTabs collapsed={panelCollapsed} setCollapsed={setPanelCollapsed} />

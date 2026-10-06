@@ -13,9 +13,8 @@ export interface StripHost {
   song: Song;
   /** Block width per beat: compact for the guitar workspace, comfortable for the chords one. */
   density: Density;
-  /** 'rows': each section its own full-width row (the chords workspace). 'inline': every section side by
-   *  side in one scrolling lane, section actions behind a menu (the guitar workspace, short on height). */
-  layout: 'rows' | 'inline';
+  /** Offer Verse, Chorus, Bridge and Custom buttons for new sections (else a single "+ Section"). */
+  quickAddSections?: boolean;
   /** Show the strum pattern lane under each row of chords. Off, a custom pattern's strokes show inside the chords instead. */
   showLane: boolean;
   /** Mark chords with no committed guitar voicing (a dashed edge), which matters on the neck. */
@@ -61,10 +60,6 @@ export interface StripHost {
   // Slots for what each workspace adds to the lane.
   /** Shown in place of a section's chords when it has none (default: a drop zone). */
   renderEmpty?(section: Section): ReactNode;
-  /** Shown under a section's lane (the chord options, the pattern block options, …). */
-  renderSectionFooter?(section: Section): ReactNode;
-  /** Shown under the sections (e.g. the arrangement editor). */
-  renderAfterSections?(): ReactNode;
   /** Words for a chord with no committed guitar voicing, for its accessible name. */
   noVoicingText?: string;
   /** Scroll/jump to the section a variant was made from; defaults to scrolling it into view. */

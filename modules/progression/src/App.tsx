@@ -6,7 +6,8 @@ import KeyPicker from './components/KeyPicker';
 import CircleOfFifths from './components/CircleOfFifths';
 import NodeMap from './components/NodeMap';
 import SongPanel from './components/SongPanel';
-import Timeline from './components/Timeline';
+import ChordInspector from './components/ChordInspector';
+import { useChordsStrip } from './state/stripBehavior';
 import { previewChordInSong, useLivePlaybackSync } from './state/playback';
 import { selectCenter, useStore } from './state/store';
 import { findEvent, keyOfSection, startChords, suggestNext } from '@sw/core';
@@ -34,6 +35,7 @@ interface Props {
  */
 export default function ProgressionModule({ navigate, focus }: Props) {
   useLivePlaybackSync();
+  useChordsStrip();
 
   const song = useStore((s) => s.song);
   const selectEvent = useStore((s) => s.selectEvent);
@@ -73,6 +75,7 @@ export default function ProgressionModule({ navigate, focus }: Props) {
   return (
     <div className="mod-progression min-h-dvh pb-10">
       <div className="mx-auto max-w-3xl space-y-4 px-4 pt-5">
+        <ChordInspector navigate={navigate} />
         <SongPanel onOpenSheet={() => setSheetOpen(true)} navigate={navigate} />
         <KeyPicker />
         <div role="group" aria-label="Chord map type" className="flex gap-4 border-b border-fg">
@@ -101,7 +104,6 @@ export default function ProgressionModule({ navigate, focus }: Props) {
         ) : (
           <CircleOfFifths musicKey={key} guitar={song.guitar} replacing={!!replaceTargetId} onPreview={preview} onAdd={addChord} onSetKey={useAsKey} />
         )}
-        <Timeline navigate={navigate} />
       </div>
       {sheetOpen && <SheetView onClose={() => setSheetOpen(false)} />}
     </div>

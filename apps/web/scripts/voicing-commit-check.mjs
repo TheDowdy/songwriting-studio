@@ -148,7 +148,7 @@ check(
 
 // ---------------------------------------------------------------- the strip shows a mini diagram
 const stripDiagramCircles = await page
-  .locator('.progression-strip button[aria-label^="Chord:"]', { hasText: 'C' })
+  .locator('.sw-strip button[aria-label^="Chord:"]', { hasText: 'C' })
   .locator('xpath=..').locator('[data-testid=block-diagram] circle')
   .count();
 check('the progression strip shows a mini diagram for a committed voicing', stripDiagramCircles > 0, `${stripDiagramCircles} circles`);
@@ -160,11 +160,11 @@ await sleep(150);
 check('changing the capo flags the committed voicing as stale', (await page.getByTestId('stale-voicing').count()) === 1);
 // Both chords' voicings were committed under capo 0, so a capo change flags both — check the
 // currently-focused one (C) specifically, the one Re-fit below is about to fix.
-check('…and flags it in the progression strip too', (await page.locator('.progression-strip button[data-stale]', { hasText: 'C' }).count()) === 1);
+check('…and flags it in the progression strip too', (await page.locator('.sw-strip button[data-stale]', { hasText: 'C' }).count()) === 1);
 await page.getByTestId('stale-voicing').getByRole('button', { name: 'Re-fit', exact: true }).click();
 await sleep(150);
 check('Re-fit clears the stale badge', (await page.getByTestId('stale-voicing').count()) === 0);
-check('…and in the strip, for that chord', (await page.locator('.progression-strip button[data-stale]', { hasText: 'C' }).count()) === 0);
+check('…and in the strip, for that chord', (await page.locator('.sw-strip button[data-stale]', { hasText: 'C' }).count()) === 0);
 const refitEvent = await eventOf(cId);
 check('…and the re-fit voicing is recorded under the new capo', refitEvent.attachments.guitar.capo === 2, refitEvent.attachments.guitar.capo);
 

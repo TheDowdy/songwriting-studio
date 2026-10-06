@@ -1,9 +1,11 @@
 import type { HelpEntry } from '@sw/ui';
+import { TIMELINE_HELP } from '@sw/timeline';
 
 const PLAYBACK = '[aria-label="Playback"]';
 
 /** Help for the shell's own controls: the header, the library, settings and the guide. */
 export const SHELL_HELP: HelpEntry[] = [
+  ...TIMELINE_HELP,
   { name: 'Back to library', text: 'Go back to your list of songs. Your song is saved automatically.' },
   { name: 'Song title', text: 'Type a new name for the song, then press Enter.' },
   { name: 'Rename song', text: 'Select to rename the song.' },

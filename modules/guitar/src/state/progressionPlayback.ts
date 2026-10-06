@@ -7,7 +7,7 @@ import { findEvent, chordStrokes, playbackRange, strumNotes, strumVelocity, toCh
 import { capoedTuning } from '@sw/core/fret/capo';
 import { shapeNotes } from '@sw/core/fret/voicings';
 import { songStore } from '@sw/song-store';
-import { advancePlayhead, clearPlayhead, transportSettings, type PlayScope } from '@sw/timeline';
+import { advancePlayhead, clearPlayhead, setPlayheadBeat, transportSettings, type PlayScope } from '@sw/timeline';
 import { ProgressionPlayer, type BeatMark, type ProgressionStrike } from '../audio/progressionPlayer';
 import { defaultBassMode } from './bassMode';
 import { chordContextFor, stopChordPlayback } from './chordActions';
@@ -109,7 +109,10 @@ export function playProgression(scope: PlayScope = transportSettings.getState().
       selectProgressionEvent(eventId);
     },
     onNote: (n) => emitPluck(n),
-    onBeat: (_eventId, beat) => useStore.getState().setProgressionBeat(beat),
+    onBeat: (eventId, beat) => {
+      setPlayheadBeat(eventId, beat);
+      useStore.getState().setProgressionBeat(beat);
+    },
     onEnd: () => {
       clearPlayhead();
       useStore.getState().setProgressionPlaying(false);

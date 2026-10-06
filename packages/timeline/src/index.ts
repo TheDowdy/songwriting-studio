@@ -1,6 +1,6 @@
 export { blockWidth, DENSITIES, type Density } from './layout';
 export { sectionsInOrder } from './order';
-export { advancePlayhead, clearPlayhead, nextCursor, playhead, type PlayheadState } from './playhead';
+export { advancePlayhead, clearPlayhead, nextCursor, playhead, setPlayheadBeat, type PlayheadState } from './playhead';
 export { chipLabel, SongOrderRow } from './SongOrderRow';
 export { ActionBar, ActionButton, BeatsStepper, ChordTitle, MAX_BEATS } from './ChordActions';
 export { setLoop, setScope, transportSettings, type PlaybackAdapter, type PlayScope, type TransportSettings } from './transport';
@@ -9,3 +9,6 @@ export { PatternBlockToolbar } from './strip/PatternLane';
 export { EmptySectionDrop } from './strip/SectionLane';
 export { SongStrip } from './strip/SongStrip';
 export { unitPx } from './layout';
+export { TIMELINE_HELP } from './help';
+export { SongStripPanel } from './strip/SongStripPanel';
+export { mirrorStripUi, registerStrip, setStripPrefs, stripPrefs, stripRegistry, stripUi, useRegisterStrip, type StripBehavior, type StripPrefs, type StripUiState } from './strip/registry';

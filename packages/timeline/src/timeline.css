@@ -21,6 +21,45 @@
   list-style: none;
   overflow-x: auto;
 }
+.sw-order-item {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+.sw-order-remove {
+  width: 24px;
+  height: 24px;
+  margin-left: -0.5rem;
+  font: inherit;
+  line-height: 1;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.sw-order-remove:hover {
+  color: var(--fg);
+  background: var(--surface-2);
+}
+.sw-order-add {
+  display: flex;
+  flex: none;
+  gap: 0.25rem;
+}
+.sw-order-addbtn {
+  min-height: 32px;
+  padding: 0 0.6rem;
+  white-space: nowrap;
+  font: inherit;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  cursor: pointer;
+}
 .sw-order-chip {
   min-height: 32px;
   padding: 0 0.75rem;
@@ -152,4 +191,43 @@
   font-size: 1.5rem;
   line-height: 1;
   color: var(--danger);
+}
+
+/* The shell's song strip: the Song order row with the view controls, then the lane. */
+.sw-strip {
+  padding: 0.25rem 1rem;
+  border-bottom: 1px solid var(--fg);
+}
+.sw-strip-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+}
+.sw-strip-tools {
+  display: flex;
+  gap: 0.375rem;
+}
+.sw-strip-tool {
+  min-height: 32px;
+  padding: 0 0.6rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.sw-strip-tool[aria-pressed='true'] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.sw-strip-folded {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--muted);
 }

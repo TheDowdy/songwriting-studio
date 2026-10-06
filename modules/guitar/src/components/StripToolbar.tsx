@@ -151,6 +151,7 @@ export function StripToolbar() {
   if (!event) {
     return (
       <section className="strip-toolbar" aria-label="Start the progression">
+        {song.sections.every((s) => s.events.length === 0) && <p className="muted">This song has no chords yet — pick one below to start.</p>}
         <ChordChoicePanel eventId={null} mode="add" onChoose={(c) => addChordAfter(null, c)} />
       </section>
     );

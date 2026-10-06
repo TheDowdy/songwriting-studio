@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLocation, useSearch } from 'wouter';
 import { useSong } from '@sw/song-store/react';
 import { AudioBanner } from './AudioBanner';
-import { SongOrderRow } from '@sw/timeline';
+import { SongStripPanel } from '@sw/timeline';
 import { Header } from './Header';
 import { getLastModule, setLastModule } from './lastModule';
 import { Transport } from './Transport';
@@ -89,16 +89,7 @@ export default function SongView({ params }: Props) {
       {activeModule.id !== 'guitar' && <AudioBanner />}
       <main className="min-h-0 flex-1 pb-44 lg:pb-0">
       {activeModule.playback && <Transport playback={activeModule.playback} Extras={activeModule.TransportExtras} />}
-      {!activeModule.hasOwnSongOrder && (
-        <div className="px-4 py-1">
-          <SongOrderRow
-            song={song}
-            onSelect={(id) =>
-              document.getElementById(`strip-section-${id}`)?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
-            }
-          />
-        </div>
-      )}
+      {activeModule.playback && <SongStripPanel song={song} />}
         <activeModule.Component
           key={`${songId}:${activeModule.id}`}
           songId={songId}

@@ -103,7 +103,7 @@ check('the partial strum sounds fewer strings', !!partial);
 
 // strokes are drawn in the lane, not on the chord blocks
 const laneArrows = await page.locator('[data-lane-cell] [data-stroke]').count();
-const blockArrows = await page.locator('.timeline-scroll li > div:not([data-lane-cell]) span[title*="strum"]').count();
+const blockArrows = await page.locator('.sw-strip li > div:not([data-lane-cell]) span[title*="strum"]').count();
 check('the lane shows every chord’s strokes, and the chord blocks show none', laneArrows === 15 && blockArrows === 0, `${laneArrows} in the lane, ${blockArrows} on chord blocks`);
 
 // ---------------------------------------------------------------- a pattern keeps its phase across a block
@@ -226,7 +226,7 @@ await page.getByRole('tab', { name: 'Guitar' }).click();
 await page.waitForSelector('.fretboard-svg');
 await sleep(300);
 check('the guitar module has no separate pattern builder or Strum patterns button', (await page.getByRole('button', { name: 'Strum patterns' }).count()) === 0 && (await page.getByLabel('Pattern name').count()) === 0);
-const firstBlock = page.locator('.progression-strip button[aria-label^="Chord:"]').first().locator('xpath=..');
+const firstBlock = page.locator('.sw-strip button[aria-label^="Chord:"]').first().locator('xpath=..');
 const stripArrows = await firstBlock.locator('[data-stroke]').count();
 const stripSlashes = await firstBlock.locator('[data-slash]').count();
 check('a chord with a custom pattern shows its strokes as arrows in the guitar strip', stripArrows === s.patterns[1].steps.filter(Boolean).length && stripSlashes === 0, `${stripArrows} arrows, ${stripSlashes} slashes`);
@@ -240,7 +240,7 @@ const expected = secondPat.steps.filter(Boolean).length;
 check('the guitar module plays the section’s pattern for its chords (one strike per stroke, plus a silent start marker)', firstGtr.filter((k) => k.n > 0).length === expected, `${firstGtr.filter((k) => k.n > 0).length} vs ${expected}`);
 check('up strokes there sound high to low', firstGtr.some((k) => k.n > 1 && k.midi[0] > k.midi.at(-1)));
 // per-chord picker in the strip toolbar
-await page.locator('.progression-strip button[aria-label^="Chord:"]').nth(1).click();
+await page.locator('.sw-strip button[aria-label^="Chord:"]').nth(1).click();
 await ownPattern().selectOption(`custom:${pid}`);
 await sleep(250);
 s = await song();

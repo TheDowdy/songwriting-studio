@@ -41,7 +41,7 @@ await page.waitForSelector('.fretboard-svg');
 await sleep(400);
 
 // ---------------------------------------------------------------- the Chords tab
-await page.locator('.progression-strip button[aria-label^="Chord:"]').first().click(); // focus the first chord (C)
+await page.locator('.sw-strip button[aria-label^="Chord:"]').first().click(); // focus the first chord (C)
 await sleep(300);
 await page.getByRole('button', { name: 'Add to progression' }).click();
 await sleep(400);

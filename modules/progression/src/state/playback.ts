@@ -3,7 +3,7 @@ import { renderPattern, renderStrumPattern } from '../audio/patterns';
 import { previewStrikes, startPlayback, stopPlayback, updatePlayback, type NoteStrike, type PlaybackOptions } from '../audio/engine';
 import { eventVoicing, findStrumPattern, chordPattern, flattenDetailed, sectionLoopBounds } from '@sw/core';
 import type { ChordEvent, ChordRef, Song, StrumPattern } from '@sw/core';
-import { advancePlayhead, clearPlayhead, transportSettings } from '@sw/timeline';
+import { advancePlayhead, clearPlayhead, setPlayheadBeat, transportSettings } from '@sw/timeline';
 import { useStore } from './store';
 
 /** The full note-strike list for the song: each chord voice-led from the one before it — or, on
@@ -110,7 +110,10 @@ export async function play(): Promise<void> {
         setPlayingEvent(id);
       }
     },
-    onBeat: (id, beat) => useStore.getState().setPlayingBeat(id, beat),
+    onBeat: (id, beat) => {
+      setPlayheadBeat(id, beat);
+      useStore.getState().setPlayingBeat(id, beat);
+    },
   });
 }
 

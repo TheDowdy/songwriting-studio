@@ -20,6 +20,11 @@ const check = (name, ok, detail = '') => {
   results.push(ok);
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? ' — ' + detail : ''}`);
 };
+// The strip stays mounted as the workspaces switch, so a section's actions menu can already be open.
+const openActions = async (name) => {
+  const b = page.getByRole('button', { name: `Section actions for ${name}`, exact: true });
+  if ((await b.getAttribute('aria-expanded')) !== 'true') await b.click();
+};
 const sleep = (ms) => page.waitForTimeout(ms);
 const song = () => page.evaluate(() => window.__songwriting.store.getState().song);
 const previewFrets = () =>
@@ -45,6 +50,7 @@ await page.getByRole('button', { name: 'New song' }).click();
 await page.waitForSelector('[aria-label="Chord map"]');
 await addChords(CHORDS);
 
+await openActions('Verse');
 await page.getByRole('button', { name: 'Make variant' }).click();
 await sleep(150);
 check('the dialog opens with a live preview for the section’s own chords', (await previewFrets()).length === 4, JSON.stringify(await previewFrets()));
@@ -106,6 +112,7 @@ check(
 );
 
 // ---------------------------------------------------------------- "stay in one position" honours its window
+await openActions('Verse');
 await page.getByRole('region', { name: 'Section: Verse', exact: true }).getByRole('button', { name: 'Make variant' }).click();
 await sleep(150);
 await page.getByRole('button', { name: 'Stay in one position' }).click();
@@ -132,7 +139,7 @@ check(
 await page.getByRole('tab', { name: 'Guitar' }).click();
 await page.waitForSelector('.fretboard-svg');
 await sleep(200);
-await page.getByRole('button', { name: 'Section actions for Verse', exact: true }).click();
+await openActions('Verse');
 await page.getByRole('region', { name: 'Section: Verse', exact: true }).getByRole('button', { name: 'Make variant' }).click();
 await sleep(150);
 check('the guitar module offers the same dialog', (await page.getByTestId('variant-dialog').count()) === 1);

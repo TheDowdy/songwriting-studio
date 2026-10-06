@@ -5,6 +5,7 @@
  * the song-store's current song (subscribed once below), so `useStore((s) => s.song)` still works
  * exactly as before.
  */
+import { mirrorStripUi } from '@sw/timeline';
 import { create } from 'zustand';
 import * as core from '@sw/core';
 import type { ChordRef, InstrumentId, Key, PatternId, Song, StrumPattern, TimeSig, VariantGeneratorId, VariantOptions } from '@sw/core';
@@ -305,6 +306,18 @@ export const useStore = create<AppState>((set, get) => {
     },
   };
 });
+
+// What the shell's song strip draws as selected, mirrored from here while this workspace is in use.
+const mirror = (s: AppState) =>
+  mirrorStripUi({
+    selectedEventId: s.selectedEventId,
+    laneEventId: s.laneEventId,
+    activeSectionId: s.activeSectionId,
+    replaceTargetId: s.replaceTargetId,
+    patternEditorOpen: s.patternEditorOpen,
+  });
+useStore.subscribe(mirror);
+mirror(useStore.getState());
 
 // The selected chord is the focus both modules share (the guitar module reads it when it opens).
 useStore.subscribe((s, prev) => {

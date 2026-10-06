@@ -173,16 +173,16 @@ check(
 );
 
 // ---------------------------------------------------------------- progression strip
-const stripLabels = await page.locator('.progression-strip button[aria-label^="Chord:"]').allTextContents();
+const stripLabels = await page.locator('.sw-strip button[aria-label^="Chord:"]').allTextContents();
 check('the strip shows all four chords in order', stripLabels.length === 4, stripLabels.join(' | '));
 
 for (let i = 0; i < CHORDS.length; i++) {
   const { label, pcs } = CHORDS[i];
   await page.evaluate(() => (window.__plucks = []));
-  await page.locator('.progression-strip button[aria-label^="Chord:"]').nth(i).click();
+  await page.locator('.sw-strip button[aria-label^="Chord:"]').nth(i).click();
   await sleep(150);
   check(`strip block ${i + 1} (${label}) shows exactly its tones`, JSON.stringify(await litPcs()) === JSON.stringify(pcs), JSON.stringify(await litPcs()));
-  const pressed = await page.locator('.progression-strip button[aria-label^="Chord:"]').nth(i).getAttribute('aria-pressed');
+  const pressed = await page.locator('.sw-strip button[aria-label^="Chord:"]').nth(i).getAttribute('aria-pressed');
   check(`strip block ${i + 1} is highlighted as selected`, pressed === 'true');
   await sleep(300); // let the strum finish (§7 Phase 3 change 2)
   check(
@@ -193,7 +193,7 @@ for (let i = 0; i < CHORDS.length; i++) {
 }
 
 // ---------------------------------------------------------------- capo and tuning
-await page.locator('.progression-strip button[aria-label^="Chord:"]').first().click();
+await page.locator('.sw-strip button[aria-label^="Chord:"]').first().click();
 await sleep(100);
 const beforeCapo = await page.evaluate(() => document.querySelectorAll('[data-capo-bar]').length);
 check('no capo bar before a capo is set', beforeCapo === 0);
@@ -215,14 +215,14 @@ check(
 
 // A fresh click with the capo on: the pluck reflects the capoed pitches too (§7 Phase 3 change 2).
 await page.evaluate(() => (window.__plucks = []));
-await page.locator('.progression-strip button[aria-label^="Chord:"]').nth(1).click();
+await page.locator('.sw-strip button[aria-label^="Chord:"]').nth(1).click();
 await sleep(450);
 check(
   'clicking a strip block plucks the capoed shape (capo included)',
   (await pluckedMidis()).length > 0 && (await pluckedMidis()) === (await shapeMidis()),
   `plucked ${await pluckedMidis()} vs shape ${await shapeMidis()}`,
 );
-await page.locator('.progression-strip button[aria-label^="Chord:"]').first().click();
+await page.locator('.sw-strip button[aria-label^="Chord:"]').first().click();
 await sleep(150);
 
 const beforeTuning = await page.evaluate(() => window.__songwriting.store.getState().song.guitar.tuning);

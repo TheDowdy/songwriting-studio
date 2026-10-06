@@ -76,7 +76,8 @@ export interface ModuleDefinition {
   onDeactivate?: () => void;   // stop audio/gestures when the user leaves this module
   playback?: PlaybackAdapter;  // how the shell's one transport plays this module (@sw/timeline)
   TransportExtras?: ComponentType; // module-specific controls shown in that transport row
-  hasOwnSongOrder?: boolean;   // true if the module already shows/edits the song's playing order
+  // (A module with a `playback` also gets the shell's song strip above it. It registers how its edits
+  //  behave with `useRegisterStrip` from @sw/timeline, and mirrors its selection with `mirrorStripUi`.)
 }
 
 export interface ModuleProps {
@@ -166,7 +167,7 @@ follows the Google developer documentation style guide; edit the data, not the c
 Library, both modules inside a song, and the guitar module's stand-alone tool mode, each in both
 themes, then drives the fretboard, tabs and dialogs by keyboard. `apps/web/scripts/perf-check.mjs`
 throttles the CPU and measures frame times during a tuning-peg drag, a chord change and scale
-playback, both stand-alone and with the shared song strip (`@sw/timeline`, the same lane the chords workspace draws, compact and inline) rendered above the neck in song context.
+playback, both stand-alone and with the shell's song strip (`@sw/timeline`), the same one the chords workspace has, above the neck in song context.
 Both are `npm run check:a11y` / `npm run check:perf` and are part of the full check suite before a
 release (see README).
 

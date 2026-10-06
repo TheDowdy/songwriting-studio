@@ -41,8 +41,6 @@ export const progressionModule = {
   },
   /** Time signature, instrument, metronome and volume, in the shell's transport row. */
   TransportExtras: PlaybackExtras,
-  /** Its Arrangement row is the (editable) song order. */
-  hasOwnSongOrder: true,
   /** Stop the transport (and any preview) when the user switches to another module (§5). */
   onDeactivate: stopPlayback,
 };

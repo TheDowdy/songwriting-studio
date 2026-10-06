@@ -37,9 +37,6 @@ export interface ModuleDefinition {
   playback?: PlaybackAdapter;
   /** Module-specific controls shown in the shell's transport row (e.g. instrument, re-voice). */
   TransportExtras?: ComponentType;
-  /** True when the module already shows and edits the song's playing order, so the shell's own
-   *  read-only Song order row would only repeat it. */
-  hasOwnSongOrder?: boolean;
   /** What each control in this module does, for hover tips and help mode (see `HelpEntry`).
    *  Scope each entry to the module's root class so its names can't collide with another module's. */
   help?: HelpEntry[];

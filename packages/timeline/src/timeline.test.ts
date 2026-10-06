@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { addChord, addSection, diatonicChord, DEFAULT_KEY, makeVariant, newSong, type Song } from '@sw/core';
 import { blockWidth } from './layout';
 import { sectionsInOrder } from './order';
-import { advancePlayhead, clearPlayhead, nextCursor, playhead } from './playhead';
+import { advancePlayhead, clearPlayhead, nextCursor, playhead, setPlayheadBeat } from './playhead';
 
 /** Verse (2 chords), Chorus (1), arranged Verse · Chorus · Verse · Chorus. */
 function song(): Song {
@@ -64,7 +64,10 @@ describe('playhead', () => {
       slots.push(playhead.getState().slot);
     }
     expect(slots).toEqual([0, 0, 1, 2, 2, 3]);
+    setPlayheadBeat(chorus.events[0]!.id, 2);
+    expect(playhead.getState()).toMatchObject({ eventId: chorus.events[0]!.id, beat: 2 });
     clearPlayhead();
     expect(playhead.getState().slot).toBeNull();
+    expect(playhead.getState().eventId).toBeNull();
   });
 });

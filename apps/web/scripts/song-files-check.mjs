@@ -56,7 +56,7 @@ const check = (name, ok, detail = '') => {
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? ' — ' + detail : ''}`);
 };
 
-const chordCount = () => page.locator('.timeline-scroll > li').count();
+const chordCount = () => page.locator('.sw-strip li button[aria-label^="Chord:"]').count();
 const urlSongId = () => page.evaluate(() => location.hash.split('/')[2]);
 const title = () => page.getByLabel('Song title').inputValue();
 const openFilePanel = async () => {
@@ -66,7 +66,7 @@ const openFilePanel = async () => {
 /** Waits for the progression module to settle on a song with `n` chords (or times out). */
 const settle = (n) =>
   page
-    .waitForFunction((n) => document.querySelectorAll('.timeline-scroll > li').length === n, n, { timeout: 4000 })
+    .waitForFunction((n) => document.querySelectorAll('.sw-strip li button[aria-label^="Chord:"]').length === n, n, { timeout: 4000 })
     .catch(() => {});
 
 await page.goto(url);

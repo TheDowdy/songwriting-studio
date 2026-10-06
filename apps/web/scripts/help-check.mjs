@@ -20,6 +20,11 @@ const check = (name, ok, detail = '') => {
   results.push(ok);
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? ' — ' + detail : ''}`);
 };
+// The strip stays mounted as the workspaces switch, so a section's actions menu can already be open.
+const openActions = async () => {
+  const b = page.getByRole('button', { name: /^Section actions for/ }).first();
+  if ((await b.getAttribute('aria-expanded')) !== 'true') await b.click();
+};
 const sleep = (ms) => page.waitForTimeout(ms);
 
 /** Every visible interactive element that resolves to no help text. */
@@ -138,6 +143,7 @@ await page.getByRole('button', { name: /^Step 2 of 8/ }).click();
 await sleep(200);
 await audit('progression: pattern block and editor');
 await page.keyboard.press('Escape');
+await openActions();
 await page.getByRole('button', { name: /^Make variant/ }).first().click().catch(() => {});
 await sleep(200);
 await audit('progression: variant dialog');
@@ -147,9 +153,9 @@ await page.keyboard.press('Escape');
 await page.getByRole('tab', { name: 'Guitar' }).click();
 await page.waitForSelector('.fretboard-svg');
 await audit('guitar module (chords tab)');
-await page.locator('.progression-strip button[aria-label^="Chord:"]').first().click();
+await page.locator('.sw-strip button[aria-label^="Chord:"]').first().click();
 await page.getByRole('button', { name: 'Use this voicing', exact: true }).click();
-await page.locator('.progression-strip button[aria-label^="Chord:"]').first().click();
+await page.locator('.sw-strip button[aria-label^="Chord:"]').first().click();
 await audit('guitar: a chord with a committed voicing selected');
 for (const b of ['Flavour', 'Inversion', 'Replace', '+ Add after']) {
   await page.getByRole('button', { name: b, exact: true }).click();
@@ -160,7 +166,7 @@ await page.getByRole('button', { name: 'Replace', exact: true }).click();
 await page.getByRole('button', { name: 'Build any chord…' }).click();
 await audit('guitar: build any chord');
 await page.getByRole('button', { name: 'Replace', exact: true }).click();
-await page.getByRole('button', { name: /^Section actions for/ }).first().click();
+await openActions();
 await page.getByRole('button', { name: 'Make variant' }).first().click();
 await audit('guitar: variant dialog');
 await page.getByRole('button', { name: 'Close', exact: true }).click();

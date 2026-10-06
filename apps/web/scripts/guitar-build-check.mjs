@@ -22,7 +22,7 @@ const check = (name, ok, detail = '') => {
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? ' — ' + detail : ''}`);
 };
 const sleep = (ms) => page.waitForTimeout(ms);
-const stripNames = () => page.locator('.progression-strip [data-chord-name]').allTextContents();
+const stripNames = () => page.locator('.sw-strip [data-chord-name]').allTextContents();
 const song = () => page.evaluate(() => window.__songwriting.store.getState().song);
 const choose = async (testId, name) => {
   await page
@@ -35,7 +35,7 @@ const choose = async (testId, name) => {
 };
 const block = (name) =>
   page
-    .locator('.progression-strip button[aria-label^="Chord:"]')
+    .locator('.sw-strip button[aria-label^="Chord:"]')
     .filter({ has: page.locator('[data-chord-name]', { hasText: new RegExp(`^${name}$`) }) })
     .first();
 const toolbarButton = (name) => page.locator('.strip-toolbar').getByRole('button', { name, exact: true });
@@ -67,10 +67,10 @@ await toolbarButton('Flavour').click();
 await page.getByTestId('flavour-panel').locator('.chip', { hasText: /^7 \(♭7\)$/ }).click();
 await sleep(200);
 check('Flavour turns G into G7', (await stripNames()).includes('G7'), JSON.stringify(await stripNames()));
-check('…and flags G’s committed voicing as stale', (await page.locator('.progression-strip button[data-stale]').count()) === 1);
+check('…and flags G’s committed voicing as stale', (await page.locator('.sw-strip button[data-stale]').count()) === 1);
 await page.getByTestId('stale-voicing').getByRole('button', { name: 'Re-fit', exact: true }).click();
 await sleep(200);
-check('Re-fit fixes it', (await page.locator('.progression-strip button[data-stale]').count()) === 0);
+check('Re-fit fixes it', (await page.locator('.sw-strip button[data-stale]').count()) === 0);
 
 // ---------------------------------------------------------------- inversion, replace, beats, duplicate, remove
 await block('C').click();
@@ -121,7 +121,7 @@ await sleep(200);
 await choose('choices-add', 'Am');
 const afterAdd = await song();
 check('+ Section adds a section and its first chord', afterAdd.sections.length === 2 && afterAdd.sections[1].events.length === 1);
-await page.locator('.progression-strip input[aria-label="Section name"]').nth(1).fill('Chorus');
+await page.locator('.sw-strip input[aria-label="Section name"]').nth(1).fill('Chorus');
 await page.keyboard.press('Enter');
 await sleep(150);
 check('renaming a section in place', (await song()).sections[1].name === 'Chorus');
@@ -171,11 +171,11 @@ const g7Notes = g7.attachments.guitar.frets.flatMap((f, s) => (f === null ? [] :
 check('…including G7’s committed (re-fitted) shape, note for note', g7Notes.every((n) => played.includes(n)), g7Notes.join(' '));
 
 // ---------------------------------------------------------------- identical in the progression module
-const guitarView = { names: await stripNames(), sections: await page.locator('.progression-strip input[aria-label="Section name"]').evaluateAll((els) => els.map((e) => e.value)) };
+const guitarView = { names: await stripNames(), sections: await page.locator('.sw-strip input[aria-label="Section name"]').evaluateAll((els) => els.map((e) => e.value)) };
 await page.getByRole('tab', { name: 'Chords' }).click();
 await page.waitForSelector('[aria-label="Chord map"]');
 await sleep(200);
-const timelineNames = await page.locator('.timeline-scroll > li button[aria-label^="Chord:"] > span:first-child').allTextContents();
+const timelineNames = await page.locator('.sw-strip li button[aria-label^="Chord:"] > span:first-child').allTextContents();
 check(
   'the progression module shows the same chords, in the same order',
   JSON.stringify(timelineNames) === JSON.stringify(guitarView.names),

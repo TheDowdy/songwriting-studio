@@ -52,7 +52,7 @@ await block('C').click();
 await page.getByRole('button', { name: 'Explore guitar voicings' }).click();
 await page.waitForSelector('.fretboard-svg');
 for (const name of ['C', 'G7']) {
-  await page.locator('.progression-strip button[aria-label^="Chord:"]', { hasText: new RegExp(`^${name}`) }).first().click();
+  await page.locator('.sw-strip button[aria-label^="Chord:"]', { hasText: new RegExp(`^${name}`) }).first().click();
   await sleep(150);
   await page.getByRole('button', { name: 'Use this voicing', exact: true }).click();
   await sleep(100);
@@ -138,11 +138,11 @@ check('on piano, C9 sounds its 9th (D) and ♭7 (B♭)', [2, 10].every((pc) => c
 await page.getByRole('tab', { name: 'Guitar' }).click();
 await page.waitForSelector('.fretboard-svg');
 await sleep(150);
-check('the guitar module shows the rich name too, and flags the stale voicing', (await page.locator('.progression-strip button[data-stale]', { hasText: 'C9' }).count()) === 1);
+check('the guitar module shows the rich name too, and flags the stale voicing', (await page.locator('.sw-strip button[data-stale]', { hasText: 'C9' }).count()) === 1);
 check(
   '…with the warning in place of the old diagram there too',
-  (await page.locator('.progression-strip button[data-stale]', { hasText: 'C9' }).locator('.chord-diagram').count()) === 0 &&
-    (await page.locator('.progression-strip button[data-stale]', { hasText: 'C9' }).locator('.block-stale').count()) === 1,
+  (await page.locator('.sw-strip button[data-stale]', { hasText: 'C9' }).locator('.chord-diagram').count()) === 0 &&
+    (await page.locator('.sw-strip button[data-stale]', { hasText: 'C9' }).locator('.block-stale').count()) === 1,
 );
 
 check('no console or page errors', errors.length === 0, errors.join(' | '));
