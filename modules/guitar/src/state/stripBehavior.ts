@@ -1,6 +1,6 @@
 import { createElement, useMemo } from 'react';
 import './stripMirror';
-import { EmptySectionDrop, useRegisterStrip, type StripBehavior } from '@sw/timeline';
+import { EmptySectionDrop, mirrorStripUi, stripUi, useRegisterStrip, type StripBehavior } from '@sw/timeline';
 import { songStore } from '@sw/song-store';
 import {
   addSection,
@@ -15,6 +15,7 @@ import {
   setChordBeats,
   setSectionRepeat,
 } from './progressionEdits';
+import { previewStrumPattern } from './progressionPlayback';
 import { useStore } from './store';
 
 /**
@@ -33,9 +34,14 @@ export function useGuitarStrip(): void {
       noVoicingText: ', no voicing committed (plays the suggested shape)',
       selectEvent: (event) => focusAndPlay(event.id),
       setActiveSection: () => {},
-      setLaneEvent: () => {},
-      setPatternEditorOpen: () => {},
-      previewPattern: () => {},
+      // The strum lane (when the viewer turns it on) keeps its selection in the strip's own state:
+      // this workspace has nothing else to do with it.
+      setLaneEvent: (id) => {
+        const cur = stripUi.getState();
+        mirrorStripUi({ laneEventId: id, patternEditorOpen: id !== null && id === cur.laneEventId ? cur.patternEditorOpen : false });
+      },
+      setPatternEditorOpen: (open) => mirrorStripUi({ patternEditorOpen: open }),
+      previewPattern: previewStrumPattern,
       setBeats: setChordBeats,
       reorderEvents: reorderChord,
       moveEvent: moveChord,

@@ -3,7 +3,7 @@
  * through the guitar synth — its committed voicing, or the shape the neck would suggest for it —
  * at the song's tempo, optionally looping, with the neck following the chord you hear.
  */
-import { findEvent, chordStrokes, playbackRange, strumNotes, strumVelocity, toChordSpec, type ChordEvent, type Song } from '@sw/core';
+import { findEvent, chordStrokes, playbackRange, strumEvents, strumNotes, strumVelocity, toChordSpec, type ChordEvent, type ChordRef, type Song, type StrumPattern } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
 import { shapeNotes } from '@sw/core/fret/voicings';
 import { songStore } from '@sw/song-store';
@@ -124,4 +124,28 @@ export function stopProgression(): void {
   player.stop();
   clearPlayhead();
   useStore.getState().setProgressionPlaying(false);
+}
+
+const previewPlayer = new ProgressionPlayer();
+
+/** Hear a strum pattern once through on a chord, strummed on the guitar (the pattern editor's Preview):
+ *  the chord's committed voicing if it has one, otherwise the best shape. */
+export function previewStrumPattern(pattern: StrumPattern, chord: ChordRef, attachments: ChordEvent['attachments']): void {
+  const song = songStore.getState().currentSong();
+  if (!song) return;
+  stopProgression();
+  const notes = chordNotes({ id: 'preview', chord, beats: pattern.beats, attachments }, song);
+  if (notes.length === 0) return;
+  const secondsPerBeat = 60 / song.bpm;
+  const strikes: ProgressionStrike[] = strumEvents(pattern, pattern.beats).map(({ offsetBeats, step }) => ({
+    atSeconds: offsetBeats * secondsPerBeat,
+    eventId: 'preview',
+    notes: strumNotes(notes, step),
+    velocity: strumVelocity(step),
+  }));
+  previewPlayer.start(strikes, pattern.beats * secondsPerBeat, useStore.getState().chordPlay.speedMs / 1000, false, {
+    onChord: () => {},
+    onNote: (n) => emitPluck(n),
+    onEnd: () => {},
+  });
 }

@@ -239,6 +239,23 @@ const firstGtr = gs.filter((k) => k.id === a.id);
 const expected = secondPat.steps.filter(Boolean).length;
 check('the guitar module plays the section’s pattern for its chords (one strike per stroke, plus a silent start marker)', firstGtr.filter((k) => k.n > 0).length === expected, `${firstGtr.filter((k) => k.n > 0).length} vs ${expected}`);
 check('up strokes there sound high to low', firstGtr.some((k) => k.n > 1 && k.midi[0] > k.midi.at(-1)));
+// the strum lane can be turned on here too, and its pattern editor previews on the guitar
+await page.getByRole('button', { name: 'Strum lane' }).click();
+await page.getByRole('button', { name: /^Pattern for/ }).first().click();
+await page.getByRole('button', { name: 'Edit pattern' }).click();
+await page.evaluate(() => {
+  const engine = window.__fluidfrets.audioEngine;
+  const real = engine.pluck.bind(engine);
+  window.__previewPlucks = 0;
+  engine.pluck = (string, midi, opts) => {
+    window.__previewPlucks++;
+    return real(string, midi, opts);
+  };
+});
+await page.getByRole('button', { name: /Preview/ }).first().click();
+await sleep(600);
+const previewed = await page.evaluate(() => window.__previewPlucks);
+check('in the guitar module, a pattern’s Preview strums it on the guitar', previewed > 0, `${previewed} plucks`);
 // per-chord picker in the strip toolbar
 await page.locator('.sw-strip button[aria-label^="Chord:"]').nth(1).click();
 await ownPattern().selectOption(`custom:${pid}`);
