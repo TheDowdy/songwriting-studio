@@ -118,9 +118,9 @@ export function reorderChord(sectionId: string, fromIndex: number, toIndex: numb
   songStore.getState().reorderEvents(sectionId, fromIndex, toIndex);
 }
 
-export function addSection(): void {
+export function addSection(name?: string): void {
   recordUndo('Add section');
-  const id = songStore.getState().addSection();
+  const id = songStore.getState().addSection(name);
   if (id) useStore.getState().setStripAddSectionId(id);
 }
 
@@ -166,4 +166,44 @@ export function addChordToProgression(spec: ChordSpec, shape: (number | null)[] 
   }
   strumChord();
   return true;
+}
+
+/** Sets a chord's length (dragging its right edge). */
+export function setChordBeats(eventId: string, beats: number): void {
+  recordUndo('Beats');
+  songStore.getState().setEventBeats(eventId, beats);
+}
+
+/** Moves a chord into another section (the strip's drag between sections). */
+export function moveChord(eventId: string, toSectionId: string, toIndex: number): void {
+  recordUndo('Move chord');
+  songStore.getState().moveEvent(eventId, toSectionId, toIndex);
+}
+
+export function setSectionRepeat(sectionId: string, repeat: number): void {
+  recordUndo('Repeat');
+  songStore.getState().setSectionRepeat(sectionId, repeat);
+}
+
+/** Drops the focus if the chord it was on no longer exists. */
+function dropFocusIfGone(): void {
+  const song = currentSong();
+  const id = useStore.getState().progressionEventId;
+  if (song && id && !findEvent(song, id)) {
+    const next = flattenSong(song)[0];
+    if (next) selectProgressionEvent(next.id);
+    else clearProgressionFocus();
+  }
+}
+
+export function removeSection(sectionId: string): void {
+  recordUndo('Delete section');
+  songStore.getState().removeSection(sectionId);
+  dropFocusIfGone();
+}
+
+export function clearSection(sectionId: string): void {
+  recordUndo('Clear section');
+  songStore.getState().clearSection(sectionId);
+  dropFocusIfGone();
 }

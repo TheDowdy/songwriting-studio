@@ -25,6 +25,7 @@ const QUICK_ADD = ['Verse', 'Chorus', 'Bridge'];
 export function SongStrip() {
   const host = useStripHost();
   const { song } = host;
+  const inline = host.layout === 'inline';
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
     useSensor(TouchSensor, TOUCH_DRAG),
@@ -52,13 +53,19 @@ export function SongStrip() {
   return (
     <div className="space-y-3">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-        <div className="space-y-3">
+        <div className={inline ? 'timeline-scroll flex items-start gap-6 overflow-x-auto overscroll-x-contain pb-2' : 'space-y-3'}>
           {song.sections.map((section) => (
             <SectionLane key={section.id} section={section} isOnly={song.sections.length === 1} />
           ))}
+          {inline && (
+            <button type="button" onClick={() => host.addSection()} className="mt-8 shrink-0 rounded-none border border-dashed border-muted px-3 py-2 text-sm italic text-muted hover:bg-surface-2">
+              + Section
+            </button>
+          )}
         </div>
       </DndContext>
 
+      {!inline && (
       <div className="flex flex-wrap gap-1.5">
         {QUICK_ADD.map((name) => (
           <button type="button" key={name} onClick={() => host.addSection(name)} className="rounded-full border border-fg px-4 py-1.5 text-base italic hover:bg-surface-2">
@@ -69,6 +76,7 @@ export function SongStrip() {
           + Custom section
         </button>
       </div>
+      )}
 
       {host.renderAfterSections?.()}
     </div>

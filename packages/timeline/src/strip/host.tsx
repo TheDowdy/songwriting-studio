@@ -1,5 +1,5 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import type { ChordEvent, ChordRef, Section, Song, StrumPattern, VariantGeneratorId, VariantOptions } from '@sw/core';
+import type { ChordEvent, ChordRef, PatternId, Section, Song, StrumPattern, VariantGeneratorId, VariantOptions } from '@sw/core';
 import type { Density } from '../layout';
 
 /**
@@ -13,6 +13,9 @@ export interface StripHost {
   song: Song;
   /** Block width per beat: compact for the guitar workspace, comfortable for the chords one. */
   density: Density;
+  /** 'rows': each section its own full-width row (the chords workspace). 'inline': every section side by
+   *  side in one scrolling lane, section actions behind a menu (the guitar workspace, short on height). */
+  layout: 'rows' | 'inline';
   /** Show the strum pattern lane under each row of chords. Off, a custom pattern's strokes show inside the chords instead. */
   showLane: boolean;
   /** Mark chords with no committed guitar voicing (a dashed edge), which matters on the neck. */
@@ -46,11 +49,11 @@ export interface StripHost {
   setSectionRepeat(sectionId: string, repeat: number): void;
   clearSection(sectionId: string): void;
   makeVariant(sectionId: string, generator: VariantGeneratorId, options: VariantOptions): void;
-  setBlockPattern(eventId: string, patternId: string | null): void;
+  setBlockPattern(eventId: string, patternId: PatternId | null): void;
   setBlockLength(eventId: string, chords: number): void;
   patternForChordOnly(eventId: string): void;
-  patternForSection(sectionId: string, patternId: string): void;
-  patternForSong(patternId: string): void;
+  patternForSection(sectionId: string, patternId: PatternId): void;
+  patternForSong(patternId: PatternId): void;
   setSongPattern(patternId: Song['pattern']): void;
   saveStrumPattern(pattern: StrumPattern): void;
   deleteStrumPattern(id: string): void;

@@ -238,6 +238,7 @@ export default function Timeline({ navigate }: { navigate: Navigate }) {
   const host: StripHost = {
     song: state.song,
     density: 'comfortable',
+    layout: 'rows',
     showLane: true,
     showVoicingState: false,
     selectedEventId: state.selectedEventId,

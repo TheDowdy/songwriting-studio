@@ -11,12 +11,18 @@ const sel = (selector: string, text: string): HelpEntry => ({ selector, scope: S
 
 export const GUITAR_HELP: HelpEntry[] = [
   // The song strip: the progression across the top, with playback and editing.
-  g(/^Chord: /, 'Select this chord to show it on the neck and hear it. Its width shows how many beats it lasts. Press and hold, then drag, to reorder it within its section.'),
+  g(/^Chord: /, 'Select this chord to show it on the neck and hear it. Its width shows how many beats it lasts. Press and hold, then drag, to move it within or between sections.'),
   g('Section name', 'Type a new name for this section, then press Enter.'),
-  sel('.strip-section-name', 'Select to rename this section.'),
+  g('Fewer repeats', 'Play this section one time fewer.'),
+  g('More repeats', 'Play this section one time more.'),
+  g(/^Section actions for /, 'Show or hide the actions for this section: duplicate, make a variant, clear and delete.'),
+  g('Duplicate section', 'Copy this section and place the copy after it.'),
+  g('Make variant', 'Create a copy of this section with the chords voiced in a different position on the neck.'),
+  g('Clear', 'Remove every chord from this section.'),
+  g(/^Delete .+/, 'Delete this section and its chords.'),
+  g(/^Length of /, 'Drag, or use the arrow keys, to change how many beats this chord lasts.'),
   g(/^Duplicate .+/, 'Copy this section and place the copy after it.'),
   g(/^Make a variant of /, 'Create a copy of this section with the chords voiced in a different position on the neck.'),
-  sel('.strip-variant-link', 'Scroll to the section this variant was made from.'),
   g('+ Add chord', 'Choose the first chord for this empty section.'),
   g('+ Section', 'Add a new, empty section to the end of the song.'),
 

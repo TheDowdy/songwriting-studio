@@ -143,10 +143,11 @@ export function ChordBlock({
           {...attributes}
           {...listeners}
           aria-pressed={active}
+          data-stale={stale || undefined}
           aria-label={`Chord: ${chordName(event.chord)}, ${event.chord.numeral}, ${event.beats} beats${voicingNote}`}
           className={`absolute inset-0 flex flex-col items-center justify-center pr-3 ${compact ? 'pb-6' : 'pb-7'}`}
         >
-          <span className={`${compact ? 'text-xl' : 'text-2xl'} font-medium leading-tight`} style={{ color: origin }}>
+          <span data-chord-name className={`${compact ? 'text-xl' : 'text-2xl'} font-medium leading-tight`} style={{ color: origin }}>
             {chordName(event.chord)}
           </span>
           <span className={`font-mono text-xs ${playing ? '' : 'text-muted'}`}>{event.chord.numeral}</span>
@@ -202,6 +203,8 @@ export function ChordBlock({
             : Array.from({ length: Math.min(shownBeats, 32) }, (_, i) => (
                 <span key={i} className="flex shrink-0 justify-center" style={{ width: unit }}>
                   <span
+                    data-slash
+                    data-now={i === playingBeat || undefined}
                     className="block h-4 w-0.5"
                     style={{
                       transform: 'skewX(-28deg)',

@@ -136,9 +136,9 @@ export const GUIDE: GuideSection[] = [
     id: 'guitar',
     title: 'Play the progression on guitar',
     blocks: [
-      { p: 'Select the **Guitar** tab to see your song on a guitar neck. Your chords appear in a strip below the neck.' },
+      { p: 'Select the **Guitar** tab to see your song on a guitar neck. Your chords appear in a strip above the neck, drawn the same way as on the Chords tab but more compactly.' },
       { h3: 'Show a chord on the neck' },
-      { p: 'Select a chord in the strip. The neck shows the recommended shape for it, and you hear it play. Each chord shows one slash for every beat it lasts, as on a lead sheet.' },
+      { p: 'Select a chord in the strip. The neck shows the recommended shape for it, and you hear it play. A chord’s width shows how long it lasts, and it shows one slash for every beat, as on a lead sheet. Drag a chord’s right edge to change its length.' },
       { h3: 'Choose a voicing' },
       { p: 'A voicing is one way to play a chord on the neck. To choose one:' },
       {
@@ -148,10 +148,10 @@ export const GUIDE: GuideSection[] = [
           'Select **Use this voicing** to save it on the chord.',
         ],
       },
-      { p: 'A chord with a saved voicing shows a small diagram in the strip. A chord without one has a dashed border, and plays the recommended shape. To go back to the recommended shape, select **Remove voicing**.' },
+      { p: 'A chord with a saved voicing shows a small diagram in the strip. A chord without one has a dashed underline, and plays the recommended shape. To go back to the recommended shape, select **Remove voicing**.' },
       { p: 'Use **Root in bass only**, **Max stretch (frets)**, and the other rules under **Voicing rules & filters** to narrow the voicings that the app offers.' },
       { h3: 'Edit chords from the guitar tab' },
-      { p: 'With a chord selected, the toolbar below the strip lets you change it without leaving the Guitar tab: **Flavour**, **Inversion**, **Replace**, **Beats**, **Duplicate**, **Remove**, and **+ Add after**.' },
+      { p: 'With a chord selected, the toolbar under the strip lets you change it without leaving the Guitar tab: **Flavour**, **Inversion**, **Replace**, **Beats**, **Duplicate**, **Remove**, and **+ Add after**.' },
       { h3: 'Strum patterns on guitar' },
       { p: 'Build and place your own strum patterns in the Chords tab’s pattern lane. With a pattern, **Play** strums each chord as the pattern says: down strums go from the low strings to the high ones, up strums from high to low, and partial strums use only the low or high strings. A chord with no custom pattern is strummed once at the start of each bar. The **Strum pattern** list in the toolbar below the strip sets the pattern for the selected chord, or leaves it on the song default.' },
       { h3: 'Play the song' },
@@ -170,7 +170,7 @@ export const GUIDE: GuideSection[] = [
       { p: 'A variant is a copy of a section with the chords voiced in a different place on the neck.' },
       {
         ol: [
-          'Select **Make a variant of** on the section. In the **Chords** tab, the button is **Make variant**.',
+          'Select **Section actions** (the **⋯** button) on the section, and then select **Make variant**. In the **Chords** tab, the actions are always on show.',
           'Choose how to voice the chords, such as **Open position** or **Smoothest movement**. The preview shows the result.',
           'Select the button that creates the variant.',
         ],

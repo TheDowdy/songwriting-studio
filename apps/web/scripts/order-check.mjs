@@ -59,19 +59,19 @@ check('the highlight clears when playback stops', (await page.locator('[data-pla
 
 // ---------------------------------------------------------------- guitar module
 await page.evaluate((id) => (location.hash = `#/song/${id}/guitar`), songId);
-await page.waitForSelector('.strip-chord');
+await page.waitForSelector('.progression-strip button[aria-label^="Chord:"]');
 const chips = () => page.evaluate(() => [...document.querySelectorAll('.sw-order-chip')].map((c) => c.textContent.trim() + (c.classList.contains('playing') ? '*' : '')));
 check('the Song order row shows the arrangement', JSON.stringify(await chips()) === JSON.stringify(['Verse', 'Chorus', 'Verse']), JSON.stringify(await chips()));
-check('each section is drawn once in the strip', (await page.locator('.strip-group[id^="strip-section-"]').count()) === 2);
+check('each section is drawn once in the strip', (await page.locator('.progression-strip section[id^="section-"]').count()) === 2);
 const widths = await page.evaluate(() =>
-  [...document.querySelectorAll('.strip-chord')].map((b) => [b.getAttribute('aria-label').match(/(\d+) beats?/)[1], Math.round(b.getBoundingClientRect().width)]),
+  [...document.querySelectorAll('.progression-strip button[aria-label^="Chord:"]')].map((b) => [b.getAttribute('aria-label').match(/(\d+) beats?/)[1], Math.round(b.getBoundingClientRect().width)]),
 );
 const w = Object.fromEntries(widths);
 check('a longer chord is drawn wider', w['8'] > w['4'], JSON.stringify(widths));
 await page.getByRole('button', { name: 'Play', exact: true }).click();
 await sleep(1500);
 check('the playing section is highlighted', (await chips()).filter((c) => c.endsWith('*')).length === 1, JSON.stringify(await chips()));
-check('the sounding beat of the playing chord is marked', (await page.locator('.strip-slash.now').count()) === 1, String(await page.locator('.strip-slash.now').count()));
+check('the sounding beat of the playing chord is marked', (await page.locator('[data-slash][data-now]').count()) === 1, String(await page.locator('[data-slash][data-now]').count()));
 await page.getByRole('button', { name: 'Stop', exact: true }).click();
 await sleep(300);
 check('…and clears on stop', (await chips()).every((c) => !c.endsWith('*')));

@@ -27,6 +27,8 @@ export function SectionLane({ section, isOnly }: { section: Section; isOnly: boo
   const host = useStripHost();
   const { song } = host;
   const [variantOpen, setVariantOpen] = useState(false);
+  const inline = host.layout === 'inline';
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const playingId = host.playing ? host.playingEventId : null;
   const activeId = playingId ?? host.selectedEventId;
@@ -52,7 +54,7 @@ export function SectionLane({ section, isOnly }: { section: Section; isOnly: boo
       id={`section-${section.id}`}
       aria-label={`Section: ${section.name}`}
       onClick={() => host.setActiveSection(section.id)}
-      className={`rounded-none border-t px-0 py-4 ${section.id === host.activeSectionId ? 'border-accent' : 'border-line'}`}
+      className={`rounded-none border-t ${inline ? 'shrink-0 px-0 py-2' : 'px-0 py-4'} ${section.id === host.activeSectionId ? 'border-accent' : 'border-line'}`}
     >
       {sourceSection && (
         <p className="mb-2 text-xs text-muted" data-testid="variant-of">
@@ -76,7 +78,7 @@ export function SectionLane({ section, isOnly }: { section: Section; isOnly: boo
             value={section.name}
             onChange={(e) => host.renameSection(section.id, e.target.value)}
             aria-label="Section name"
-            className="w-44 rounded-none border-0 border-b border-transparent bg-transparent px-1 text-2xl font-medium italic hover:border-line focus:border-fg"
+            className={`rounded-none border-0 border-b border-transparent bg-transparent px-1 font-medium italic hover:border-line focus:border-fg ${inline ? 'w-32 text-lg' : 'w-44 text-2xl'}`}
           />
           {section.key && (
             <span className="font-mono text-xs text-muted" title="This section has its own key">
@@ -103,7 +105,22 @@ export function SectionLane({ section, isOnly }: { section: Section; isOnly: boo
             </button>
           </div>
         </div>
-        <div className="flex items-center gap-1 text-sm text-muted">
+        {inline && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setMenuOpen((v) => !v);
+            }}
+            aria-expanded={menuOpen}
+            aria-label={`Section actions for ${section.name}`}
+            className="grid size-8 place-items-center rounded-lg text-muted hover:bg-surface-2"
+          >
+            ⋯
+          </button>
+        )}
+        {(!inline || menuOpen) && (
+        <div className={`flex items-center gap-1 text-sm text-muted ${inline ? 'basis-full flex-wrap' : ''}`}>
           <button type="button" onClick={() => host.duplicateSection(section.id)} className="rounded-lg px-2 py-1 hover:bg-surface-2">
             Duplicate section
           </button>
@@ -130,6 +147,7 @@ export function SectionLane({ section, isOnly }: { section: Section; isOnly: boo
             </button>
           )}
         </div>
+        )}
       </div>
 
       {section.events.length === 0 ? (
@@ -138,7 +156,7 @@ export function SectionLane({ section, isOnly }: { section: Section; isOnly: boo
         <SortableContext items={section.events.map((e) => e.id)} strategy={horizontalListSortingStrategy}>
           <div className="flex gap-2">
             {/* Row labels, lined up with the chord blocks and the pattern lane under them. */}
-            {host.showLane && (
+            {host.showLane && !inline && (
               <div aria-hidden="true" className="w-12 shrink-0 font-mono text-[10px] uppercase leading-tight tracking-[0.12em] text-muted">
                 <div className={`flex items-center ${host.density === 'compact' ? 'h-24' : 'h-28'}`}>Chords</div>
                 <div className="mt-1 flex h-9 items-center" data-testid="pattern-lane-label">
@@ -146,7 +164,7 @@ export function SectionLane({ section, isOnly }: { section: Section; isOnly: boo
                 </div>
               </div>
             )}
-            <ol className="timeline-scroll flex min-w-0 flex-1 snap-x gap-2 overflow-x-auto overscroll-x-contain pb-3">
+            <ol className={`flex min-w-0 gap-2 ${inline ? 'pb-1' : 'timeline-scroll flex-1 snap-x overflow-x-auto overscroll-x-contain pb-3'}`}>
               {withOffsets.map(({ event, offset }, index) => (
                 <ChordBlock
                   key={event.id}

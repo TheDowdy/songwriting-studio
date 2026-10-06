@@ -52,7 +52,7 @@ await page.evaluate((cs) => {
 await page.getByRole('tab', { name: 'Guitar' }).click();
 await page.waitForSelector('.fretboard-svg');
 for (const name of ['D', 'G', 'Am', 'Em']) {
-  await page.locator('.strip-chord').filter({ has: page.locator('.strip-chord-name', { hasText: new RegExp(`^${name}$`) }) }).click();
+  await page.locator('.progression-strip button[aria-label^="Chord:"]').filter({ has: page.locator('[data-chord-name]', { hasText: new RegExp(`^${name}$`) }) }).click();
   await sleep(150);
   await page.getByRole('button', { name: 'Use this voicing', exact: true }).click();
   await sleep(100);
@@ -89,7 +89,7 @@ const yBefore = await pageY();
 // What the user sees must not jump either: the first chord block keeps its place on screen, even if
 // something above it (the shell's transport row, wrapping to fit Re-voice and Undo) grows and the
 // browser's scroll anchoring moves the scroll position to compensate.
-const blockTop = () => page.evaluate(() => Math.round(document.querySelector('.strip-chord').getBoundingClientRect().top));
+const blockTop = () => page.evaluate(() => Math.round(document.querySelector('.progression-strip button[aria-label^="Chord:"]').getBoundingClientRect().top));
 const blockBefore = await blockTop();
 await tuningSelect().selectOption('dadgad');
 await sleep(200);

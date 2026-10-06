@@ -781,117 +781,7 @@
   border-top: 1px solid var(--fg);
   border-bottom: 1px solid var(--fg);
 }
-.mod-guitar .strip-scroll {
-  display: flex;
-  gap: 1rem;
-  margin: 0;
-  padding: 0 0 0.25rem;
-  list-style: none;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.mod-guitar .strip-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: none;
-}
-.mod-guitar .strip-section-name {
-  padding: 0;
-  font: inherit;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  background: none;
-  border: 0;
-  cursor: text;
-  font-family: var(--font-mono);
-}
-.mod-guitar .strip-section-name:hover {
-  color: var(--fg);
-}
-.mod-guitar .strip-chords {
-  display: flex;
-  gap: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.mod-guitar .strip-chord {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.05rem;
-  min-width: 64px;
-  min-height: 44px;
-  padding: 0.25rem 0.5rem;
-  font: inherit;
-  color: var(--fg);
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  cursor: pointer;
-  border-left: 1px solid var(--fg);
-  border-bottom: 2px solid var(--line);
-}
-.mod-guitar .strip-chord-name {
-  font-weight: 500;
-  font-size: 1.35rem;
-  line-height: 1.1;
-}
-.mod-guitar .strip-chord-numeral {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  opacity: 1;
-  color: var(--muted);
-}
 /* The chord's length in beats, a small number at the bottom of the box (never widening it). */
-.mod-guitar .strip-chord-beats {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.2rem;
-  margin-top: 0.1rem;
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  opacity: 1;
-  color: var(--muted);
-}
-.mod-guitar .strip-slash {
-  display: block;
-  width: 2px;
-  height: 0.8rem;
-  background: currentColor;
-  transform: skewX(-28deg);
-}
-.mod-guitar .strip-slash.now {
-  /* The beat being heard turns red pencil, like the progression timeline's. */
-  background: var(--play);
-  width: 3px;
-}
-.mod-guitar .strip-stroke {
-  font-size: 0.85rem;
-  font-weight: 500;
-  line-height: 1;
-}
-.mod-guitar .strip-stroke.up {
-  opacity: 0.7;
-}
-.mod-guitar .strip-stroke.partial {
-  font-size: 0.65rem;
-}
-.mod-guitar .strip-stroke.accent {
-  font-weight: 800;
-}
-.mod-guitar .strip-chord[aria-pressed='true'] {
-  box-shadow: inset 0 0 0 1.5px var(--accent);
-  border-color: var(--accent);
-  border-bottom-color: var(--accent);
-}
 .mod-guitar .capo-badge {
   padding: 0.1rem 0.6rem;
   font-size: 0.75rem;
@@ -903,10 +793,6 @@
 @media (max-height: 500px) {
   .mod-guitar .progression-strip {
     padding: 0.3rem 0.75rem;
-  }
-  .mod-guitar .strip-chord {
-    min-height: 36px;
-    padding: 0.15rem 0.4rem;
   }
 }
 
@@ -942,21 +828,6 @@
 }
 /* The strip's committed blocks show a mini diagram alongside the name/numeral, and flag a stale
  *  one exactly as the panel does (`.dialog-warning`'s colour). */
-.mod-guitar .strip-chord-diagram {
-  color: inherit;
-}
-.mod-guitar .strip-chord.stale {
-  box-shadow: inset 0 0 0 2px var(--danger);
-}
-.mod-guitar .strip-chord-stale-badge {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 31px;
-  font-size: 1.5rem;
-  line-height: 1;
-  color: var(--danger);
-}
 .mod-guitar .chord-diagram--mini {
   display: block;
 }
@@ -1081,43 +952,7 @@
 }
 
 /* Editable strip (Songwriting Studio Phase 6) */
-.mod-guitar .strip-group-head {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  min-height: 24px;
-}
-.mod-guitar .strip-section-repeat {
-  text-transform: none;
-}
-.mod-guitar .strip-section-input {
-  width: 9rem;
-  min-height: 24px;
-  padding: 0 0.3rem;
-  font: inherit;
-  font-size: 0.8rem;
-  color: var(--fg);
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-}
-.mod-guitar .strip-section-action {
-  min-width: 24px;
-  min-height: 24px;
-  padding: 0;
-  font-size: 0.85rem;
-  color: var(--muted);
-  background: none;
-  border: 0;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.mod-guitar .strip-section-action:hover {
-  color: var(--fg);
-  background: var(--surface-2);
-}
-.mod-guitar .strip-add-chord,
-.mod-guitar .strip-add-section {
+.mod-guitar .strip-add-chord {
   min-width: 52px;
   min-height: 44px;
   padding: 0.25rem 0.6rem;
@@ -1134,49 +969,12 @@
   color: var(--fg);
   border-color: var(--accent);
 }
-.mod-guitar .strip-group-new {
-  justify-content: flex-end;
-}
 /* No committed voicing: it plays its suggested shape, and the dashed edge says so. */
-.mod-guitar .strip-chord.uncommitted {
-  border-style: dashed;
-  border-bottom-style: dashed;
-}
-.mod-guitar .strip-chord.sounding {
-  /* The playhead is a pale wash with a red-pencil baseline, not a solid red block. */
-  color: var(--fg);
-  background: var(--t-diatonic) !important;
-  border-bottom-color: var(--play);
-}
-.mod-guitar .strip-chord {
-  touch-action: manipulation;
-}
 
 /* Playing the progression in the guitar module (Songwriting Studio Phase 6) */
-.mod-guitar .strip-transport {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.4rem;
-}
 /* Play is red pencil here as in the progression module; other primary actions stay blue. */
-.mod-guitar .strip-transport .button.primary {
-  color: var(--play-fg);
-  background: var(--play);
-  border-color: var(--play);
-}
-.mod-guitar .strip-tempo {
-  font-variant-numeric: tabular-nums;
-}
 
 /* Tuning/capo changes and the re-voicing assistant (Songwriting Studio Phase 7) */
-.mod-guitar .strip-transport-end {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-left: auto;
-}
 .mod-guitar .revoice-button {
   color: var(--danger);
   border-color: color-mix(in srgb, var(--danger) 55%, var(--line));
@@ -1297,21 +1095,4 @@
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--muted);
-}
-.mod-guitar .strip-variant-of {
-  margin: 0 0 0.2rem;
-  font-size: 0.7rem;
-  color: var(--muted);
-}
-.mod-guitar .strip-variant-link {
-  padding: 0;
-  font: inherit;
-  color: inherit;
-  text-decoration: underline;
-  background: none;
-  border: 0;
-  cursor: pointer;
-}
-.mod-guitar .strip-variant-link:hover {
-  color: var(--fg);
 }

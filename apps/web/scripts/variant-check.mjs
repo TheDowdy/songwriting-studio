@@ -132,7 +132,8 @@ check(
 await page.getByRole('tab', { name: 'Guitar' }).click();
 await page.waitForSelector('.fretboard-svg');
 await sleep(200);
-await page.getByRole('button', { name: /Make a variant of Verse$/ }).click();
+await page.getByRole('button', { name: 'Section actions for Verse', exact: true }).click();
+await page.getByRole('region', { name: 'Section: Verse', exact: true }).getByRole('button', { name: 'Make variant' }).click();
 await sleep(150);
 check('the guitar module offers the same dialog', (await page.getByTestId('variant-dialog').count()) === 1);
 await page.getByRole('button', { name: 'Smoothest movement' }).click();
@@ -141,7 +142,7 @@ await page.getByRole('button', { name: 'Create' }).click();
 await sleep(300);
 const fromGuitar = await song();
 check('a variant made from the guitar module is added to the same song', fromGuitar.sections.some((s) => s.name === 'Verse (Smoothest movement)'));
-check('…and shown in the strip with its "Variant of" link', (await page.getByTestId('strip-variant-of').count()) >= 1);
+check('…and shown in the strip with its "Variant of" link', (await page.getByTestId('variant-of').count()) >= 1);
 
 check('no console or page errors', errors.length === 0, errors.join(' | '));
 await browser.close();
