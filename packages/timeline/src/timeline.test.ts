@@ -20,7 +20,7 @@ describe('blockWidth', () => {
     expect(blockWidth(1, 'compact')).toBe(64);
     expect(blockWidth(4, 'compact')).toBe(96);
     expect(blockWidth(8, 'compact')).toBe(192);
-    expect(blockWidth(4, 'comfortable')).toBe(160);
+    expect(blockWidth(4, 'comfortable')).toBe(176);
     expect(blockWidth(1, 'comfortable')).toBe(56);
   });
   it('makes a longer chord wider once past the minimum', () => {

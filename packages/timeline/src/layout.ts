@@ -14,7 +14,7 @@ interface DensitySpec {
 
 export const DENSITIES: Record<Density, DensitySpec> = {
   compact: { beatPx: 24, minPx: 64 },
-  comfortable: { beatPx: 40, minPx: 56 },
+  comfortable: { beatPx: 44, minPx: 56 },
 };
 
 export function blockWidth(beats: number, density: Density): number {
