@@ -63,3 +63,76 @@
 .sw-order-repeat {
   opacity: 0.75;
 }
+
+/* The selected chord's action row (ChordActions.tsx), the same in every workspace. */
+.sw-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+}
+.sw-actions-title {
+  margin-right: 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+.sw-actions-numeral {
+  font-weight: 400;
+  color: var(--muted);
+}
+.sw-action {
+  min-height: 40px;
+  padding: 0 0.9rem;
+  font: inherit;
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid var(--fg);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.sw-action:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+.sw-action[aria-pressed='true'] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.sw-action.danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+.sw-action:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.sw-beats {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.sw-beats-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-right: 0.15rem;
+}
+.sw-beats .sw-action {
+  min-width: 40px;
+  padding: 0;
+}
+.sw-beats-value {
+  width: 3.25rem;
+  min-height: 40px;
+  font: inherit;
+  font-size: 1.05rem;
+  text-align: center;
+  color: var(--fg);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--fg);
+  border-radius: 0;
+}

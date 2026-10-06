@@ -16,10 +16,10 @@ import {
   setChordFlavour,
   setChordInversion,
 } from '../state/progressionEdits';
+import { ActionBar, ActionButton, BeatsStepper, ChordTitle } from '@sw/timeline';
 import { useStore } from '../state/store';
 
 const INVERSION_LABEL = ['Root', '1st', '2nd', '3rd'];
-const BEATS_MAX = 32;
 
 const ORIGIN_TINT = {
   diatonic: 'var(--t-diatonic)',
@@ -162,45 +162,18 @@ export function StripToolbar() {
 
   return (
     <section className="strip-toolbar" aria-label={`Edit ${chordName(chord)}`}>
-      <div className="strip-toolbar-row">
-        <strong className="strip-toolbar-chord">
-          {chordName(chord)} <span className="muted">{chord.numeral}</span>
-        </strong>
-        <button type="button" className="button" aria-pressed={panel === 'flavour'} onClick={() => toggle('flavour')}>
+      <ActionBar className="strip-toolbar-row">
+        <ChordTitle name={chordName(chord)} numeral={chord.numeral} />
+        <ActionButton aria-pressed={panel === 'flavour'} onClick={() => toggle('flavour')}>
           Flavour
-        </button>
-        <button type="button" className="button" aria-pressed={panel === 'inversion'} onClick={() => toggle('inversion')}>
+        </ActionButton>
+        <ActionButton aria-pressed={panel === 'inversion'} onClick={() => toggle('inversion')}>
           Inversion
-        </button>
-        <button type="button" className="button" aria-pressed={panel === 'replace'} onClick={() => toggle('replace')}>
+        </ActionButton>
+        <ActionButton aria-pressed={panel === 'replace'} onClick={() => toggle('replace')}>
           Replace
-        </button>
-        <span className="beats-control" role="group" aria-label="Beats">
-          <span className="beats-label" aria-hidden="true">
-            Beats
-          </span>
-          <button
-            type="button"
-            className="button"
-            aria-label="One beat shorter"
-            disabled={event.beats <= 1}
-            onClick={() => adjustChordBeats(event.id, -1)}
-          >
-            −
-          </button>
-          <output className="beats-value" aria-label="Beats">
-            {event.beats}
-          </output>
-          <button
-            type="button"
-            className="button"
-            aria-label="One beat longer"
-            disabled={event.beats >= BEATS_MAX}
-            onClick={() => adjustChordBeats(event.id, 1)}
-          >
-            +
-          </button>
-        </span>
+        </ActionButton>
+        <BeatsStepper beats={event.beats} onChange={(n) => adjustChordBeats(event.id, n - event.beats)} />
         {song && (
           <PatternSelect
             song={song}
@@ -212,16 +185,14 @@ export function StripToolbar() {
             }}
           />
         )}
-        <button type="button" className="button" onClick={() => duplicateChord(event.id)}>
-          Duplicate
-        </button>
-        <button type="button" className="button danger" onClick={() => removeChord(event.id)}>
+        <ActionButton onClick={() => duplicateChord(event.id)}>Duplicate</ActionButton>
+        <ActionButton danger onClick={() => removeChord(event.id)}>
           Remove
-        </button>
-        <button type="button" className="button" aria-pressed={panel === 'add'} onClick={() => toggle('add')}>
+        </ActionButton>
+        <ActionButton aria-pressed={panel === 'add'} onClick={() => toggle('add')}>
           + Add after
-        </button>
-      </div>
+        </ActionButton>
+      </ActionBar>
 
       {panel === 'flavour' && (
         <div className="strip-toolbar-panel" data-testid="flavour-panel">

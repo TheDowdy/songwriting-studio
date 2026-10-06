@@ -32,6 +32,7 @@ export const GUITAR_HELP: HelpEntry[] = [
   g('Inversion', 'Choose which note of the selected chord is in the bass.'),
   g('Replace', 'Swap the selected chord for a different one. Suggestions are ranked for the key.'),
   g('Beats', 'How many beats the selected chord lasts. Use − and + to change it.'),
+  g('Beats for selected chord', 'How many beats the selected chord lasts. Type a number, or use − and +.'),
   g('One beat shorter', 'Make the selected chord one beat shorter.'),
   g('One beat longer', 'Make the selected chord one beat longer.'),
   g('Duplicate', 'Copy the selected chord and place the copy after it.'),

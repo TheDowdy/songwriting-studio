@@ -20,8 +20,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { canToggleMajorMinor, chordName, chroma, keyLabel, keyOfSection, patternBlocks, toggleMajorMinor, voicingStatus } from '@sw/core';
 import type { Key, PatternBlock } from '@sw/core';
 import { capoedTuning } from '@sw/core/fret/capo';
-import { ChordDiagram, NumberField, VariantDialog } from '@sw/ui';
-import { chipLabel, playhead } from '@sw/timeline';
+import { ChordDiagram, VariantDialog } from '@sw/ui';
+import { ActionBar, ActionButton, BeatsStepper, chipLabel, ChordTitle, playhead } from '@sw/timeline';
 import { useStore as useZustand } from 'zustand';
 import type { Navigate } from '../App';
 import { previewChordInSong } from '../state/playback';
@@ -264,37 +264,29 @@ function ChordToolbar({
   const startReplace = useStore((s) => s.startReplace);
   const cancelReplace = useStore((s) => s.cancelReplace);
   const setEventChord = useStore((s) => s.setEventChord);
-  const btn = 'rounded-full border border-fg px-3.5 py-1.5 text-base italic hover:bg-surface-2 aria-pressed:border-accent aria-pressed:text-accent';
   return (
-    <div className="mt-2 flex flex-wrap items-center gap-2" aria-label={`Actions for ${chordName(event.chord)}`}>
-      <span className="text-lg font-medium">{chordName(event.chord)}</span>
-      <label className="flex items-center gap-1 text-sm text-muted">
-        Beats
-        <NumberField
-          min={1}
-          max={BEATS_MAX}
-          value={event.beats}
-          onCommit={(n) => setEventBeats(event.id, n)}
-          aria-label="Beats for selected chord"
-          className="w-16 rounded-none border-0 border-b border-fg bg-transparent px-2 py-1.5 text-base text-fg"
-        />
-      </label>
-      <button
+    <ActionBar className="mt-2" aria-label={`Actions for ${chordName(event.chord)}`}>
+      <ChordTitle name={chordName(event.chord)} />
+      <BeatsStepper beats={event.beats} onChange={(n) => setEventBeats(event.id, n)} />
+      <ActionButton
         onClick={() => setEventChord(event.id, toggleMajorMinor(event.chord, musicKey))}
         disabled={!canToggleMajorMinor(event.chord)}
-        className={`${btn} disabled:opacity-40`}
       >
         {event.chord.quality === 'min' ? 'Make major' : 'Make minor'}
-      </button>
-      <button onClick={onFlavor} aria-pressed={flavorOpen} className={btn}>Flavour</button>
-      <button onClick={onDetail} aria-pressed={detailOpen} className={btn}>Piano / guitar</button>
-      <button onClick={onExplore} className={btn}>Explore guitar voicings</button>
-      <button onClick={() => (replacing ? cancelReplace() : startReplace(event.id))} aria-pressed={replacing} className={btn}>
+      </ActionButton>
+      <ActionButton onClick={onFlavor} aria-pressed={flavorOpen}>
+        Flavour
+      </ActionButton>
+      <ActionButton onClick={onDetail} aria-pressed={detailOpen}>
+        Piano / guitar
+      </ActionButton>
+      <ActionButton onClick={onExplore}>Explore guitar voicings</ActionButton>
+      <ActionButton onClick={() => (replacing ? cancelReplace() : startReplace(event.id))} aria-pressed={replacing}>
         {replacing ? 'Cancel replace' : 'Replace'}
-      </button>
-      <button onClick={() => duplicateEvent(event.id)} className={btn}>Duplicate</button>
-      <button onClick={() => removeEvent(event.id)} className={btn}>Remove</button>
-    </div>
+      </ActionButton>
+      <ActionButton onClick={() => duplicateEvent(event.id)}>Duplicate</ActionButton>
+      <ActionButton onClick={() => removeEvent(event.id)}>Remove</ActionButton>
+    </ActionBar>
   );
 }
 

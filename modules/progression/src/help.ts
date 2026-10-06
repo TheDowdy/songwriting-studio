@@ -81,6 +81,8 @@ export const PROGRESSION_HELP: HelpEntry[] = [
   p('Remove pattern', 'Remove this block. Its chords go back to the song default.'),
   p('Song default', 'Choose the pattern for every chord that has no block of its own.'),
   p('Close pattern block', 'Close the block’s options.'),
+  p('One beat shorter', 'Make the selected chord one beat shorter.'),
+  p('One beat longer', 'Make the selected chord one beat longer.'),
   p('Beats for selected chord', 'How many beats the selected chord lasts.'),
   p('Flavour', 'Change the type of the selected chord, such as 7th or sus4.'),
   p('Piano / guitar', 'Show the selected chord on a piano keyboard or as a guitar diagram.'),
