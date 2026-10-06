@@ -36,8 +36,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 0.5rem 1rem;
-  padding: 0.5rem 1rem;
+  gap: 0.25rem 1rem;
+  padding: 0.25rem 1rem;
   background: var(--bg);
   border-bottom: 1px solid var(--fg);
 }
@@ -776,6 +776,7 @@
 
 /* Progression strip and capo badge (Songwriting Studio Phase 3) */
 .mod-guitar .progression-strip {
+  position: relative;
   padding: 0.5rem 1rem;
   background: transparent;
   border-top: 1px solid var(--fg);
@@ -1095,4 +1096,32 @@
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--muted);
+}
+
+/* Folding the strip away (to give the neck the height on a short screen). */
+.mod-guitar .strip-fold {
+  min-height: 32px;
+  padding: 0 0.5rem;
+  font: inherit;
+  font-style: italic;
+  color: var(--fg);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.mod-guitar .strip-fold.corner {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.5rem;
+  z-index: 1;
+  min-width: 32px;
+  padding: 0;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.mod-guitar .progression-strip.collapsed {
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
 }

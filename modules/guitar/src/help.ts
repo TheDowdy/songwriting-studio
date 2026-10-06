@@ -13,6 +13,8 @@ export const GUITAR_HELP: HelpEntry[] = [
   // The song strip: the progression across the top, with playback and editing.
   g(/^Chord: /, 'Select this chord to show it on the neck and hear it. Its width shows how many beats it lasts. Press and hold, then drag, to move it within or between sections.'),
   g('Section name', 'Type a new name for this section, then press Enter.'),
+  g('Hide the song strip', 'Fold the song strip away to give the neck more room.'),
+  g(/^Show the song strip/, 'Show the song strip again.'),
   g('Fewer repeats', 'Play this section one time fewer.'),
   g('More repeats', 'Play this section one time more.'),
   g(/^Section actions for /, 'Show or hide the actions for this section: duplicate, make a variant, clear and delete.'),

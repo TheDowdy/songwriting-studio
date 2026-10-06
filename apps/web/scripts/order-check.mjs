@@ -76,6 +76,16 @@ await page.getByRole('button', { name: 'Stop', exact: true }).click();
 await sleep(300);
 check('…and clears on stop', (await chips()).every((c) => !c.endsWith('*')));
 
+// ---------------------------------------------------------------- the strip folds away to give the neck room
+const chordButtons = () => page.locator('.progression-strip button[aria-label^="Chord:"]').count();
+await page.getByRole('button', { name: 'Hide the song strip' }).click();
+check('the strip folds to one line', (await chordButtons()) === 0 && (await page.getByRole('button', { name: /^Show the song strip/ }).count()) === 1);
+await page.reload();
+await page.waitForSelector('.fretboard-svg');
+check('…and stays folded after a reload', (await page.getByRole('button', { name: /^Show the song strip/ }).count()) === 1);
+await page.getByRole('button', { name: /^Show the song strip/ }).click();
+check('…and unfolds again', (await chordButtons()) > 0);
+
 check('no page errors', errors.length === 0, errors.join(' | '));
 await browser.close();
 process.exit(results.every(Boolean) ? 0 : 1);

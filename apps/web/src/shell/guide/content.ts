@@ -138,7 +138,7 @@ export const GUIDE: GuideSection[] = [
     blocks: [
       { p: 'Select the **Guitar** tab to see your song on a guitar neck. Your chords appear in a strip above the neck, drawn the same way as on the Chords tab but more compactly.' },
       { h3: 'Show a chord on the neck' },
-      { p: 'Select a chord in the strip. The neck shows the recommended shape for it, and you hear it play. A chord’s width shows how long it lasts, and it shows one slash for every beat, as on a lead sheet. Drag a chord’s right edge to change its length.' },
+      { p: 'Select a chord in the strip. The neck shows the recommended shape for it, and you hear it play. Select **▾** at the top right of the strip to fold it away and give the neck more room; on a short screen it starts folded. A chord’s width shows how long it lasts, and it shows one slash for every beat, as on a lead sheet. Drag a chord’s right edge to change its length.' },
       { h3: 'Choose a voicing' },
       { p: 'A voicing is one way to play a chord on the neck. To choose one:' },
       {

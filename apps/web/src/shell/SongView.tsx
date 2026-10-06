@@ -90,7 +90,7 @@ export default function SongView({ params }: Props) {
       <main className="min-h-0 flex-1 pb-44 lg:pb-0">
       {activeModule.playback && <Transport playback={activeModule.playback} Extras={activeModule.TransportExtras} />}
       {!activeModule.hasOwnSongOrder && (
-        <div className="px-4 py-2">
+        <div className="px-4 py-1">
           <SongOrderRow
             song={song}
             onSelect={(id) =>
